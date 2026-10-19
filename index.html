@@ -224,7 +224,13 @@ ul.checks .wn{color:var(--accent);font-weight:600}
         <button type="button" data-ovlc="0" role="radio">Square frame</button>
         <button type="button" data-ovlc="1" role="radio">Circle frame</button>
       </div>
-      <p class="note">The electric frame is drawn on the outermost LEDs over any pattern or video. It keeps a tunnel visible whatever the content is.</p>
+      <div class="seg" role="radiogroup" aria-label="Frame light">
+        <button type="button" data-frm="0" role="radio">Steady</button>
+        <button type="button" data-frm="1" role="radio">Flicker</button>
+        <button type="button" data-frm="2" role="radio">Blink</button>
+      </div>
+      <div id="frCtl" style="display:flex;flex-direction:column;gap:10px"></div>
+      <p class="note">The frame is drawn over any pattern or video, so a tunnel stays visible whatever plays. These settings shape it in Tunnel square, Tunnel circle and the frame on top.</p>
       <p class="note">Trail keeps old light on screen so movement smears and fades out. Softness slows how fast each LED changes, in both directions.</p>
     </section>
 
@@ -263,9 +269,10 @@ ul.checks .wn{color:var(--accent);font-weight:600}
     <section aria-labelledby="h-src">
       <h2 id="h-src">Sources</h2>
       <div class="seg" role="radiogroup" aria-label="Audio source">
-        <button type="button" id="aDemo" role="radio" aria-checked="true">Demo beat</button>
-        <button type="button" id="aFile" role="radio" aria-checked="false">Audio file</button>
-        <button type="button" id="aVid" role="radio" aria-checked="false">Video sound</button>
+        <button type="button" id="aDemo" role="radio" aria-checked="true">Demo</button>
+        <button type="button" id="aFile" role="radio" aria-checked="false">File</button>
+        <button type="button" id="aVid" role="radio" aria-checked="false">Video</button>
+        <button type="button" id="aSys" role="radio" aria-checked="false">Computer</button>
       </div>
       <div class="chips">
         <label class="btn filebtn" for="audioIn"><input type="file" id="audioIn" accept="audio/*">Load audio</label>
@@ -332,7 +339,7 @@ const AMBS=[
 const FACES=['north','north-east','east','south-east','south','south-west','west','north-west'];
 
 /* ---------- state ---------- */
-const DEF={pat:31,pal:0,solid:0,speed:1,gain:1.4,trail:0,soft:0,ovl:0,ovlC:0,fit:0,vContrast:1.15,vSat:1.1,vGamma:1,loop:'all',
+const DEF={pat:31,pal:0,solid:0,speed:1,gain:1.4,trail:0,soft:0,ovl:0,ovlC:0,frW:2,frIn:0,frMode:1,frRate:2,fit:0,vContrast:1.15,vSat:1.1,vGamma:1,loop:'all',
   led:0,bal:0,bright:1,cgam:2.2,front:1,back:4,gap:9,dist:2,yaw:0,pitch:0,amb:0,clock:21.5,face:6};
 const S=Object.assign({},DEF);
 const KEY='infinity-grid-v12';
@@ -420,8 +427,12 @@ const CT={
  view:[{k:'dist',l:'Distance to the panel',min:0,max:1,step:0.001,map:p=>Math.round(0.1*Math.pow(100,p)*100)/100,inv:v=>Math.log(v/0.1)/Math.log(100),f:v=>v<1?Math.round(v*100)+' cm':v.toFixed(v<3?2:1)+' m'},
        {k:'yaw',l:'Turn left / right',min:-80,max:80,step:1,f:v=>v===0?'facing you':Math.abs(v)+'° '+(v<0?'left':'right')},
        {k:'pitch',l:'Tilt down / up',min:-60,max:60,step:1,f:v=>v===0?'level':Math.abs(v)+'° '+(v<0?'down':'up')}],
- sun:[{k:'clock',l:'Clock, summer time',min:4,max:24,step:1/12,f:hhmm}]
+ sun:[{k:'clock',l:'Clock, summer time',min:4,max:24,step:1/12,f:hhmm}],
+ frame:[{k:'frW',l:'Frame width',min:1,max:10,step:1,f:v=>v+' LED'+(v>1?'s':'')+' · '+fmt1(v*LEDS[S.led].pitch)+' mm'},
+        {k:'frIn',l:'Frame inset from the edge',min:0,max:30,step:1,f:v=>v===0?'on the outer LEDs':v+' LED'+(v>1?'s':'')+' in · '+fmt1(v*LEDS[S.led].pitch)+' mm'},
+        {k:'frRate',l:'Blink rate',min:0.25,max:10,step:0.25,f:v=>v+' Hz'}]
 };
+function fmt1(v){return(Math.round(v*10)/10).toString();}
 const outs={};
 function buildCtl(host,list,cb){
   const el=document.getElementById(host);
@@ -436,7 +447,11 @@ function buildCtl(host,list,cb){
     inp.addEventListener('input',()=>{S[c.k]=c.map?c.map(+inp.value):+inp.value;out.textContent=c.f(S[c.k]);save();if(cb)cb(c.k);});
   }
 }
-buildCtl('patCtl',CT.pat);buildCtl('vidCtl',CT.vid);buildCtl('ledCtl2',CT.led,()=>onLight());buildCtl('viewCtl',CT.view,()=>onView());buildCtl('sunCtl',CT.sun,()=>onView());
+buildCtl('patCtl',CT.pat);buildCtl('vidCtl',CT.vid);buildCtl('ledCtl2',CT.led,()=>onLight());buildCtl('viewCtl',CT.view,()=>onView());buildCtl('sunCtl',CT.sun,()=>onView());buildCtl('frCtl',CT.frame);
+const frmBtns=[...document.querySelectorAll('[data-frm]')];
+function syncFrm(){frmBtns.forEach(b=>b.setAttribute('aria-checked',String(+b.dataset.frm===S.frMode)));outs.frRate.inp.parentElement.hidden=S.frMode!==2;}
+frmBtns.forEach(b=>b.addEventListener('click',()=>{S.frMode=+b.dataset.frm;save();syncFrm();}));
+syncFrm();
 function setCtl(k,v){S[k]=v;const o=outs[k];if(o){o.inp.value=o.c.inv?o.c.inv(v):v;o.out.textContent=o.c.f(v);}}
 
 /* pattern chips */
@@ -515,7 +530,8 @@ uniform vec4 uLev;
 uniform vec3 uMed; // aspect, fit(0 fill,1 inside,2 stretch), unused
 uniform vec3 uVid; // contrast, saturation, gamma
 uniform sampler2D uPrev;
-uniform float uDecay,uSoft,uOvl,uOvlC;
+uniform float uDecay,uSoft,uOvl,uOvlC,uFrW,uFrIn,uFrRate;
+uniform int uFrMode;
 uniform int uPal;
 uniform vec3 uSolid; // drive values that make the chosen single colour on this LED type
 uniform sampler2D uShape; // Buddha silhouette, mipmapped
@@ -563,21 +579,23 @@ vec3 stars(vec2 p,float t){
   }
   return acc;
 }
+/* frame on the outer LEDs: width and inset in LEDs; mode 0 steady, 1 electric flicker, 2 blink at uFrRate Hz */
 vec3 elec(vec2 c,vec2 p,float t,float circ){
-  float fl=floor(t*26.);
-  float flick=.80+.14*vn(vec2(t*31.,3.7))+.06*h11(fl);
-  flick+=step(.9,h11(fl*1.37+4.))*.28;
-  float ang=atan(p.y,p.x);
-  float wob=(vn(vec2(ang*7.+t*2.,t*17.))-.5)*.9;
-  float d;
-  if(circ<.5){float m=min(min(c.x,uN-c.x),min(c.y,uN-c.y));d=abs(m-1.+wob*.6);}
-  else{float r=length(c-uN*.5);d=abs(r-(uN*.5-1.5)+wob*.6);}
-  float line=smoothstep(1.35,.45,d);
-  float spark=step(.955,h21(floor(c)+fl*17.31))*smoothstep(2.4,.8,d);
-  float hue=.55+.08*sin(t*.4)+.05*vn(vec2(ang*3.,t*5.));
+  float fl=floor(t*26.),ang=atan(p.y,p.x);
+  float flick=1.,wob=0.,spk=0.,hue=.55;
+  if(uFrMode==1){
+    flick=.80+.14*vn(vec2(t*31.,3.7))+.06*h11(fl)+step(.9,h11(fl*1.37+4.))*.28;
+    wob=(vn(vec2(ang*7.+t*2.,t*17.))-.5)*.9;spk=1.;
+    hue=.55+.08*sin(t*.4)+.05*vn(vec2(ang*3.,t*5.));
+  }else if(uFrMode==2)flick=step(.5,fract(uT*uFrRate));
+  float hw=.5*uFrW,mid=uFrIn+hw,d;
+  if(circ<.5){float m=min(min(c.x,uN-c.x),min(c.y,uN-c.y));d=abs(m-mid+wob*.6);}
+  else{float r=length(c-uN*.5);d=abs(r-(uN*.5-mid)+wob*.6);}
+  float line=smoothstep(hw+.45,hw-.45,d);
+  float spark=spk*step(.955,h21(floor(c)+fl*17.31))*smoothstep(hw+1.4,hw-.2,d);
   vec3 base=mix(pal(hue),vec3(1.),.38);
   vec3 col=base*line*flick+vec3(.85,.95,1.)*spark*.9;
-  col+=pal(hue)*.10*smoothstep(4.,1.,d)*flick;
+  col+=pal(hue)*.10*smoothstep(hw+3.,hw,d)*flick*spk;
   return col;
 }
 void main(){
@@ -1161,7 +1179,7 @@ function ensureAudio(){
     actx=new (window.AudioContext||window.webkitAudioContext)();
     analyser=actx.createAnalyser();analyser.fftSize=2048;analyser.smoothingTimeConstant=0.6;analyser.minDecibels=-88;analyser.maxDecibels=-22;
     fftBuf=new Uint8Array(analyser.frequencyBinCount);
-    mediaNode=actx.createMediaElementSource(playerEl);mediaNode.connect(analyser);analyser.connect(actx.destination);
+    mediaNode=actx.createMediaElementSource(playerEl);mediaNode.connect(analyser);mediaNode.connect(actx.destination); /* the analyser itself stays silent, so captured computer sound is not played twice */
     playerEl.addEventListener('play',()=>{if(actx.state==='suspended')actx.resume();});
     return true;
   }catch(e){actx=null;return false;}
@@ -1189,7 +1207,7 @@ function demoBands(t,out){
 const raw=new Float32Array(NB);
 function updateAudio(t){
   let live=false;
-  if(analyser&&((audioSrc==='file'&&!playerEl.paused)||(audioSrc==='video'&&vidNode&&!vid.paused))){bandsFromAnalyser(raw);live=true;}
+  if(srcLive()){bandsFromAnalyser(raw);live=true;}
   else if(audioSrc==='demo'){demoBands(t,raw);live=true;}
   else raw.fill(0);
   for(let i=0;i<NB;i++){
@@ -1203,7 +1221,7 @@ function updateAudio(t){
   const imp=Math.max(0,bass-bassAvg*1.25-0.04);bassAvg+=(bass-bassAvg)*0.05;
   beat=Math.max(imp*4,beat*0.9);beat=Math.min(1,beat);
   if(S.pat>=24&&S.pat<=29){
-    if(analyser&&((audioSrc==='file'&&!playerEl.paused)||(audioSrc==='video'&&vidNode&&!vid.paused)))waveFromAnalyser();
+    if(srcLive())waveFromAnalyser();
     else if(audioSrc==='demo')waveDemo(t);else waveBytes.fill(128);
     gl.activeTexture(gl.TEXTURE4);gl.bindTexture(gl.TEXTURE_2D,waveTex);
     gl.texSubImage2D(gl.TEXTURE_2D,0,0,0,256,1,gl.RED,gl.UNSIGNED_BYTE,waveBytes);
@@ -1213,18 +1231,33 @@ function updateAudio(t){
 }
 
 /* audio UI */
-const aDemo=document.getElementById('aDemo'),aFile=document.getElementById('aFile'),aVid=document.getElementById('aVid'),srcNote=document.getElementById('srcNote');
-let vidNode=null;
-function ensureVideoAudio(){if(vidNode||!actx)return;try{vidNode=actx.createMediaElementSource(vid);vidNode.connect(analyser);}catch(e){}}
-function setAudioSrc(s){audioSrc=s;
-  aDemo.setAttribute('aria-checked',String(s==='demo'));aFile.setAttribute('aria-checked',String(s==='file'));aVid.setAttribute('aria-checked',String(s==='video'));
+const aDemo=document.getElementById('aDemo'),aFile=document.getElementById('aFile'),aVid=document.getElementById('aVid'),aSys=document.getElementById('aSys'),srcNote=document.getElementById('srcNote');
+let vidNode=null,sysStream=null,sysNode=null;
+function ensureVideoAudio(){if(vidNode||!actx)return;try{vidNode=actx.createMediaElementSource(vid);vidNode.connect(analyser);vidNode.connect(actx.destination);}catch(e){}}
+function srcLive(){return !!analyser&&((audioSrc==='file'&&!playerEl.paused)||(audioSrc==='video'&&!!vidNode&&!vid.paused)||(audioSrc==='system'&&!!sysNode));}
+function stopSystemAudio(){if(sysNode){try{sysNode.disconnect();}catch(e){}sysNode=null;}if(sysStream){sysStream.getTracks().forEach(t=>t.stop());sysStream=null;}}
+/* computer sound: the browser's screen-share picker, with "share system audio" ticked, hands over everything the PC plays */
+function startSystemAudio(){
+  if(!ensureAudio()){srcNote.textContent='This browser view did not allow audio analysis. The demo beat still works.';setAudioSrc('demo');return;}
+  if(!navigator.mediaDevices||!navigator.mediaDevices.getDisplayMedia){srcNote.textContent='This browser cannot pick up computer sound. Use Chrome or Edge on a computer.';setAudioSrc('demo');return;}
+  srcNote.textContent='Choose Entire screen and tick "Also share system audio", then press Share.';
+  navigator.mediaDevices.getDisplayMedia({video:true,audio:{echoCancellation:false,noiseSuppression:false,autoGainControl:false},systemAudio:'include',selfBrowserSurface:'exclude'}).then(st=>{
+    if(!st.getAudioTracks().length){st.getTracks().forEach(t=>t.stop());setAudioSrc('demo');srcNote.textContent='No sound came with that share. Click Computer again, choose Entire screen and tick "Also share system audio".';return;}
+    stopSystemAudio();sysStream=st;sysNode=actx.createMediaStreamSource(st);sysNode.connect(analyser);try{actx.resume();}catch(e){}
+    st.getTracks().forEach(tr=>tr.addEventListener('ended',()=>{if(sysStream===st){setAudioSrc('demo');srcNote.textContent='Computer sound stopped. The demo beat is back.';}}));
+    srcNote.textContent='Listening to everything your computer plays. Stop with "Stop sharing" in the browser bar, or pick another source.';
+  }).catch(()=>{setAudioSrc('demo');srcNote.textContent='Sharing was cancelled. Click Computer again to pick up the computer sound.';});
+}
+function setAudioSrc(s){const was=audioSrc;audioSrc=s;
+  aDemo.setAttribute('aria-checked',String(s==='demo'));aFile.setAttribute('aria-checked',String(s==='file'));aVid.setAttribute('aria-checked',String(s==='video'));aSys.setAttribute('aria-checked',String(s==='system'));
+  if(s!=='system')stopSystemAudio();else if(was!=='system'||!sysNode)startSystemAudio();
   playerEl.hidden=(s!=='file'||!playerEl.src);
   if(s==='file'&&!playerEl.src)srcNote.textContent='Load an audio file, then press play on the player. The visuals follow what is playing.';
   if(s==='video'){
     if(ensureAudio()){ensureVideoAudio();try{actx.resume();}catch(e){}}
     srcNote.textContent=playlist.length?'The audio visuals follow the sound of the playing video.':'Add a video first. The audio visuals will follow its sound.';
   }}
-aDemo.addEventListener('click',()=>setAudioSrc('demo'));aFile.addEventListener('click',()=>setAudioSrc('file'));aVid.addEventListener('click',()=>setAudioSrc('video'));
+aDemo.addEventListener('click',()=>setAudioSrc('demo'));aFile.addEventListener('click',()=>setAudioSrc('file'));aVid.addEventListener('click',()=>setAudioSrc('video'));aSys.addEventListener('click',()=>setAudioSrc('system'));
 document.getElementById('audioIn').addEventListener('change',e=>{
   const f=e.target.files&&e.target.files[0];if(!f)return;
   if(!ensureAudio()){srcNote.textContent='This browser view did not allow audio analysis. The demo beat still works.';return;}
@@ -1704,7 +1737,8 @@ function frame(ts){
   uni(P1,'uPat','uniform1i',patId);uni(P1,'uSpec','uniform1i',1);uni(P1,'uWave','uniform1i',4);uni(P1,'uMedia','uniform1i',2);
   uni(P1,'uLev','uniform4f',bass,mid,treb,beat);
   uni(P1,'uMed','uniform3f',mediaAspect,S.fit,0);uni(P1,'uVid','uniform3f',S.vContrast,S.vSat,S.vGamma);
-  uni(P1,'uPrev','uniform1i',3);uni(P1,'uDecay','uniform1f',decay);uni(P1,'uSoft','uniform1f',soft);uni(P1,'uOvl','uniform1f',S.ovl);uni(P1,'uOvlC','uniform1f',S.ovlC);uni(P1,'uPal','uniform1i',S.pal);
+  uni(P1,'uPrev','uniform1i',3);uni(P1,'uDecay','uniform1f',decay);uni(P1,'uSoft','uniform1f',soft);uni(P1,'uOvl','uniform1f',S.ovl);uni(P1,'uOvlC','uniform1f',S.ovlC);
+  uni(P1,'uFrW','uniform1f',S.frW);uni(P1,'uFrIn','uniform1f',S.frIn);uni(P1,'uFrRate','uniform1f',S.frRate);uni(P1,'uFrMode','uniform1i',S.frMode);uni(P1,'uPal','uniform1i',S.pal);
   uni(P1,'uSolid','uniform3f',solidDrive[0],solidDrive[1],solidDrive[2]);
   if(S.pat===36){brotStep(N,t*S.speed,dts*Math.max(S.speed,.05));}
   uni(P1,'uShape','uniform1i',6);uni(P1,'uBrot','uniform1i',7);
