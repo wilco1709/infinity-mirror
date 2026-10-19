@@ -109,10 +109,14 @@ ul.checks .wn{color:var(--accent);font-weight:600}
   .rail{grid-column:2;grid-row:1/3}
 }
 @media (max-width:900px){
-  .app{display:block;height:auto}
-  .stagewrap{aspect-ratio:1;padding:16px}
-  .meter{max-height:none;border-left:0;border-top:1px solid var(--line)}
-  .rail{border-left:0;border-top:1px solid var(--line);overflow:visible;padding-inline:16px}
+  /* phone: the view stays at the top while the controls scroll underneath it */
+  .app{display:flex;flex-direction:column;height:auto}
+  .stagewrap{position:sticky;top:0;z-index:5;background:var(--bg);height:min(60vh,100vw);padding:8px;border-bottom:1px solid var(--line)}
+  .rail{order:2;border-left:0;overflow:visible;padding-inline:16px}
+  .meter{order:3;max-height:none;border-left:0;border-top:1px solid var(--line)}
+  .hud{font-size:11px}
+  .hud.tr{display:none}
+  .row input[type=range]{height:28px}
 }
 @media (prefers-reduced-motion:reduce){*{scroll-behavior:auto}}
 </style>
@@ -120,7 +124,7 @@ ul.checks .wn{color:var(--accent);font-weight:600}
 <div class="app">
   <div class="stagewrap" id="wrap">
     <div class="stage" id="stage">
-      <canvas id="cv" aria-label="Simulated infinity mirror panel. Drag to turn it, scroll to move closer or further away, double-click to face it straight on."></canvas>
+      <canvas id="cv" aria-label="Simulated infinity mirror on its speaker trailer. Drag to walk around it, pinch or scroll to move closer or further away, double-tap to stand in front."></canvas>
       <button class="hud fsbtn" id="fs" type="button" style="pointer-events:auto;font-size:12px;padding:4px 8px;min-height:0">Fullscreen</button>
       <div class="hud tr" id="hudTR"></div>
       <div class="hud bl" id="hudBL"></div>
@@ -183,7 +187,7 @@ ul.checks .wn{color:var(--accent);font-weight:600}
     <section aria-labelledby="h-view">
       <h2 id="h-view">You and the room</h2>
       <div id="viewCtl" style="display:flex;flex-direction:column;gap:10px"></div>
-      <div class="chips"><button type="button" id="viewReset">Face it straight on</button></div>
+      <div class="chips"><button type="button" id="viewReset">Stand in front</button></div>
       <div id="ambCtl"></div>
       <div id="sunBox" style="display:flex;flex-direction:column;gap:10px">
         <div id="sunCtl"></div>
@@ -191,7 +195,7 @@ ul.checks .wn{color:var(--accent);font-weight:600}
         <div id="faceCtl"></div>
         <p class="note" id="sunNote"></p>
       </div>
-      <p class="note">Drag the panel to turn it, scroll to walk closer or away. Your eyes adapt to what is in view, as they do in real life.</p>
+      <p class="note">The hall, the speaker trailer and the panel stand still; you move. Drag sideways to walk around, up and down to change your eye height. Pinch or scroll to walk closer or away, double-tap to stand in front again. Your eyes adapt to what is in view.</p>
     </section>
 
     <section aria-labelledby="h-led">
@@ -340,7 +344,7 @@ const FACES=['north','north-east','east','south-east','south','south-west','west
 
 /* ---------- state ---------- */
 const DEF={pat:31,pal:0,solid:0,speed:1,gain:1.4,trail:0,soft:0,ovl:0,ovlC:0,frW:2,frIn:0,frMode:1,frRate:2,fit:0,vContrast:1.15,vSat:1.1,vGamma:1,loop:'all',
-  led:0,bal:0,bright:1,cgam:2.2,front:1,back:4,gap:9,dist:2,yaw:0,pitch:0,amb:0,clock:21.5,face:6};
+  led:0,bal:0,bright:1,cgam:2.2,front:1,back:4,gap:9,dist:2,yaw:0,pitch:0,eyeH:1.65,amb:0,clock:21.5,face:6};
 const S=Object.assign({},DEF);
 const KEY='infinity-grid-v12';
 try{const j=JSON.parse(localStorage.getItem(KEY)||'null');if(j&&typeof j==='object'){for(const k in DEF)if(k in j&&typeof j[k]===typeof DEF[k])S[k]=j[k];}}catch(e){}
@@ -425,8 +429,8 @@ const CT={
  led:[{k:'bright',l:'Brightness',min:0.02,max:1,step:0.01,f:v=>Math.round(v*100)+' %'},
       {k:'cgam',l:'Controller gamma',min:1,max:3.2,step:0.05,f:v=>v<1.02?'none (raw PWM)':v.toFixed(2)}],
  view:[{k:'dist',l:'Distance to the panel',min:0,max:1,step:0.001,map:p=>Math.round(0.1*Math.pow(100,p)*100)/100,inv:v=>Math.log(v/0.1)/Math.log(100),f:v=>v<1?Math.round(v*100)+' cm':v.toFixed(v<3?2:1)+' m'},
-       {k:'yaw',l:'Turn left / right',min:-80,max:80,step:1,f:v=>v===0?'facing you':Math.abs(v)+'° '+(v<0?'left':'right')},
-       {k:'pitch',l:'Tilt down / up',min:-60,max:60,step:1,f:v=>v===0?'level':Math.abs(v)+'° '+(v<0?'down':'up')}],
+       {k:'yaw',l:'Walk around it',min:-180,max:180,step:1,f:v=>v===0?'straight in front':Math.abs(v)===180?'behind':Math.abs(v)+'° to the '+(v<0?'left':'right')},
+       {k:'eyeH',l:'Eye height',min:0.3,max:4,step:0.05,f:v=>v.toFixed(2)+' m'+(Math.abs(v-1.65)<.03?', standing':v<1.2?', crouching':v>2.6?', on shoulders or a stage':'')}],
  sun:[{k:'clock',l:'Clock, summer time',min:4,max:24,step:1/12,f:hhmm}],
  frame:[{k:'frW',l:'Frame width',min:1,max:10,step:1,f:v=>v+' LED'+(v>1?'s':'')+' · '+fmt1(v*LEDS[S.led].pitch)+' mm'},
         {k:'frIn',l:'Frame inset from the edge',min:0,max:30,step:1,f:v=>v===0?'on the outer LEDs':v+' LED'+(v>1?'s':'')+' in · '+fmt1(v*LEDS[S.led].pitch)+' mm'},
@@ -937,6 +941,32 @@ void main(){
   o=vec4(clamp(prev+mv,0.,1.),1.);
 }`.replace('//PALDATA',palGLSL()+icoGLSL());
 
+/* The speaker trailer, fixed at its shortest: 185 cm from number plate to right sub, 120 cm deep.
+   Subs 58 x 67 cm, tops 58 x 58 cm, the 600 mm panel in a 61 cm slot right above the wheel case.
+   Same layout as Speaker Trailer.html at 185 cm; centimetres, ground at y = 0, cabinet fronts at z = 60. */
+const CART=(()=>{const s=58/181,bed=(550-447)*s,chT=15*s,wr=53*s,wy=(550-497)*s;
+  const slotBot=Math.max(bed+6,wy+wr+6),slotTop=slotBot+61,py=slotBot+.5+30,px=90.5,subTop=bed+67,top=subTop+58;
+  return{s,bed,chT,wr,wy,slotBot,slotTop,py,px,subTop,top,floor:-py/100};})();
+function cartGLSL(){
+  const C=CART,L=(x,y,z)=>[(x-C.px)/100,(y-C.py)/100,(z-60)/100];
+  const B=[ /* x0,y0,z0, x1,y1,z1, id: 0 cabinet, 1 sub, 2 top, 3 steel, 4 number plate, 5 rear light */
+    [0,C.bed,-60,58,C.subTop,60,1],[0,C.subTop,-60,58,C.top,60,2],[123,C.bed,-60,181,C.subTop,60,1],[123,C.subTop,-60,181,C.top,60,2],
+    [58,C.bed,-60,123,C.slotBot,60,0],[58,C.slotBot,-60,60,C.slotTop,60,0],[121,C.slotBot,-60,123,C.slotTop,60,0],
+    [58,C.slotTop,-60,123,C.slotTop+2,60,0],[60,C.slotBot,-60,121,C.slotTop,48,0],
+    [-3,C.bed-C.chT,-56,183,C.bed,56,3],[181,29,-3,238,33,3,3],[236,30,-5,244,36,5,3],[222,6,-1.5,225,31,1.5,3],[218,0,-2,229,12,2,3],
+    [-4.6,17,-26,-4,28,26,4],[-5,23,-56,-4,28.2,-38,5],[-5,23,38,-4,28.2,56,5]];
+  const v=a=>'vec3('+a.map(n=>n.toFixed(4)).join(',')+')';
+  const top=C.top,s=C.s;
+  return 'const int NCB='+B.length+';'
+    +'const vec3 CB0[NCB]=vec3[NCB]('+B.map(b=>v(L(b[0],b[1],b[2]))).join(',')+');'
+    +'const vec3 CB1[NCB]=vec3[NCB]('+B.map(b=>v(L(b[3],b[4],b[5]))).join(',')+');'
+    +'const int CBI[NCB]=int[NCB]('+B.map(b=>b[6]).join(',')+');'
+    +'const float WHX='+((C.px-C.px)/100).toFixed(4)+',WHY='+((C.wy-C.py)/100).toFixed(4)+',WHR='+(C.wr/100).toFixed(4)+',WHW=.06,WHZA='+((69-60)/100).toFixed(4)+',WHZB='+((-69-60)/100).toFixed(4)+';'
+    +'const float COLX='+((C.px-29)/100).toFixed(4)+',SUBY='+((C.bed+107*s-C.py)/100).toFixed(4)+',SUBR='+(72*s/100).toFixed(4)
+    +',PRT0='+((C.bed+2.5-C.py)/100).toFixed(4)+',PRT1='+((C.bed+6.5-C.py)/100).toFixed(4)+',PRTW=.26'
+    +',HRY='+((top-40*s-C.py)/100).toFixed(4)+',HRW='+(95*s/100).toFixed(4)+',HRH='+(41*s/100).toFixed(4)
+    +',TWY='+((top-115*s-C.py)/100).toFixed(4)+',TWR='+(50*s*.92/100).toFixed(4)+';';
+}
 /* Pass 2: you stand at (0,0,D) looking at the panel centre (origin). The panel turns about its centre.
    Every light value in here is a luminance in cd/m2 (nits), linear sRGB. Tone mapping happens at the very end. */
 const FS2=String.raw`#version 300 es
@@ -945,7 +975,9 @@ precision highp float;
 uniform sampler2D uDuty;
 uniform mat3 uLedM,uRot,uRotI;
 uniform vec2 uRes;
-uniform float uTanH,uD,uN,uPitch,uSig,uHalfOut,uHalfWin,uBox,uTbg,uTrans,uQ,uRo,uScale,uGlare,uRoomZ,uHaze;
+uniform float uTanH,uD,uN,uPitch,uSig,uHalfOut,uHalfWin,uBox,uTbg,uTrans,uQ,uRo,uScale,uGlare,uRoomZ,uHaze,uFloor;
+uniform vec3 uEyeW;
+//CARTDATA
 uniform vec3 uLay,uIdx,uSelf,uSunDir,uSunL,uSunE,uSkyL,uGndE,uGlowC,uAur,uTL;
 uniform int uMode,uAmb;
 uniform vec3 uWB; // chromatic adaptation of the eye to the room light (von Kries, partial)
@@ -974,7 +1006,7 @@ vec3 djLens(vec3 ro,vec3 rd){vec3 L=vec3(0.);
     if(d2<.0036)L+=uDjC[i]*(smoothstep(DJC0,DJC1,dot(-rd,uDjA[i]))/(PI*.0036));}
   return L;}
 vec3 envRoom(vec3 ro,vec3 rd){
-  vec3 bmin=vec3(-6.,-1.6,-1.5),bmax=vec3(6.,2.4,uRoomZ);
+  vec3 bmin=vec3(-12.,uFloor,-4.),bmax=vec3(12.,uFloor+5.,14.);  /* the hall: 24 x 18 m, 5 m high, the trailer near the back wall */
   vec3 r=rd+vec3(1e-7);vec3 inv=1./r;vec3 t0=(bmin-ro)*inv,t1=(bmax-ro)*inv,tf=max(t0,t1);
   float t=min(min(tf.x,tf.y),tf.z);vec3 p=ro+rd*t;
   vec3 n;float rho;int face;
@@ -991,7 +1023,7 @@ vec3 envRoom(vec3 ro,vec3 rd){
 }
 vec3 envSky(vec3 ro,vec3 rd){
   vec3 hor=uSkyL*.33+uGlowC*.6;
-  if(rd.y<-1e-4){float t=(-1.6-ro.y)/rd.y;vec3 p=ro+rd*t;
+  if(rd.y<-1e-4){float t=(uFloor-ro.y)/rd.y;vec3 p=ro+rd*t;
     vec3 L=uGndE*(.12/PI)+selfLight(p,vec3(0.,1.,0.),.12);
     return mix(L,hor,1.-exp(-t/900.));}
   float g=max(rd.y,0.);
@@ -1004,6 +1036,16 @@ vec3 envSky(vec3 ro,vec3 rd){
   return L;
 }
 vec3 env(vec3 ro,vec3 rd){return uAmb==2?envSky(ro,rd):envRoom(ro,rd);}
+/* illuminance (lux) on a surface at p facing n, for matte objects: diffuse luminance = reflectance x E / pi */
+vec3 irr(vec3 p,vec3 n){
+  float r2=max(dot(p,p),.04);vec3 vd=p*inversesqrt(r2);
+  vec3 E=uSelf*(max(dot(uRotI[2],vd),0.)*max(dot(n,-vd),0.)/r2);
+  if(uAmb==0)E+=vec3(.004*PI);
+  else if(uAmb==1)E+=uTL*(400.*max(n.y,0.)+180.*(1.-abs(n.y))+90.*max(-n.y,0.));
+  else if(uAmb==2){vec3 dir=uSunE*max(uSunDir.y,0.);E+=uSunE*max(dot(n,uSunDir),0.)+(uGndE-dir)*(.5+.5*n.y)+uGndE*.12*(.5-.5*n.y);}
+  else{E+=vec3(.003*PI);for(int i=0;i<6;i++){float rr;vec3 wd;float c=djCone(i,p,rr,wd);E+=uDjC[i]*(c*max(dot(n,-wd),0.)/rr);}}
+  return E;
+}
 /* light falling on the front film, scattered by its ~1 % haze (estimate) */
 vec3 frontHaze(vec3 p,vec3 n){
   vec3 E=uSunE*max(dot(n,uSunDir),0.)*(uAmb==2?1.:0.);
@@ -1038,27 +1080,73 @@ vec3 tunnel(vec3 h,vec3 d,float dist){
   }
   return acc;
 }
+/* the speaker trailer at 185 cm, as a prop around the panel: boxes plus two wheels, in the panel's own frame */
+bool cartHit(vec3 ro,vec3 rd,out float tb,out vec3 nb,out int idb){
+  tb=1e9;nb=vec3(0.,0.,1.);idb=0;bool hit=false;
+  vec3 inv=1./(rd+vec3(1e-9));
+  for(int i=0;i<NCB;i++){
+    vec3 t0=(CB0[i]-ro)*inv,t1=(CB1[i]-ro)*inv,tn=min(t0,t1),tf=max(t0,t1);
+    float a=max(max(tn.x,tn.y),tn.z),b=min(min(tf.x,tf.y),tf.z);
+    if(a<b&&a>0.&&a<tb){tb=a;idb=CBI[i];hit=true;nb=a==tn.x?vec3(-sign(rd.x),0.,0.):a==tn.y?vec3(0.,-sign(rd.y),0.):vec3(0.,0.,-sign(rd.z));}
+  }
+  for(int s=0;s<2;s++){
+    vec3 c=vec3(WHX,WHY,s==0?WHZA:WHZB);
+    vec2 oc=ro.xy-c.xy;float A=dot(rd.xy,rd.xy),B=dot(oc,rd.xy),Cc=dot(oc,oc)-WHR*WHR,disc=B*B-A*Cc;
+    if(disc>0.&&A>1e-9){float t=(-B-sqrt(disc))/A;if(t>0.&&t<tb&&abs(ro.z+rd.z*t-c.z)<WHW){tb=t;idb=6;hit=true;nb=vec3(normalize(ro.xy+rd.xy*t-c.xy),0.);}}
+    for(int k=0;k<2;k++){float zc=c.z+(k==0?WHW:-WHW),t=(zc-ro.z)/(rd.z+1e-9);
+      if(t>0.&&t<tb){vec2 q=ro.xy+rd.xy*t-c.xy;if(dot(q,q)<WHR*WHR){tb=t;idb=7;hit=true;nb=vec3(0.,0.,k==0?1.:-1.);}}}
+  }
+  return hit;
+}
+vec3 shadeCart(vec3 p,vec3 n,int id,vec3 rd){
+  float rho=.045,spec=.004;vec3 col=vec3(1.);
+  if(id==3){rho=.05;spec=.03;}
+  else if(id==4){col=vec3(.95,.72,.05);rho=.6;}
+  else if(id==5){col=vec3(.6,.03,.03);rho=.3;}
+  else if(id==6){rho=.03;spec=.01;}
+  else if(id==7){float r=length(p.xy-vec2(WHX,WHY));rho=r<WHR*.55?.12:.03;spec=r<WHR*.55?.1:.01;}
+  if((id==1||id==2)&&n.z>.5){
+    float cx=p.x<0.?-COLX:COLX;
+    if(id==1){
+      float r=length(p.xy-vec2(cx,SUBY));
+      if(r<SUBR){rho=.02*(.6+.4*step(.4,fract(p.x*160.)*fract(p.y*160.)));spec=.01;}
+      if(abs(r-SUBR)<.008){rho=.08;spec=.08;}
+      if(p.y>PRT0&&p.y<PRT1&&abs(p.x-cx)<PRTW)rho=.004;
+    }else{
+      if(abs(p.x-cx)<HRW*.5&&abs(p.y-HRY)<HRH*.5)rho=.006+.01*max(abs(p.x-cx)/(HRW*.5),abs(p.y-HRY)/(HRH*.5));
+      float r=length(p.xy-vec2(cx,TWY));
+      if(r<TWR){rho=.02;if(r<TWR*.3){rho=.06;spec=.08;}}
+      if(abs(r-TWR)<.006){rho=.08;spec=.08;}
+    }
+  }
+  vec3 p0=p+n*2e-3;
+  return col*rho*irr(p0,n)/PI+spec*env(p0,reflect(rd,n));
+}
 void main(){
   vec2 ndc=gl_FragCoord.xy/uRes*2.-1.;
-  vec3 dw=normalize(vec3(ndc*uTanH,-1.));
-  vec3 eW=vec3(0.,0.,uD);
+  /* you stand at uEyeW and look at the panel centre; the room, the trailer and the panel stay put */
+  vec3 eW=uEyeW,fw=normalize(-eW),rt=normalize(cross(fw,vec3(0.,1.,0.))),up=cross(rt,fw);
+  vec3 dw=normalize(fw+ndc.x*uTanH*rt+ndc.y*uTanH*up);
   vec3 e=uRot*eW,d=uRot*dw;
   vec3 inv=1./(d+vec3(1e-9));
   vec3 bmin=vec3(-uHalfOut,-uHalfOut,-uBox),bmax=vec3(uHalfOut,uHalfOut,0.);
   vec3 t0=(bmin-e)*inv,t1=(bmax-e)*inv,tn=min(t0,t1),tf=max(t0,t1);
   float tN=max(max(tn.x,tn.y),tn.z),tF=min(min(tf.x,tf.y),tf.z);
   vec3 L;float veil=-1.;
-  if(tN<tF&&tN>0.){
+  float tc;vec3 nc;int cid;
+  bool hc=cartHit(e,d,tc,nc,cid),hp=tN<tF&&tN>0.;
+  if(hc&&(!hp||tc<tN))L=shadeCart(e+d*tc,nc,cid,dw);
+  else if(hp){
     vec3 h=e+d*tN,hW=uRotI*h;
     if(tN==tn.z){
       vec3 nW=uRotI[2],p0=hW+nW*1e-3;
       if(max(abs(h.x),abs(h.y))<uHalfWin){
         vec3 R=uRo*env(p0,reflect(dw,nW));
         L=tunnel(h,d,tN)+R+frontHaze(hW,nW);veil=dot(R,LUM);
-      }else L=.04*env(p0,nW)+.03*env(p0,reflect(dw,nW));
+      }else L=.04*irr(p0,nW)/PI+.01*env(p0,reflect(dw,nW));
     }else{
       vec3 nW=uRotI*(tN==tn.x?vec3(-sign(d.x),0.,0.):vec3(0.,-sign(d.y),0.)),p0=hW+nW*1e-3;
-      L=.05*env(p0,nW)+.03*env(p0,reflect(dw,nW));
+      L=.05*irr(p0,nW)/PI+.01*env(p0,reflect(dw,nW));
     }
   }else L=env(eW,dw);
   if(uMode==1){o=vec4(L,veil);return;}
@@ -1069,7 +1157,7 @@ void main(){
   vec3 c=pow(m,vec3(1./2.2));
   c+=(hash(gl_FragCoord.xy)-.5)/255.;
   o=vec4(c,1.);
-}`;
+}`.replace('//CARTDATA',cartGLSL());
 
 function compile(type,src){const s=gl.createShader(type);gl.shaderSource(s,src);gl.compileShader(s);
   if(!gl.getShaderParameter(s,gl.COMPILE_STATUS)){console.error(gl.getShaderInfoLog(s));}return s;}
@@ -1561,14 +1649,16 @@ const COMPASS=['N','NNE','NE','ENE','E','ESE','SE','SSE','S','SSW','SW','WSW','W
 /* ---------- disco: six moving heads on a truss behind the crowd ---------- */
 const DJCOL=[[1,0,0],[0,1,0],[0,0,1],[1,0,1],[0,1,1],[1,.42,0],[1,1,1],[.3,0,1]].map(c=>{const Y=.2126*c[0]+.7152*c[1]+.0722*c[2];return c.map(v=>v/Y);});
 const djP=new Float32Array(18),djA=new Float32Array(18),djC=new Float32Array(18);
-function djUpdate(t){for(let i=0;i<6;i++){const px=-5+2*i,py=2.3,pz=S.dist+2.5;
-  const tx=3.2*Math.sin(t*(.31+.07*i)+i*1.7),ty=-1.6+2.4*(.5+.5*Math.sin(t*(.23+.05*i)+i*2.3)),tz=-0.5+0.6*Math.sin(t*.17+i);
+function djUpdate(t){for(let i=0;i<6;i++){const F=CART.floor,px=-5+2*i,py=F+3.6,pz=7;   /* truss 3.6 m up, 7 m in front of the trailer */
+  const tx=3.2*Math.sin(t*(.31+.07*i)+i*1.7),ty=F+2.4*(.5+.5*Math.sin(t*(.23+.05*i)+i*2.3)),tz=-0.5+0.6*Math.sin(t*.17+i);
   const ax=tx-px,ay=ty-py,az=tz-pz,l=Math.hypot(ax,ay,az);
   djP.set([px,py,pz],i*3);djA.set([ax/l,ay/l,az/l],i*3);
   djC.set(DJCOL[(Math.floor(t/4+i*1.37)+i*3)%8].map(v=>v*30000),i*3);}}
 
 /* ---------- build sheet ---------- */
-function viewCos(){return Math.cos(S.yaw*D2R)*Math.cos(S.pitch*D2R);}
+/* where your eyes are, relative to the panel centre: walk around it at the chosen distance and eye height */
+function eyePos(){const h=S.eyeH+CART.floor;return[S.dist*Math.sin(S.yaw*D2R),h,S.dist*Math.cos(S.yaw*D2R)];}
+function viewCos(){const e=eyePos();return e[2]/Math.hypot(e[0],e[1],e[2]);}
 function updateSheet(){
   const C=CFG,L=C.L,n=C.N*C.N,st=C.st,full=C.full;
   const th=Math.acos(Math.min(1,viewCos())),shift=2*st.d*tanAt(Math.sin(th),st.nC)*1000;
@@ -1661,16 +1751,29 @@ const PRESETS={
   preHD:{led:1,bal:0,front:1,back:4,gap:9},
   preP6:{led:3,bal:0,front:1,back:4,gap:9}};
 for(const id in PRESETS)$(id).addEventListener('click',()=>{const p=PRESETS[id];for(const k in p){if(stops[k])stops[k].set(p[k]);else S[k]=p[k];}syncBal();onConfig();save();});
-$('viewReset').addEventListener('click',()=>{setCtl('yaw',0);setCtl('pitch',0);save();onView();});
-/* drag to turn, wheel to walk, double-click to face it */
-let drag=null;
-cv.addEventListener('pointerdown',e=>{drag={x:e.clientX,y:e.clientY,yaw:S.yaw,pitch:S.pitch};cv.setPointerCapture(e.pointerId);cv.classList.add('drag');});
-cv.addEventListener('pointermove',e=>{if(!drag)return;const k=160/Math.max(200,cssSize);
-  setCtl('yaw',Math.max(-80,Math.min(80,Math.round(drag.yaw+(e.clientX-drag.x)*k))));setCtl('pitch',Math.max(-60,Math.min(60,Math.round(drag.pitch-(e.clientY-drag.y)*k))));save();});
-const endDrag=()=>{if(drag){drag=null;cv.classList.remove('drag');onView();}};
-cv.addEventListener('pointerup',endDrag);cv.addEventListener('pointercancel',endDrag);
-cv.addEventListener('dblclick',()=>{setCtl('yaw',0);setCtl('pitch',0);save();onView();});
-cv.addEventListener('wheel',e=>{e.preventDefault();setCtl('dist',Math.max(0.1,Math.min(10,Math.round(S.dist*Math.exp(e.deltaY*0.0012)*100)/100)));save();},{passive:false});
+const faceIt=()=>{setCtl('yaw',0);setCtl('eyeH',1.65);save();onView();};
+$('viewReset').addEventListener('click',faceIt);
+/* one finger or the mouse: walk around (left/right) and change eye height (up/down).
+   Two fingers: pinch to walk closer or further. Mouse wheel does the same. Double-tap: back in front. */
+const ptrs=new Map();let drag=null,pinch=null;
+const clampD=v=>Math.max(0.1,Math.min(10,Math.round(v*100)/100));
+function startDrag(p){drag={x:p.x,y:p.y,yaw:S.yaw,eyeH:S.eyeH};}
+cv.addEventListener('pointerdown',e=>{ptrs.set(e.pointerId,{x:e.clientX,y:e.clientY});try{cv.setPointerCapture(e.pointerId);}catch(_){}
+  cv.classList.add('drag');
+  if(ptrs.size===2){const[a,b]=[...ptrs.values()];pinch={d:Math.max(10,Math.hypot(a.x-b.x,a.y-b.y)),dist:S.dist};drag=null;}
+  else if(ptrs.size===1)startDrag({x:e.clientX,y:e.clientY});});
+cv.addEventListener('pointermove',e=>{if(!ptrs.has(e.pointerId))return;ptrs.set(e.pointerId,{x:e.clientX,y:e.clientY});
+  if(pinch&&ptrs.size>=2){const[a,b]=[...ptrs.values()];setCtl('dist',clampD(pinch.dist*pinch.d/Math.max(10,Math.hypot(a.x-b.x,a.y-b.y))));save();return;}
+  if(!drag)return;const sz=Math.max(200,cssSize);
+  let y=drag.yaw+(e.clientX-drag.x)*220/sz;y=((y+180)%360+360)%360-180;
+  setCtl('yaw',Math.round(y));setCtl('eyeH',Math.max(0.3,Math.min(4,Math.round((drag.eyeH-(e.clientY-drag.y)*3/sz)*20)/20)));save();});
+function endPtr(e){ptrs.delete(e.pointerId);
+  if(ptrs.size<2)pinch=null;
+  if(ptrs.size===1)startDrag([...ptrs.values()][0]);
+  if(ptrs.size===0){drag=null;cv.classList.remove('drag');onView();}}
+cv.addEventListener('pointerup',endPtr);cv.addEventListener('pointercancel',endPtr);
+cv.addEventListener('dblclick',faceIt);
+cv.addEventListener('wheel',e=>{e.preventDefault();setCtl('dist',clampD(S.dist*Math.exp(e.deltaY*0.0012)));save();},{passive:false});
 
 /* ---------- live meter display ---------- */
 const mEls={};['mOut','mOutMax','mEmit','mLit','mL1','mLall','mLmax','mVeil','mCon','mLux','mLuxD','mW','mA','mEff','lOut','lFilm','lWall','lBoard','sOut','sFilm','sWall','sBoard'].forEach(k=>mEls[k]=$(k));
@@ -1682,7 +1785,7 @@ function updateMeter(m){
   txt('mOut',fN(m.o));txt('mOutMax','All white at this brightness: '+fN(C.full.o)+' lm');
   txt('mEmit',fN(m.e));txt('mLit',fmt(m.lit*100,0));txt('mL1',fN(L1));txt('mLall',fN(Lall));txt('mLmax',fN(m.Ymax*TT));
   txt('mVeil',fN(veilNow));txt('mCon',isFinite(veilNow)&&veilNow>0?'tunnel contrast '+fN((Lall+veilNow)/veilNow)+' : 1':'');
-  const a=C.win/2/S.dist,E=4*Lall*a/Math.sqrt(1+a*a)*Math.atan(a/Math.sqrt(1+a*a))*Math.max(0,viewCos());
+  const ep=eyePos(),a=C.win/2/Math.hypot(ep[0],ep[1],ep[2]),E=4*Lall*a/Math.sqrt(1+a*a)*Math.atan(a/Math.sqrt(1+a*a))*Math.max(0,viewCos());
   txt('mLux',fN(E));txt('mLuxD','at '+outs.dist.c.f(S.dist));
   txt('mW',fN(m.P));txt('mA',fN(m.P/5)+' A');txt('mEff',fN(m.P>0?m.o/m.P:0));
   const src=m.e>0?m:C.full,tot=src.e||1,fr=[src.o/tot,src.a/tot,src.w/tot,src.b/tot];
@@ -1759,10 +1862,10 @@ function frame(ts){
   /* pass 2: the mirror in its room */
   const C=CFG,st=C.st;
   gl.useProgram(P2.p);
-  const cy=Math.cos(S.yaw*D2R),sy=Math.sin(S.yaw*D2R),cb=Math.cos(-S.pitch*D2R),sb=Math.sin(-S.pitch*D2R);
-  const R=[cy,sy*sb,sy*cb, 0,cb,-sb, -sy,cy*sb,cy*cb];
-  gl.uniformMatrix3fv(P2.u.uRot,false,R);
-  gl.uniformMatrix3fv(P2.u.uRotI,false,[R[0],R[3],R[6],R[1],R[4],R[7],R[2],R[5],R[8]]);
+  /* the hall, the trailer and the panel stay put: only your eyes move */
+  const I3=[1,0,0,0,1,0,0,0,1],EYE=eyePos();
+  gl.uniformMatrix3fv(P2.u.uRot,false,I3);gl.uniformMatrix3fv(P2.u.uRotI,false,I3);
+  uni(P2,'uEyeW','uniform3f',EYE[0],EYE[1],EYE[2]);uni(P2,'uFloor','uniform1f',CART.floor);
   gl.uniformMatrix3fv(P2.u.uLedM,false,C.M);
   uni(P2,'uDuty','uniform1i',0);uni(P2,'uTanH','uniform1f',TANH);uni(P2,'uD','uniform1f',S.dist);
   uni(P2,'uN','uniform1f',N);uni(P2,'uPitch','uniform1f',C.pitch);uni(P2,'uSig','uniform1f',C.L.pkg/1000*0.3);
