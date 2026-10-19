@@ -36,6 +36,13 @@ canvas{display:block;width:100%;height:100%;image-rendering:auto}
 .fsbtn{position:absolute;left:10px;top:8px}
 .rail{background:var(--panel);border-left:1px solid var(--line);overflow-y:auto;min-height:0;min-width:0;padding:16px 18px 28px;display:flex;flex-direction:column;gap:18px}
 .rail section{gap:10px}
+.tabs{position:sticky;top:-16px;z-index:3;display:grid;grid-template-columns:repeat(4,1fr);gap:4px;margin:0 -18px;padding:10px 18px;background:var(--panel);border-bottom:1px solid var(--line)}
+.tabs button{font:500 12.5px/1.15 var(--ui);color:var(--mute);background:transparent;border:1px solid var(--line);border-radius:6px;padding:8px 4px;min-height:40px;cursor:pointer}
+.tabs button[aria-selected=true]{color:var(--accent-ink,#111);background:var(--accent);border-color:var(--accent)}
+.tabs button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.rail section[aria-labelledby=h-pat]{order:1}.rail section[aria-labelledby=h-led]{order:2}.rail section[aria-labelledby=h-mir]{order:3}.rail section[aria-labelledby=h-pre]{order:4}
+.rail section[aria-labelledby=h-src]{order:1}.rail section[aria-labelledby=h-vid]{order:2}
+.rail details{order:9}
 .meter{background:var(--panel);border-left:1px solid var(--line);overflow-y:auto;min-height:0;min-width:0;padding:18px 16px 24px;display:flex;flex-direction:column;gap:16px}
 h1{font-size:17px;line-height:1.25;font-weight:600;margin:0;letter-spacing:-.005em}
 .sub{color:var(--mute);margin:4px 0 0;max-width:34ch}
@@ -78,6 +85,12 @@ dl.sheet dd.hl{color:var(--accent)}
 .plist .rm{padding:7px 10px}
 .plist button[aria-current=true]{border-color:var(--accent);color:var(--accent)}
 .groups{display:flex;flex-direction:column;gap:8px}
+.dmx{display:grid;grid-template-columns:repeat(10,1fr);gap:4px;align-items:end}
+.dmx label{display:flex;flex-direction:column;align-items:center;gap:4px;font:10.5px var(--mono);color:var(--mute)}
+.dmx input{writing-mode:vertical-lr;direction:rtl;width:22px;height:96px;margin:0;accent-color:var(--accent)}
+.dmx output{font:10.5px var(--mono);color:var(--fg);min-width:2.4em;text-align:center}
+.psec{font:600 12.5px/1.2 var(--ui);color:var(--fg);margin-top:10px;padding-bottom:6px;border-bottom:1px solid var(--line)}
+.psec:first-child{margin-top:0}
 .glabel{font:500 10.5px/1 var(--mono);text-transform:uppercase;letter-spacing:.12em;color:var(--mute);margin-top:4px}
 .sw{display:inline-block;width:26px;height:8px;border-radius:2px;margin-right:7px;vertical-align:middle}
 .kpi{display:flex;flex-direction:column;gap:2px;min-width:0}
@@ -113,6 +126,7 @@ ul.checks .wn{color:var(--accent);font-weight:600}
   .app{display:flex;flex-direction:column;height:auto}
   .stagewrap{position:sticky;top:0;z-index:5;background:var(--bg);height:min(60vh,100vw);padding:8px;border-bottom:1px solid var(--line)}
   .rail{order:2;border-left:0;overflow:visible;padding-inline:16px}
+  .tabs{top:min(60vh,100vw);z-index:4;margin:0 -16px;padding:8px 16px}
   .meter{order:3;max-height:none;border-left:0;border-top:1px solid var(--line)}
   .hud{font-size:11px}
   .hud.tr{display:none}
@@ -173,7 +187,14 @@ ul.checks .wn{color:var(--accent);font-weight:600}
       <p class="sub">The 600 mm panel: a real LED matrix or P6 panel behind two half-silvered films, traced copy by copy through the actual layers.</p>
     </header>
 
-    <section aria-labelledby="h-pre">
+    <nav class="tabs" role="tablist" aria-label="Settings">
+      <button type="button" role="tab" data-tabbtn="view">View</button>
+      <button type="button" role="tab" data-tabbtn="av">Audio / Video input</button>
+      <button type="button" role="tab" data-tabbtn="vis">Visuals</button>
+      <button type="button" role="tab" data-tabbtn="room">Room</button>
+    </nav>
+
+    <section aria-labelledby="h-pre" data-tab="vis">
       <h2 id="h-pre">Presets</h2>
       <div class="chips">
         <button type="button" id="preDrawn">As drawn, 6 mm acrylic</button>
@@ -184,10 +205,15 @@ ul.checks .wn{color:var(--accent);font-weight:600}
       <p class="note">Recommended silver films: Llumar R20 in front, Llumar R35 at the back. Every dotted slider steps through parts you can buy.</p>
     </section>
 
-    <section aria-labelledby="h-view">
-      <h2 id="h-view">You and the room</h2>
+    <section aria-labelledby="h-view" data-tab="view">
+      <h2 id="h-view">Where you stand</h2>
       <div id="viewCtl" style="display:flex;flex-direction:column;gap:10px"></div>
       <div class="chips"><button type="button" id="viewReset">Stand in front</button></div>
+      <p class="note">The hall, the speaker trailer and the panel stand still; you move. Drag sideways to walk around, up and down to change your eye height. Pinch or scroll to walk closer or away, double-tap to stand in front again. Your eyes adapt to what is in view.</p>
+    </section>
+
+    <section aria-labelledby="h-room" data-tab="room">
+      <h2 id="h-room">Light in the room</h2>
       <div id="ambCtl"></div>
       <div id="sunBox" style="display:flex;flex-direction:column;gap:10px">
         <div id="sunCtl"></div>
@@ -195,10 +221,21 @@ ul.checks .wn{color:var(--accent);font-weight:600}
         <div id="faceCtl"></div>
         <p class="note" id="sunNote"></p>
       </div>
-      <p class="note">The hall, the speaker trailer and the panel stand still; you move. Drag sideways to walk around, up and down to change your eye height. Pinch or scroll to walk closer or away, double-tap to stand in front again. Your eyes adapt to what is in view.</p>
+      <div id="blbBox" style="display:flex;flex-direction:column;gap:10px">
+        <div class="glabel">Bulb</div>
+        <div class="seg" role="radiogroup" aria-label="Bulb" id="blbW"></div>
+        <div class="glabel">DMX program</div>
+        <div class="chips" role="radiogroup" aria-label="DMX program" id="blbP"></div>
+        <div id="blbCtl" style="display:flex;flex-direction:column;gap:10px"></div>
+        <div class="glabel">Rows, DMX channel 1 to 10 (1 is above the trailer)</div>
+        <div class="dmx" id="blbCh"></div>
+        <p class="note" id="blbLive" style="font-family:var(--mono)"></p>
+        <p class="note" id="blbNote"></p>
+      </div>
+      <p class="note">The hall is 10 × 18 m with the ceiling 3 m above the top of the trailer.</p>
     </section>
 
-    <section aria-labelledby="h-led">
+    <section aria-labelledby="h-led" data-tab="vis">
       <h2 id="h-led">LEDs</h2>
       <div id="ledCtl"></div>
       <div class="seg" role="radiogroup" aria-label="Colour balance" id="balSeg">
@@ -209,13 +246,13 @@ ul.checks .wn{color:var(--accent);font-weight:600}
       <div id="ledCtl2" style="display:flex;flex-direction:column;gap:10px"></div>
     </section>
 
-    <section aria-labelledby="h-mir">
+    <section aria-labelledby="h-mir" data-tab="vis">
       <h2 id="h-mir">Mirror stack</h2>
       <div id="mirCtl" style="display:flex;flex-direction:column;gap:12px"></div>
       <p class="note warn" id="mirWarn" hidden></p>
     </section>
 
-    <section aria-labelledby="h-pat">
+    <section aria-labelledby="h-pat" data-tab="vis">
       <h2 id="h-pat">Visual</h2>
       <div class="groups" id="patChips" role="radiogroup" aria-label="Pattern"></div>
       <p class="note" id="patNote"></p>
@@ -238,7 +275,7 @@ ul.checks .wn{color:var(--accent);font-weight:600}
       <p class="note">Trail keeps old light on screen so movement smears and fades out. Softness slows how fast each LED changes, in both directions.</p>
     </section>
 
-    <section aria-labelledby="h-vid">
+    <section aria-labelledby="h-vid" data-tab="av">
       <h2 id="h-vid">Video on the grid</h2>
       <div class="drop" id="drop">
         <div>Drop video files here</div>
@@ -270,7 +307,7 @@ ul.checks .wn{color:var(--accent);font-weight:600}
       <p class="note" id="vidNote">Add one or more videos. Each frame is averaged down to one colour per LED. Contrast and saturation help, because dots on black lose punch.</p>
     </section>
 
-    <section aria-labelledby="h-src">
+    <section aria-labelledby="h-src" data-tab="av">
       <h2 id="h-src">Sources</h2>
       <div class="seg" role="radiogroup" aria-label="Audio source">
         <button type="button" id="aDemo" role="radio" aria-checked="true">Demo</button>
@@ -285,6 +322,17 @@ ul.checks .wn{color:var(--accent);font-weight:600}
       </div>
       <audio id="player" controls hidden></audio>
       <p class="note" id="srcNote">Demo beat drives the audio visuals without a microphone. Pick Video sound to drive them from the video that is playing.</p>
+    </section>
+
+    <section aria-labelledby="h-port" data-tab="room">
+      <h2 id="h-port">Port LEDs in the subs</h2>
+      <div class="seg" role="radiogroup" aria-label="Port LED mode">
+        <button type="button" data-prtm="0" role="radio">Always on</button>
+        <button type="button" data-prtm="1" role="radio">On the sound</button>
+        <button type="button" data-prtm="2" role="radio">Off</button>
+      </div>
+      <div id="prtCtl" style="display:flex;flex-direction:column;gap:10px"></div>
+      <p class="note" id="prtNote"></p>
     </section>
 
     <details>
@@ -339,29 +387,39 @@ const AMBS=[
  {n:'Dark',d:'A dark hall. The only light in the room is the panel itself, bouncing off floor, walls and ceiling.'},
  {n:'TL light',d:'Hall with 4000 K TL luminaires in the ceiling, about 400 lux on the floor. The luminaires show up in the mirror when you tilt it.'},
  {n:'Dutch summer day',d:'Outdoors in Utrecht on 15 July, average Dutch summer sky (about 45 % sunshine). Use the clock for sunset.'},
- {n:'Disco lights',d:'Dark club with light haze and six 30,000 cd moving-head spots behind the crowd, sweeping and changing colour.'}];
+ {n:'Disco lights',d:'Dark club with light haze and six 30,000 cd moving-head spots behind the crowd, sweeping and changing colour.'},
+ {n:'Bulbs',d:'100 clear incandescent bulbs under the ceiling: 10 rows of 10, 1 m apart, rows 1.5 m apart from above the trailer to the back of the hall. Each row is one DMX dimmer channel.'}];
+/* Bulbs: 10 rows of 10 clear incandescent A60 bulbs, 1 m apart in a row, rows 1.5 m apart, the first row right above
+   the trailer, 12 cm under the ceiling. One DMX dimmer channel per row. Rated flux: EU label values for clear bulbs.
+   tau: how fast the tungsten coil heats up and cools down (thicker filament in bigger bulbs is slower). */
+const BULBS=[{n:'25 W',lm:220,tau:.05},{n:'40 W',lm:415,tau:.07},{n:'60 W',lm:710,tau:.09},{n:'100 W',lm:1340,tau:.12}];
+const BULB_PROGS=['Full on','On the sound','Chase','Bounce','Random','Breathe','Manual'];
 const FACES=['north','north-east','east','south-east','south','south-west','west','north-west'];
 
 /* ---------- state ---------- */
 const DEF={pat:31,pal:0,solid:0,speed:1,gain:1.4,trail:0,soft:0,ovl:0,ovlC:0,frW:2,frIn:0,frMode:1,frRate:2,fit:0,vContrast:1.15,vSat:1.1,vGamma:1,loop:'all',
-  led:0,bal:0,bright:1,cgam:2.2,front:1,back:4,gap:9,dist:2,yaw:0,pitch:0,eyeH:1.65,amb:0,clock:21.5,face:6};
+  led:0,bal:0,bright:1,cgam:2.2,front:1,back:4,gap:9,dist:2,yaw:0,pitch:0,eyeH:1.65,amb:0,clock:21.5,face:6,prtM:0,prtB:1,prtS:0.6,prtF:0.12,prtD:30,
+  tab:'view',look:0,blbW:2,blbP:0,blbM:1,blbS:1,blbSens:0.6,blbF:0.08,blbC:[255,230,200,170,140,110,80,60,40,20]};
 const S=Object.assign({},DEF);
 const KEY='infinity-grid-v12';
 try{const j=JSON.parse(localStorage.getItem(KEY)||'null');if(j&&typeof j==='object'){for(const k in DEF)if(k in j&&typeof j[k]===typeof DEF[k])S[k]=j[k];}}catch(e){}
 {const LIM={led:LEDS.length-1,front:FILMS.length-1,back:FILMS.length-1,gap:GAPS.length-1,amb:AMBS.length-1,face:FACES.length-1};
- for(const k in LIM)S[k]=Math.max(0,Math.min(LIM[k],Math.round(S[k])||0));}
+ for(const k in LIM)S[k]=Math.max(0,Math.min(LIM[k],Math.round(S[k])||0));
+ if(!Array.isArray(S.blbC)||S.blbC.length!==10)S.blbC=DEF.blbC.slice();S.blbC=S.blbC.map(v=>Math.max(0,Math.min(255,Math.round(+v)||0)));
+ S.blbW=Math.max(0,Math.min(3,Math.round(S.blbW)||0));S.blbP=Math.max(0,Math.min(6,Math.round(S.blbP)||0));}
 let saveT=0;function save(){clearTimeout(saveT);saveT=setTimeout(()=>{try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}},250)}
 
+/* two families: the ones the audio drives, and the ones that run by themselves and ignore the sound */
 const PGROUPS=[
- {g:'Audio',items:[[0,'Spectrum bars'],[1,'Radial spectrum']]},
- {g:'Waveforms',items:[[24,'Oscilloscope'],[25,'Mirrored wave'],[26,'Circle wave'],[27,'Lissajous'],[28,'Ribbon'],[29,'Sound bars']]},
- {g:'Tunnel',items:[[31,'Tunnel square'],[32,'Tunnel circle']]},
- {g:'Flowing',items:[[11,'Color flow'],[12,'Lava lamp'],[13,'Ocean waves'],[8,'Aurora'],[4,'Plasma'],[14,'Breathing']]},
- {g:'Fading',items:[[15,'Twinkle'],[16,'Comets'],[17,'Radar sweep'],[18,'Scanner'],[7,'Ripples'],[2,'Tunnel rings'],[3,'Spiral arms']]},
- {g:'Objects',items:[[19,'Suns'],[20,'Hearts']]},
+ {sec:'Reacts to the sound',g:'Spectrum',items:[[0,'Spectrum bars'],[1,'Radial spectrum']]},
+ {g:'Waveform',items:[[24,'Oscilloscope'],[25,'Mirrored wave'],[26,'Circle wave'],[27,'Lissajous'],[28,'Ribbon'],[29,'Sound bars']]},
+ {g:'Pulses on the bass',items:[[2,'Tunnel rings'],[3,'Spiral arms'],[4,'Plasma'],[5,'Fire'],[13,'Ocean waves'],[6,'Matrix rain'],[19,'Suns'],[20,'Hearts']]},
+ {sec:'Not on the sound',g:'Still',items:[[34,'Buddha'],[33,'Solid colour'],[9,'Media'],[10,'Test grid'],[30,'Colour check']]},
+ {g:'Tunnel frame',items:[[31,'Tunnel square'],[32,'Tunnel circle']]},
+ {g:'Flowing',items:[[11,'Color flow'],[12,'Lava lamp'],[8,'Aurora'],[14,'Breathing']]},
+ {g:'Fading',items:[[15,'Twinkle'],[16,'Comets'],[17,'Radar sweep'],[18,'Scanner'],[7,'Ripples']]},
  {g:'Space',items:[[21,'Starfield'],[22,'Warp'],[23,'Nebula flight']]},
- {g:'Sacred',items:[[34,'Buddha'],[35,'Folding icosahedron'],[36,'Buddhabrot']]},
- {g:'Other',items:[[5,'Fire'],[6,'Matrix rain'],[9,'Media'],[10,'Test grid'],[30,'Colour check'],[33,'Solid colour']]}];
+ {g:'Geometry',items:[[35,'Folding icosahedron'],[36,'Buddhabrot']]}];
 const PAT_NOTE={
  0:'Classic stereo-style VU columns with peak hold. 3 LEDs per bar, segmented rows.',
  1:'Spectrum wrapped around the centre, mirrored left and right.',
@@ -430,11 +488,16 @@ const CT={
       {k:'cgam',l:'Controller gamma',min:1,max:3.2,step:0.05,f:v=>v<1.02?'none (raw PWM)':v.toFixed(2)}],
  view:[{k:'dist',l:'Distance to the panel',min:0,max:1,step:0.001,map:p=>Math.round(0.1*Math.pow(100,p)*100)/100,inv:v=>Math.log(v/0.1)/Math.log(100),f:v=>v<1?Math.round(v*100)+' cm':v.toFixed(v<3?2:1)+' m'},
        {k:'yaw',l:'Walk around it',min:-180,max:180,step:1,f:v=>v===0?'straight in front':Math.abs(v)===180?'behind':Math.abs(v)+'° to the '+(v<0?'left':'right')},
-       {k:'eyeH',l:'Eye height',min:0.3,max:4,step:0.05,f:v=>v.toFixed(2)+' m'+(Math.abs(v-1.65)<.03?', standing':v<1.2?', crouching':v>2.6?', on shoulders or a stage':'')}],
+       {k:'eyeH',l:'Eye height',min:0.3,max:4,step:0.05,f:v=>v.toFixed(2)+' m'+(Math.abs(v-1.65)<.03?', standing':v<1.2?', crouching':v>2.6?', on shoulders or a stage':'')},
+       {k:'look',l:'Look up',min:0,max:75,step:1,f:v=>v===0?'at the panel':v+'° above the panel'}],
  sun:[{k:'clock',l:'Clock, summer time',min:4,max:24,step:1/12,f:hhmm}],
  frame:[{k:'frW',l:'Frame width',min:1,max:10,step:1,f:v=>v+' LED'+(v>1?'s':'')+' · '+fmt1(v*LEDS[S.led].pitch)+' mm'},
         {k:'frIn',l:'Frame inset from the edge',min:0,max:30,step:1,f:v=>v===0?'on the outer LEDs':v+' LED'+(v>1?'s':'')+' in · '+fmt1(v*LEDS[S.led].pitch)+' mm'},
-        {k:'frRate',l:'Blink rate',min:0.25,max:10,step:0.25,f:v=>v+' Hz'}]
+        {k:'frRate',l:'Blink rate',min:0.25,max:10,step:0.25,f:v=>v+' Hz'}],
+ port:[{k:'prtD',l:'Depth of the LED ring in the slot',min:0,max:50,step:1,f:v=>v===0?'at the mouth':v+' cm in'},
+       {k:'prtB',l:'Brightness',min:0.02,max:1,step:0.01,f:v=>Math.round(v*100)+' %'},
+       {k:'prtS',l:'Sensitivity to the sound',min:0,max:1,step:0.01,f:v=>v<0.01?'none':Math.round(v*100)+' %'},
+       {k:'prtF',l:'Glow between the beats',min:0,max:0.6,step:0.01,f:v=>v<0.01?'dark':Math.round(v*100)+' %'}]
 };
 function fmt1(v){return(Math.round(v*10)/10).toString();}
 const outs={};
@@ -451,7 +514,15 @@ function buildCtl(host,list,cb){
     inp.addEventListener('input',()=>{S[c.k]=c.map?c.map(+inp.value):+inp.value;out.textContent=c.f(S[c.k]);save();if(cb)cb(c.k);});
   }
 }
-buildCtl('patCtl',CT.pat);buildCtl('vidCtl',CT.vid);buildCtl('ledCtl2',CT.led,()=>onLight());buildCtl('viewCtl',CT.view,()=>onView());buildCtl('sunCtl',CT.sun,()=>onView());buildCtl('frCtl',CT.frame);
+buildCtl('patCtl',CT.pat);buildCtl('vidCtl',CT.vid);buildCtl('ledCtl2',CT.led,()=>onLight());buildCtl('viewCtl',CT.view,()=>onView());buildCtl('sunCtl',CT.sun,()=>onView());buildCtl('frCtl',CT.frame);let prtDT=0;
+buildCtl('prtCtl',CT.port,k=>{if(k!=='prtD')return;clearTimeout(prtDT);   /* re-trace the light guide for the new depth, once the slider rests */
+  prtDT=setTimeout(()=>{portMC(S.prtD/100);portUpload();runChecks();},90);});
+const prtBtns=[...document.querySelectorAll('[data-prtm]')];
+function syncPrt(){prtBtns.forEach(b=>b.setAttribute('aria-checked',String(+b.dataset.prtm===S.prtM)));
+  outs.prtS.inp.parentElement.hidden=outs.prtF.inp.parentElement.hidden=S.prtM!==1;outs.prtB.inp.parentElement.hidden=S.prtM===2;
+  document.getElementById('prtNote').textContent=['Always the colour the panel shows most, at a steady level.','Pulses with the bass and the beat of the audio source above. Sensitivity sets how hard a beat hits; the glow sets how much stays on between beats.','The rings are off. The rest of the lighting stays as it is.'][S.prtM];}
+prtBtns.forEach(b=>b.addEventListener('click',()=>{S.prtM=+b.dataset.prtm;save();syncPrt();}));
+syncPrt();
 const frmBtns=[...document.querySelectorAll('[data-frm]')];
 function syncFrm(){frmBtns.forEach(b=>b.setAttribute('aria-checked',String(+b.dataset.frm===S.frMode)));outs.frRate.inp.parentElement.hidden=S.frMode!==2;}
 frmBtns.forEach(b=>b.addEventListener('click',()=>{S.frMode=+b.dataset.frm;save();syncFrm();}));
@@ -466,6 +537,7 @@ function setCtl(k,v){S[k]=v;const o=outs[k];if(o){o.inp.value=o.c.inv?o.c.inv(v)
 /* pattern chips */
 const patChips=document.getElementById('patChips');
 for(const grp of PGROUPS){
+  if(grp.sec){const h=document.createElement('div');h.className='psec';h.textContent=grp.sec;patChips.appendChild(h);}
   const lab=document.createElement('div');lab.className='glabel';lab.textContent=grp.g;patChips.appendChild(lab);
   const box=document.createElement('div');box.className='chips';
   for(const [id,name] of grp.items){const b=document.createElement('button');b.type='button';b.textContent=name;b.setAttribute('role','radio');b.dataset.id=id;
@@ -511,8 +583,37 @@ buildStops('mirCtl','back','Back film, LED side',FILMS,f=>f.n,filmDesc,onConfig)
 buildStops('mirCtl','gap','Between the films',GAPS,gapName,gapDesc,onConfig);
 buildStops('ambCtl','amb','Light around you',AMBS,a=>a.n,a=>a.d,()=>{syncAmb();onView();});
 buildStops('faceCtl','face','Panel faces',FACES,f=>f,()=>'The compass direction the mirror looks towards. The sun reflects in it when it is behind you.',onView);
-function syncAmb(){document.getElementById('sunBox').hidden=S.amb!==2;}
+function syncAmb(){document.getElementById('sunBox').hidden=S.amb!==2;document.getElementById('blbBox').hidden=S.amb!==4;}
 syncAmb();
+/* bulb controller: bulb type, program, faders; the 10 row channels show the live DMX value */
+const blbOut=[],blbIn=[];
+{const w=document.getElementById('blbW');BULBS.forEach((b,i)=>{const e=document.createElement('button');e.type='button';e.setAttribute('role','radio');e.textContent=b.n;e.dataset.i=i;
+   e.addEventListener('click',()=>{S.blbW=i;save();syncBlb();});w.appendChild(e);});
+ const p=document.getElementById('blbP');BULB_PROGS.forEach((n,i)=>{const e=document.createElement('button');e.type='button';e.setAttribute('role','radio');e.textContent=n;e.dataset.i=i;
+   e.addEventListener('click',()=>{S.blbP=i;save();syncBlb();});p.appendChild(e);});
+ const ch=document.getElementById('blbCh');for(let j=0;j<10;j++){const l=document.createElement('label');
+   l.innerHTML='<output>0</output><input type="range" min="0" max="255" step="1" aria-label="Row '+(j+1)+', DMX channel '+(j+1)+'"><span>'+(j+1)+'</span>';
+   const inp=l.querySelector('input');inp.value=S.blbC[j];inp.addEventListener('input',()=>{S.blbC[j]=+inp.value;if(S.blbP!==6){S.blbP=6;syncBlb();}save();});
+   blbIn.push(inp);blbOut.push(l.querySelector('output'));ch.appendChild(l);}}
+buildCtl('blbCtl',[{k:'blbM',l:'Master dimmer',min:0,max:1,step:0.01,f:v=>Math.round(v*100)+' % · DMX '+Math.round(v*255)},
+  {k:'blbS',l:'Speed',min:0.1,max:6,step:0.1,f:v=>v.toFixed(1)+' rows per second'},
+  {k:'blbSens',l:'Sensitivity to the sound',min:0,max:1,step:0.01,f:v=>Math.round(v*100)+' %'},
+  {k:'blbF',l:'Glow between the beats',min:0,max:0.6,step:0.01,f:v=>v<0.01?'dark':Math.round(v*100)+' %'}]);
+function syncBlb(){document.querySelectorAll('#blbW button').forEach(b=>b.setAttribute('aria-checked',String(+b.dataset.i===S.blbW)));
+  document.querySelectorAll('#blbP button').forEach(b=>b.setAttribute('aria-checked',String(+b.dataset.i===S.blbP)));
+  const snd=S.blbP===1,mov=S.blbP>=2&&S.blbP<=5;
+  outs.blbS.inp.parentElement.hidden=!(mov||snd);outs.blbSens.inp.parentElement.hidden=outs.blbF.inp.parentElement.hidden=!snd;
+  document.getElementById('blbNote').textContent=['Every row at the master dimmer.','The bass and the beat of the audio source light the rows, and each hit rolls from the trailer to the back of the hall at the speed you set.','One row after the other lights up, from the trailer to the back, with a fading tail.','A lit row runs to the back of the hall and returns.','Each row jumps to a new random level, at the speed you set.','A slow wave of light rolls along the rows.','Set each row with its fader.'][S.blbP]+
+    ' Real dimming: the light follows the voltage to the power 3.4 and the colour gets warmer (2700 K at full, down to deep orange), and the coil takes '+Math.round(BULBS[S.blbW].tau*1000)+' ms to heat up.';}
+syncBlb();
+/* settings tabs: View, Audio / Video input, Visuals, Room */
+const tabBtns=[...document.querySelectorAll('[data-tabbtn]')];
+function syncTab(){tabBtns.forEach(b=>b.setAttribute('aria-selected',String(b.dataset.tabbtn===S.tab)));
+  document.querySelectorAll('#rail [data-tab]').forEach(s=>s.hidden=s.dataset.tab!==S.tab);}
+tabBtns.forEach(b=>b.addEventListener('click',()=>{S.tab=b.dataset.tabbtn;save();syncTab();const rl=document.getElementById('rail');rl.scrollTop=0;
+  if(getComputedStyle(rl).overflowY==='visible'){const tb=rl.querySelector('nav.tabs'),want=tb.offsetTop+rl.getBoundingClientRect().top+scrollY-parseFloat(getComputedStyle(tb).top);if(scrollY>want)scrollTo(0,want);}}));
+if(!['view','av','vis','room'].includes(S.tab))S.tab='view';
+syncTab();
 let sunPlay=false;const sunBtn=document.getElementById('sunPlay');
 sunBtn.addEventListener('click',()=>{sunPlay=!sunPlay;sunBtn.setAttribute('aria-pressed',String(sunPlay));sunBtn.textContent=sunPlay?'Pause the clock':'Run the clock (10 min per second)';});
 
@@ -683,7 +784,7 @@ void main(){
   }else if(uPat==8){
     float n=fbm(p*1.5+vec2(t*.1,-t*.07));
     float n2=fbm(p*2.5-vec2(t*.13,t*.05)+n*2.);
-    col=pal(.45+n2*.45+uLev.z*.2)*smoothstep(.25,.85,n2+uLev.x*.25);
+    col=pal(.45+n2*.45)*smoothstep(.25,.85,n2);
   }else if(uPat==9){
     vec2 uv=q;float asp=uMed.x;
     if(uMed.y<.5){ if(asp>1.)uv.x=.5+(q.x-.5)/asp; else uv.y=.5+(q.y-.5)*asp; }
@@ -701,13 +802,13 @@ void main(){
     float x=dot(q,vec2(.62,.38))*1.25+t*.05+.18*sin(q.y*3.1+t*.35)+.12*sin(q.x*4.3-t*.27);
     x+=.18*fbm(q*2.2+vec2(t*.04,-t*.03));
     float v=.78+.22*sin(x*12.566-t*.4);
-    col=pal(x)*v*(.85+.15*uLev.x);
+    col=pal(x)*v;
   }else if(uPat==12){
     float f=0.;
     for(int i=0;i<5;i++){
       float fi=float(i);
       vec2 cc=vec2(sin(t*.23*(1.+fi*.31)+fi*2.3)*.7,sin(t*.19*(1.+fi*.27)+fi*4.1)*.75);
-      float rr=.26+.07*sin(t*.3+fi)+uLev.x*.05;
+      float rr=.26+.07*sin(t*.3+fi);
       f+=rr*rr/(dot(p-cc,p-cc)+.002);
     }
     col=pal(.08*min(f,2.5)+t*.02+.25)*(.1+.9*smoothstep(.6,2.4,f));
@@ -727,11 +828,11 @@ void main(){
     float r=length(p)*.5;
     float b=.5+.5*sin(t*.75-r*3.5);
     b=b*b;
-    col=pal(.12*r+t*.02+b*.12)*(.05+.95*b)*(.8+.2*uLev.x);
+    col=pal(.12*r+t*.02+b*.12)*(.05+.95*b);
   }else if(uPat==15){
     float id=h21(floor(c));
     float id2=h21(floor(c)+37.1);
-    float ph=fract(t*(.07+id*.12)*(1.+uLev.x*.6)+id2*9.3);
+    float ph=fract(t*(.07+id*.12)+id2*9.3);
     float tw=pow(sin(ph*3.14159),4.);
     col=mix(vec3(1.),pal(id2*.8+t*.01),.6)*tw*step(.4,id);
   }else if(uPat==16){
@@ -761,7 +862,7 @@ void main(){
     float behind=-dx*dir;
     float tail=behind>0.?exp(-behind*6.):0.;
     float head=exp(-dx*dx*1800.);
-    col=pal(q.y*.35+t*.03)*(tail*.85+head)*(.75+.25*uLev.x);
+    col=pal(q.y*.35+t*.03)*(tail*.85+head);
   }else if(uPat==19){
     vec3 acc=vec3(0.);
     for(int i=0;i<3;i++){
@@ -947,6 +1048,53 @@ void main(){
 const CART=(()=>{const s=58/181,bed=(550-447)*s,chT=15*s,wr=53*s,wy=(550-497)*s;
   const slotBot=Math.max(bed+6,wy+wr+6),slotTop=slotBot+61,py=slotBot+.5+30,px=90.5,subTop=bed+67,top=subTop+58;
   return{s,bed,chT,wr,wy,slotBot,slotTop,py,px,subTop,top,floor:-py/100};})();
+/* The hall: 10 m wide (the bulb rows run wall to wall), 18 m deep with the trailer near the back wall,
+   ceiling 3 m above the top of the trailer. Floor 0.20, walls 0.50, ceiling 0.75 reflectance. */
+const HALL=(()=>{const W=10,D=18,H=(CART.top+300)/100,Af=W*D,Aw=2*(W+D)*H,A=2*Af+Aw;
+  return{W,D,H,A,rho:(Af*.2+Aw*.5+Af*.75)/A,Af,Aw};})();
+/* The slot port at the bottom of each sub: 46 x 10 cm, 55 cm deep, then it opens into the cabinet.
+   At a depth you choose (0 = at the mouth, up to 50 cm), a ring of WS2812B-2020 strip lines all four walls like a bracelet turned inside out:
+   3 rows (3 x 6.25 mm) around the 112 cm inside, LEDs facing the middle of the slot.
+   The walls are black paint: 4 % diffuse, plus the gloss of the paint (Schlick, n = 1.5), which at grazing angles
+   reflects most of the light, so the slot works as a light guide. A Monte Carlo photon tracer gives, per watt
+   the ring emits: how much leaves the mouth and in which direction (table T, per steradian), and how bright the
+   walls are at each depth (table M, exitance per m2). The shader and the floor light both use these tables. */
+const PORT={W:.23,H:.10,L:.55,BW:3*.00625,F0:.04,RHO:.04,NB:24,MB:55};
+PORT.P=2*(2*PORT.W+PORT.H);PORT.NROW=Math.round(PORT.P/.00625);PORT.NLED=3*PORT.NROW;
+function portMC(D0){
+  const{W,H,L,BW,P,F0,RHO,NB,MB}=PORT;
+  const N=240000,cnt=new Float64Array(NB*NB),Mc=new Float64Array(MB);let esc=0,back=0,abs=0;
+  const fr=c=>F0+(1-F0)*Math.pow(1-c,5);
+  let sd=12345;const rnd=()=>{sd=sd+0x6D2B79F5|0;let t=Math.imul(sd^sd>>>15,1|sd);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};
+  const cosDir=(nx,ny)=>{const u=rnd(),ph=2*Math.PI*rnd(),r=Math.sqrt(u),a=r*Math.cos(ph),b=r*Math.sin(ph),c=Math.sqrt(1-u);return[c*nx-a*ny,c*ny+a*nx,b];};
+  const amap=a=>{const s=a/(Math.PI/2);return Math.sign(s)*Math.sqrt(Math.abs(s));};
+  for(let i=0;i<N;i++){
+    let s=rnd()*P,x,y,nx,ny;
+    if(s<2*W){x=-W+s;y=0;nx=0;ny=1;}else if((s-=2*W)<H){x=W;y=s;nx=-1;ny=0;}else if((s-=H)<2*W){x=W-s;y=H;nx=0;ny=-1;}else{s-=2*W;x=-W;y=H-s;nx=1;ny=0;}
+    let z=-D0-BW*rnd(),[dx,dy,dz]=cosDir(nx,ny),alive=false;
+    for(let b=0;b<400;b++){
+      const tx=dx>0?(W-x)/dx:dx<0?(-W-x)/dx:1e9,ty=dy>0?(H-y)/dy:dy<0?-y/dy:1e9,tz=dz>0?-z/dz:dz<0?(-L-z)/dz:1e9;
+      if(tz<=tx&&tz<=ty){if(dz>0){esc++;const ia=Math.min(NB-1,Math.floor((amap(Math.atan2(dx,dz))+1)/2*NB)),ib=Math.min(NB-1,Math.floor((amap(Math.atan2(dy,dz))+1)/2*NB));cnt[ib*NB+ia]++;}else back++;alive=true;break;}
+      let wx=0,wy=0;
+      if(tx<ty){x+=dx*tx;y+=dy*tx;z+=dz*tx;wx=dx>0?-1:1;x=-wx*W;}else{x+=dx*ty;y+=dy*ty;z+=dz*ty;wy=dy>0?-1:1;y=dy>0?H:0;}
+      const F=fr(Math.abs(wx?dx:dy)),r=rnd();
+      if(r<F){if(wx)dx=-dx;else dy=-dy;}
+      else if(r<F+(1-F)*RHO){Mc[Math.min(MB-1,Math.floor(-z/L*MB))]++;[dx,dy,dz]=cosDir(wx,wy);}
+      else{abs++;alive=true;break;}
+    }
+    if(!alive)abs++;
+  }
+  /* solid angle of each direction bin (bins are even in sqrt of the angle, so they are fine near the slot axis) */
+  const om=new Float64Array(NB*NB),inv=u=>Math.sign(u)*u*u*Math.PI/2,SS=20,du=2/NB/SS;let omSum=0;
+  for(let ib=0;ib<NB;ib++)for(let ia=0;ia<NB;ia++){let o=0;
+    for(let q=0;q<SS;q++)for(let p=0;p<SS;p++){const ua=-1+(ia*SS+p+.5)*du,ub=-1+(ib*SS+q+.5)*du,a=inv(ua),b=inv(ub),ta=Math.tan(a),tb=Math.tan(b);
+      o+=(1+ta*ta)*(1+tb*tb)/Math.pow(1+ta*ta+tb*tb,1.5)*(Math.PI*Math.abs(ua))*(Math.PI*Math.abs(ub))*du*du;}
+    om[ib*NB+ia]=o;omSum+=o;}
+  const T=new Float32Array(NB*NB),Mt=new Float32Array(MB);let TI=0;
+  for(let k=0;k<NB*NB;k++){T[k]=cnt[k]/(N*om[k]);TI+=T[k]*om[k];}
+  for(let k=0;k<MB;k++)Mt[k]=Mc[k]/(N*P*(L/MB));
+  Object.assign(PORT,{D0,T,Mt,esc:esc/N,back:back/N,abs:abs/N,omSum,TI});}
+portMC(S.prtD/100);
 function cartGLSL(){
   const C=CART,L=(x,y,z)=>[(x-C.px)/100,(y-C.py)/100,(z-60)/100];
   const B=[ /* x0,y0,z0, x1,y1,z1, id: 0 cabinet, 1 sub, 2 top, 3 steel, 4 number plate, 5 rear light */
@@ -962,10 +1110,12 @@ function cartGLSL(){
     +'const vec3 CB1[NCB]=vec3[NCB]('+B.map(b=>v(L(b[3],b[4],b[5]))).join(',')+');'
     +'const int CBI[NCB]=int[NCB]('+B.map(b=>b[6]).join(',')+');'
     +'const float WHX='+((C.px-C.px)/100).toFixed(4)+',WHY='+((C.wy-C.py)/100).toFixed(4)+',WHR='+(C.wr/100).toFixed(4)+',WHW=.06,WHZA='+((69-60)/100).toFixed(4)+',WHZB='+((-69-60)/100).toFixed(4)+';'
-    +'const float COLX='+((C.px-29)/100).toFixed(4)+',SUBY='+((C.bed+107*s-C.py)/100).toFixed(4)+',SUBR='+(72*s/100).toFixed(4)
-    +',PRT0='+((C.bed+2.5-C.py)/100).toFixed(4)+',PRT1='+((C.bed+6.5-C.py)/100).toFixed(4)+',PRTW=.26'
+    +'const float COLX='+((C.px-29)/100).toFixed(4)+',SUBY='+((C.bed+39-C.py)/100).toFixed(4)+',SUBR='+(72*s/100).toFixed(4)
+    +',PRT0='+((C.bed+2-C.py)/100).toFixed(4)+',PRT1='+((C.bed+12-C.py)/100).toFixed(4)
+    +',PRTW='+(PORT.W).toFixed(4)+',PRTH='+(PORT.H).toFixed(4)+',PRTL='+(PORT.L).toFixed(4)+',PRTB='+(PORT.BW).toFixed(5)+',PRTA='+(PORT.P*PORT.BW).toFixed(5)
     +',HRY='+((top-40*s-C.py)/100).toFixed(4)+',HRW='+(95*s/100).toFixed(4)+',HRH='+(41*s/100).toFixed(4)
     +',TWY='+((top-115*s-C.py)/100).toFixed(4)+',TWR='+(50*s*.92/100).toFixed(4)
+    +',HALLW='+(HALL.W/2).toFixed(4)+',HALLH='+HALL.H.toFixed(4)+',BULBY='+(HALL.H-.12+C.floor).toFixed(4)
     +',PLZ0='+((-26-60)/100).toFixed(4)+',PLZ1='+((26-60)/100).toFixed(4)+',PLY0='+((17-C.py)/100).toFixed(4)+',PLY1='+((28-C.py)/100).toFixed(4)+';';
 }
 /* Pass 2: you stand at (0,0,D) looking at the panel centre (origin). The panel turns about its centre.
@@ -979,7 +1129,11 @@ uniform vec2 uRes;
 uniform float uTanH,uD,uN,uPitch,uSig,uHalfOut,uHalfWin,uBox,uTbg,uTrans,uQ,uRo,uScale,uGlare,uRoomZ,uHaze,uFloor;
 uniform vec3 uEyeW;
 uniform vec3 uIR; // illuminance from all higher light bounces in the hall (lux), integrating-sphere formula
-uniform vec3 uSlotL,uSlotI; // port LED strips in the subs: mean luminance of the slot (nits) and intensity per strip (cd), dominant colour
+uniform vec3 uSlotPhi; // LED ring in each sub port: flux it emits (cd·sr, i.e. lm/683 per W), in the panel's dominant colour
+uniform sampler2D uPort; // Monte Carlo tables of the port light guide: rows 0-23 light out of the mouth per sr, row 24 wall exitance by depth
+uniform float uPrtD;     // depth of the LED ring inside the slot (m)
+uniform vec3 uBulb[10];  // bulbs: intensity of one bulb in each of the 10 rows (cd, linear RGB)
+uniform float uLook;     // how far you look up from the panel (rad)
 //CARTDATA
 uniform vec3 uLay,uIdx,uSelf,uSunDir,uSunL,uSunE,uSkyL,uGndE,uGlowC,uAur,uTL;
 uniform int uMode,uAmb;
@@ -995,11 +1149,28 @@ vec3 selfLight(vec3 p,vec3 n,float rho){
   float r2=max(dot(p,p),.04);vec3 vd=p*inversesqrt(r2);
   return rho/PI*uSelf*max(dot(uRotI[2],vd),0.)*max(dot(n,-vd),0.)/r2;
 }
-/* light from the two port LED strips, Lambertian, facing out of the speaker fronts */
-vec3 slotLight(vec3 p,vec3 n){vec3 E=vec3(0.);
-  for(int s=0;s<2;s++){vec3 c=vec3(s==0?-COLX:COLX,(PRT0+PRT1)*.5,.0),v=p-c;float r2=max(dot(v,v),.01);vec3 vd=v*inversesqrt(r2);
-    E+=uSlotI*(max(vd.z,0.)*max(dot(n,-vd),0.)/r2);}
-  return E;}
+/* light leaving a port mouth in direction d, per sr, per unit flux of the ring (from the photon tracer) */
+float portT(vec3 d){vec2 a=vec2(atan(d.x,d.z),atan(d.y,d.z))/(PI*.5),u=sign(a)*sqrt(abs(a));
+  vec2 tc=clamp((u+1.)*12.,vec2(.5),vec2(23.5))/vec2(56.,25.);return texture(uPort,tc).r;}
+float portM(float z){return texture(uPort,vec2(clamp(z/PRTL*55.,.5,54.5)/56.,24.5/25.)).r;}
+/* light from the two ports onto a surface: each 46 cm mouth as two points, with the traced angular spread */
+vec3 slotLight(vec3 p,vec3 n){float E=0.;
+  for(int s=0;s<4;s++){vec3 c=vec3((s<2?-COLX:COLX)+(s%2==0?-.5:.5)*PRTW,PRT0+PRTH*.5,0.),v=p-c;float r2=max(dot(v,v),.01);vec3 vd=v*inversesqrt(r2);
+    if(vd.z>0.)E+=.5*portT(vd)*max(dot(n,-vd),0.)/r2;}
+  return E*uSlotPhi;}
+/* looking into a port: follow the ray down the slot, mirror-bouncing off the gloss of the paint (Schlick),
+   picking up the diffuse glow of the walls (traced exitance by depth) and, 30 cm in, the LED ring itself */
+vec3 portView(vec3 q,vec3 d,float fine){vec3 L=vec3(0.);float T=1.;
+  for(int k=0;k<14;k++){
+    float tx=d.x>0.?(PRTW-q.x)/d.x:d.x<0.?(-PRTW-q.x)/d.x:1e9,ty=d.y>0.?(PRTH-q.y)/d.y:d.y<0.?-q.y/d.y:1e9,tz=d.z<0.?(-PRTL-q.z)/d.z:1e9;
+    if(tz<=tx&&tz<=ty)break;                              /* past 40 cm: the dark inside of the cabinet */
+    bool xw=tx<ty;q+=d*min(tx,ty);float c=abs(xw?d.x:d.y),z=-q.z,s=xw?q.y:q.x;
+    if(z>uPrtD&&z<uPrtD+PRTB){vec2 g=vec2(fract(s/.00625),fract((z-uPrtD)/.00625))-.5;
+      L+=T*uSlotPhi/(PI*PRTA)*mix(1.,exp(-dot(g,g)*40.)/.0785,fine);}
+    else L+=T*uSlotPhi*(portM(z)/PI);
+    T*=.04+.96*pow(1.-c,5.);if(T<.003)break;
+    if(xw)d.x=-d.x;else d.y=-d.y;}
+  return L;}
 float djCone(int i,vec3 p,out float r2,out vec3 wd){vec3 w=p-uDjP[i];r2=max(dot(w,w),.04);wd=w*inversesqrt(r2);return smoothstep(DJC0,DJC1,dot(wd,uDjA[i]));}
 vec3 djSurf(vec3 p,vec3 n,float rho){vec3 L=vec3(0.);for(int i=0;i<6;i++){float r2;vec3 wd;float c=djCone(i,p,r2,wd);L+=uDjC[i]*(c*max(dot(n,-wd),0.)/r2);}return L*rho/PI;}
 vec3 djHaze(vec3 ro,vec3 rd,float tmax){
@@ -1013,10 +1184,27 @@ vec3 djLens(vec3 ro,vec3 rd){vec3 L=vec3(0.);
   for(int i=0;i<6;i++){vec3 w=uDjP[i]-ro;float t=dot(w,rd);if(t<=0.)continue;float d2=dot(w,w)-t*t;
     if(d2<.0036)L+=uDjC[i]*(smoothstep(DJC0,DJC1,dot(-rd,uDjA[i]))/(PI*.0036));}
   return L;}
+/* 10 rows x 10 bulbs. uBulb[j] = intensity of each bulb in row j (cd, linear RGB), as its DMX channel drives it */
+const float BX0=-4.5,BDX=1.,BZ0=-.6,BDZ=1.5,BR=.03,BFIL=.006;
+vec3 bulbE(vec3 p,vec3 n){vec3 E=vec3(0.);
+  for(int j=0;j<10;j++){if(uBulb[j].x+uBulb[j].y+uBulb[j].z<1e-5)continue;float g=0.;
+    for(int i=0;i<10;i++){vec3 v=vec3(BX0+BDX*float(i),BULBY,BZ0+BDZ*float(j))-p;float r2=max(dot(v,v),.0025);
+      g+=max(dot(n,v),0.)*inversesqrt(r2)/r2;}
+    E+=uBulb[j]*g;}
+  return E;}
+/* looking at a bulb: the tungsten coil carries most of the intensity in a tiny core, the clear glass glows faintly round it */
+bool bulbHit(vec3 ro,vec3 rd,float tmax,out vec3 L){
+  for(int j=0;j<10;j++){if(uBulb[j].x+uBulb[j].y+uBulb[j].z<1e-6)continue;
+    for(int i=0;i<10;i++){vec3 c=vec3(BX0+BDX*float(i),BULBY,BZ0+BDZ*float(j)),w=c-ro;float t=dot(w,rd);
+      if(t<=0.||t>tmax)continue;float b2=dot(w,w)-t*t;if(b2>BR*BR)continue;
+      L=b2<BFIL*BFIL?uBulb[j]*(.7/(PI*BFIL*BFIL)):uBulb[j]*(.3/(PI*(BR*BR-BFIL*BFIL)));return true;}}
+  return false;}
 vec3 envRoom(vec3 ro,vec3 rd){
-  vec3 bmin=vec3(-12.,uFloor,-4.),bmax=vec3(12.,uFloor+5.,14.);  /* the hall: 24 x 18 m, 5 m high, the trailer near the back wall */
+  vec3 bmin=vec3(-HALLW,uFloor,-4.),bmax=vec3(HALLW,uFloor+HALLH,14.);  /* the hall: 10 x 18 m, ceiling 3 m above the trailer */
   vec3 r=rd+vec3(1e-7);vec3 inv=1./r;vec3 t0=(bmin-ro)*inv,t1=(bmax-ro)*inv,tf=max(t0,t1);
-  float t=min(min(tf.x,tf.y),tf.z);vec3 p=ro+rd*t;
+  float t=min(min(tf.x,tf.y),tf.z);
+  if(uAmb==4){vec3 Lb;if(bulbHit(ro,rd,t,Lb))return Lb;}
+  vec3 p=ro+rd*t;
   vec3 n;float rho;int face;
   if(t==tf.y){n=vec3(0.,-sign(r.y),0.);face=r.y<0.?0:1;rho=r.y<0.?.2:.75;}
   else if(t==tf.x){n=vec3(-sign(r.x),0.,0.);face=2;rho=.5;}
@@ -1026,7 +1214,8 @@ vec3 envRoom(vec3 ro,vec3 rd){
   else if(uAmb==1){
     L+=uTL*(face==0?32.:face==1?22.:40.);
     if(face==1){vec2 c=mod(p.xz+1.2,2.4)-1.2;if(max(abs(c.x),abs(c.y))<.3)L=uTL*3500.;}
-  }else{L+=vec3(.003)+djSurf(p,n,rho)+djHaze(ro,rd,t)+djLens(ro,rd);}
+  }else if(uAmb==3){L+=vec3(.003)+djSurf(p,n,rho)+djHaze(ro,rd,t)+djLens(ro,rd);}
+  else L+=vec3(.002)+bulbE(p,n)*(rho/PI);
   return L;
 }
 vec3 envSky(vec3 ro,vec3 rd){
@@ -1051,7 +1240,8 @@ vec3 irr(vec3 p,vec3 n){
   if(uAmb==0)E+=vec3(.004*PI);
   else if(uAmb==1)E+=uTL*(400.*max(n.y,0.)+180.*(1.-abs(n.y))+90.*max(-n.y,0.));
   else if(uAmb==2){vec3 dir=uSunE*max(uSunDir.y,0.);E+=uSunE*max(dot(n,uSunDir),0.)+(uGndE-dir)*(.5+.5*n.y)+uGndE*.12*(.5-.5*n.y);}
-  else{E+=vec3(.003*PI);for(int i=0;i<6;i++){float rr;vec3 wd;float c=djCone(i,p,rr,wd);E+=uDjC[i]*(c*max(dot(n,-wd),0.)/rr);}}
+  else if(uAmb==3){E+=vec3(.003*PI);for(int i=0;i<6;i++){float rr;vec3 wd;float c=djCone(i,p,rr,wd);E+=uDjC[i]*(c*max(dot(n,-wd),0.)/rr);}}
+  else E+=vec3(.002*PI)+bulbE(p,n);
   return E;
 }
 /* light falling on the front film, scattered by its ~1 % haze (estimate) */
@@ -1151,8 +1341,7 @@ vec3 shadeCart(vec3 p,vec3 n,int id,int bi,vec3 rd,float dist){
         float cone=.012*(.6+.4*r/SUBR);rho=mix(.025,cone,hole);spec=mix(.03,.005,hole);n=n0;}
       if(r>SUBR&&r<SUBR+.012){rho=.06;spec=.08;n=n0;
         for(int k=0;k<6;k++){float a=float(k)*1.0472+.3;if(length(q-vec2(cos(a),sin(a))*(SUBR+.006))<.0045){rho=.3;spec=.2;}}}
-      if(p.y>PRT0&&p.y<PRT1&&abs(p.x-cx)<PRTW){rho=.004;spec=0.;
-        float u=fract((p.x-cx)/.00625)-.5;emit=uSlotL*(exp(-u*u*40.)/.28*mix(1.,.6,1.-fine)+.04);}
+      if(p.y>PRT0&&p.y<PRT1&&abs(p.x-cx)<PRTW){rho=0.;spec=0.;emit=portView(vec3(p.x-cx,p.y-PRT0,-1e-4),rd,fine);}
     }else{
       vec2 hq=vec2(p.x-cx,p.y-HRY);
       if(abs(hq.x)<HRW*.5+.012&&abs(hq.y)<HRH*.5+.012){rho=.04;spec=.03;n=n0;
@@ -1183,6 +1372,7 @@ void main(){
   vec2 ndc=gl_FragCoord.xy/uRes*2.-1.;
   /* you stand at uEyeW and look at the panel centre; the room, the trailer and the panel stay put */
   vec3 eW=uEyeW,fw=normalize(-eW),rt=normalize(cross(fw,vec3(0.,1.,0.))),up=cross(rt,fw);
+  fw=normalize(fw*cos(uLook)+up*sin(uLook));up=cross(rt,fw);   /* tilt your head up from the panel */
   vec3 dw=normalize(fw+ndc.x*uTanH*rt+ndc.y*uTanH*up);
   vec3 e=uRot*eW,d=uRot*dw;
   vec3 inv=1./(d+vec3(1e-9));
@@ -1251,6 +1441,13 @@ let adFbo=null;const adBuf=new Float32Array(AD*AD*4);
 if(hasFloat){const t=tex(5,gl.NEAREST,gl.NEAREST);gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA32F,AD,AD,0,gl.RGBA,gl.FLOAT,null);
   adFbo=gl.createFramebuffer();gl.bindFramebuffer(gl.FRAMEBUFFER,adFbo);gl.framebufferTexture2D(gl.FRAMEBUFFER,gl.COLOR_ATTACHMENT0,gl.TEXTURE_2D,t,0);
   if(gl.checkFramebufferStatus(gl.FRAMEBUFFER)!==gl.FRAMEBUFFER_COMPLETE)adFbo=null;gl.bindFramebuffer(gl.FRAMEBUFFER,null);}
+/* port light-guide tables from the photon tracer, on their own texture unit (8); half floats filter linearly in WebGL2 */
+const portTex=tex(8,gl.LINEAR,gl.LINEAR);
+function portUpload(){const w=56,h=PORT.NB+1,d=new Float32Array(w*h*4);
+  for(let j=0;j<PORT.NB;j++)for(let i=0;i<PORT.NB;i++)d[(j*w+i)*4]=PORT.T[j*PORT.NB+i];
+  for(let i=0;i<PORT.MB;i++)d[(PORT.NB*w+i)*4]=PORT.Mt[i];
+  gl.activeTexture(gl.TEXTURE8);gl.bindTexture(gl.TEXTURE_2D,portTex);gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA16F,w,h,0,gl.RGBA,gl.FLOAT,d);gl.activeTexture(gl.TEXTURE0);}
+portUpload();
 const waveTex=tex(4,gl.LINEAR,gl.LINEAR);
 const waveBytes=new Uint8Array(256).fill(128);
 gl.texImage2D(gl.TEXTURE_2D,0,gl.R8,256,1,0,gl.RED,gl.UNSIGNED_BYTE,waveBytes);
@@ -1711,7 +1908,7 @@ const COMPASS=['N','NNE','NE','ENE','E','ESE','SE','SSE','S','SSW','SW','WSW','W
 /* ---------- disco: six moving heads on a truss behind the crowd ---------- */
 const DJCOL=[[1,0,0],[0,1,0],[0,0,1],[1,0,1],[0,1,1],[1,.42,0],[1,1,1],[.3,0,1]].map(c=>{const Y=.2126*c[0]+.7152*c[1]+.0722*c[2];return c.map(v=>v/Y);});
 const djP=new Float32Array(18),djA=new Float32Array(18),djC=new Float32Array(18);
-function djUpdate(t){for(let i=0;i<6;i++){const F=CART.floor,px=-5+2*i,py=F+3.6,pz=7;   /* truss 3.6 m up, 7 m in front of the trailer */
+function djUpdate(t){for(let i=0;i<6;i++){const F=CART.floor,px=-4.5+1.8*i,py=F+3.6,pz=7;   /* truss 3.6 m up, 7 m in front of the trailer */
   const tx=3.2*Math.sin(t*(.31+.07*i)+i*1.7),ty=F+2.4*(.5+.5*Math.sin(t*(.23+.05*i)+i*2.3)),tz=-0.5+0.6*Math.sin(t*.17+i);
   const ax=tx-px,ay=ty-py,az=tz-pz,l=Math.hypot(ax,ay,az);
   djP.set([px,py,pz],i*3);djA.set([ax/l,ay/l,az/l],i*3);
@@ -1789,8 +1986,10 @@ function runChecks(){
     add(dd<0.01?true:'warn','<b>Datasheet white.</b> The typical mcd values give raw white x '+(rw[0]/t).toFixed(3)+', y '+(rw[1]/t).toFixed(3)+'; the same datasheet states x '+C.L.wxy[0]+', y '+C.L.wxy[1]+' (off by '+dd.toFixed(3)+').'+(dd<0.01?'':' The sheet does not add up by itself; real parts vary ±25 % per channel. The model keeps the typical mcd values.'));}
   const F=C.full,cl=C.lm.reduce((s,v,i)=>s+v*LUT[i*256+255],0)*C.N*C.N;
   add(Math.abs(F.e/cl-1)<1e-6,'<b>Meter loop.</b> Counting a white frame LED by LED gives '+fmt(F.e,1)+' lm; LEDs × flux per LED gives '+fmt(cl,1)+' lm.');
-  {const rho=(432*.2+420*.5+432*.75)/1284;let sb=0;for(let k=1;k<=400;k++)sb+=Math.pow(rho,k);
+  {const rho=HALL.rho;let sb=0;for(let k=1;k<=400;k++)sb+=Math.pow(rho,k);
    add(Math.abs(sb/(rho/(1-rho))-1)<1e-9,'<b>Light bounces in the hall.</b> Adding 400 bounces one by one gives '+sb.toFixed(6)+' × the light, the closed form ρ/(1 − ρ) with ρ = '+rho.toFixed(3)+' gives '+(rho/(1-rho)).toFixed(6)+' ×. So every bounce is in, not just the first.');}
+  {const P=PORT,tot=P.esc+P.back+P.abs;
+   add(Math.abs(tot-1)<1e-9&&Math.abs(P.omSum/(2*Math.PI)-1)<2e-3&&Math.abs(P.TI/P.esc-1)<1e-6,'<b>Port light guide.</b> Of the light the ring '+(P.D0>0?Math.round(P.D0*100)+' cm inside':'at the mouth of')+' each slot emits, '+fmt(P.esc*100,1)+' % leaves the mouth, '+fmt(P.back*100,1)+' % goes on into the cabinet and '+fmt(P.abs*100,1)+' % is absorbed by the black paint (sum '+fmt(tot*100,6)+' %). The direction table covers '+(P.omSum/Math.PI).toFixed(4)+' π sr of the 2 π hemisphere and integrates back to the same '+fmt(P.TI*100,2)+' %.');}
   const ss=sunsetClock();add(Math.abs(ss-(21+52/60))<6/60,'<b>Sun.</b> Computed sunset in Utrecht on 15 July: '+hhmm(ss)+' (almanac: 21:52).');
   const nb=res.filter(r=>r[0]===false).length,nw=res.filter(r=>r[0]==='warn').length;
   $('checks').innerHTML=res.map(([k,t])=>'<li><span class="'+(k===true?'ok':k==='warn'?'wn':'bad')+'">'+(k===true?'✓':k==='warn'?'!':'✗')+'</span><span>'+t+'</span></li>').join('');
@@ -1852,7 +2051,7 @@ function updateMeter(m){
   const ep=eyePos(),a=C.win/2/Math.hypot(ep[0],ep[1],ep[2]),E=4*Lall*a/Math.sqrt(1+a*a)*Math.atan(a/Math.sqrt(1+a*a))*Math.max(0,viewCos());
   txt('mLux',fN(E));txt('mLuxD','at '+outs.dist.c.f(S.dist));
   txt('mIR',S.amb===2?'outdoors: no hall to bounce in':'bounced light in the hall '+fN(irLux)+' lux');
-  txt('mSlot','port LEDs '+fN(slotLm)+' lm · '+fN(slotW)+' W');
+  txt('mSlot','port rings '+fN(slotLm)+' lm, '+fN(slotOut)+' lm out of the slots · '+fN(slotW)+' W');
   txt('mW',fN(m.P));txt('mA',fN(m.P/5)+' A');txt('mEff',fN(m.P>0?m.o/m.P:0));
   const src=m.e>0?m:C.full,tot=src.e||1,fr=[src.o/tot,src.a/tot,src.w/tot,src.b/tot];
   ['sOut','sFilm','sWall','sBoard'].forEach((k,i)=>{mEls[k].style.width='calc('+(fr[i]*100).toFixed(2)+'% - 2px)';});
@@ -1881,8 +2080,8 @@ spark.addEventListener('pointermove',e=>{const r=spark.getBoundingClientRect(),i
 spark.addEventListener('pointerleave',()=>{sHover=-1;});
 
 /* ---------- render loop ---------- */
-let frameN=0,lastTs=0,fpsAvg=60,adapt=5,adaptT=5,irLux=0,SLOT=null,slotLm=0,slotW=0;const slotDuty=[0,0,0],slotRGB=[0,0,0];
-const hudTR=$('hudTR'),TANH=0.441,TLC=cctRGB(4000),ADAPT_FALLBACK=[1,40,3000,0.5];
+let frameN=0,lastTs=0,fpsAvg=60,adapt=5,adaptT=5,irLux=0,SLOT=null,slotLm=0,slotOut=0,slotW=0,prtG=1,blbFlux=0;const blbV=new Float32Array(10),blbDmx=new Uint8Array(10),blbHist=[],blbU=new Float32Array(30);const slotDuty=[0,0,0],slotRGB=[0,0,0];
+const hudTR=$('hudTR'),TANH=0.441,TLC=cctRGB(4000),ADAPT_FALLBACK=[1,40,3000,0.5,20];
 function uni(P,name,fn,...a){if(P.u[name]!=null)gl[fn](P.u[name],...a);}
 const adY=new Float32Array(AD*AD);
 function readAdapt(){
@@ -1931,9 +2130,9 @@ function frame(ts){
   /* the hall, the trailer and the panel stay put: only your eyes move */
   const I3=[1,0,0,0,1,0,0,0,1],EYE=eyePos();
   gl.uniformMatrix3fv(P2.u.uRot,false,I3);gl.uniformMatrix3fv(P2.u.uRotI,false,I3);
-  uni(P2,'uEyeW','uniform3f',EYE[0],EYE[1],EYE[2]);uni(P2,'uFloor','uniform1f',CART.floor);
+  uni(P2,'uEyeW','uniform3f',EYE[0],EYE[1],EYE[2]);uni(P2,'uLook','uniform1f',S.look*D2R);uni(P2,'uFloor','uniform1f',CART.floor);
   gl.uniformMatrix3fv(P2.u.uLedM,false,C.M);
-  uni(P2,'uDuty','uniform1i',0);uni(P2,'uTanH','uniform1f',TANH);uni(P2,'uD','uniform1f',S.dist);
+  uni(P2,'uDuty','uniform1i',0);uni(P2,'uPort','uniform1i',8);uni(P2,'uPrtD','uniform1f',PORT.D0);uni(P2,'uTanH','uniform1f',TANH);uni(P2,'uD','uniform1f',S.dist);
   uni(P2,'uN','uniform1f',N);uni(P2,'uPitch','uniform1f',C.pitch);uni(P2,'uSig','uniform1f',C.L.pkg/1000*0.3);
   uni(P2,'uHalfOut','uniform1f',STACK.outerMm/2000);uni(P2,'uHalfWin','uniform1f',C.win/2);uni(P2,'uBox','uniform1f',C.depthMm/1000);
   uni(P2,'uLay','uniform3f',st.tF,st.d,st.tBa);uni(P2,'uIdx','uniform3f',st.nF,st.nC,st.nB);uni(P2,'uTbg','uniform1f',st.tBg);
@@ -1941,26 +2140,52 @@ function frame(ts){
   uni(P2,'uGlare','uniform1f',0.03);uni(P2,'uRoomZ','uniform1f',S.dist+5);uni(P2,'uAmb','uniform1i',S.amb);uni(P2,'uHaze','uniform1f',0.012);
   uni(P2,'uSelf','uniform3f',m.self[0],m.self[1],m.self[2]);
   uni(P2,'uTL','uniform3f',TLC[0],TLC[1],TLC[2]);
-  {const il=S.amb===1?TLC:S.amb===2?cctRGB(5500):[1,1,1],k=S.amb===2?0.6:0.8;
+  {const il=S.amb===1?TLC:S.amb===2?cctRGB(5500):S.amb===4?cctRGB(2700):[1,1,1],k=S.amb===2?0.6:0.8;
    const wb=il.map(v=>1+(1/Math.max(v,0.05)-1)*k),Y=.2126*wb[0]+.7152*wb[1]+.0722*wb[2];uni(P2,'uWB','uniform3f',wb[0]/Y,wb[1]/Y,wb[2]/Y);}
   const sn=S.amb===2?sunState():null,z3=[0,0,0];
   uni(P2,'uSunDir','uniform3fv',sn?sn.dir:[0,1,0]);uni(P2,'uSunL','uniform3fv',sn?sn.sunL:z3);uni(P2,'uSunE','uniform3fv',sn?sn.sunE:z3);
   uni(P2,'uSkyL','uniform3fv',sn?sn.skyL:z3);uni(P2,'uGndE','uniform3fv',sn?sn.gndE:z3);uni(P2,'uGlowC','uniform3fv',sn?sn.glowC:z3);uni(P2,'uAur','uniform3fv',sn?sn.aur:z3);
   if(S.amb===3)djUpdate(t*S.speed);else djC.fill(0);
-  /* port LED strips in the subs: 2 × 73 WS2812B-2020 at 6.25 mm, driven with the panel's dominant colour (the heaviest hue bin) */
+  /* LED ring in each sub port: 3 × 179 WS2812B-2020 at 6.25 mm, driven with the panel's dominant colour (the heaviest hue bin).
+     Always on, or on the sound: the bass and the beat push the level up (fast attack, 0.12 s release) from a glow floor. */
   {let best=-1,bw=0;for(let i=0;i<13;i++)if(DB[i*4+3]>bw){bw=DB[i*4+3];best=i;}
-   const tgt=best<0?[0,0,0]:(()=>{const v=[DB[best*4],DB[best*4+1],DB[best*4+2]],mx=Math.max(...v);return v.map(x=>x/mx*S.bright);})();
+   const lv=S.prtM===2?0:S.prtM===1?Math.min(1,S.prtF+S.prtS*1.8*(.55*bass+.9*beat)):1;
+   prtG+=(lv-prtG)*(1-Math.exp(-dts/(S.prtM===1?(lv>prtG?.02:.12):.15)));
+   const tgt=best<0?[0,0,0]:(()=>{const v=[DB[best*4],DB[best*4+1],DB[best*4+2]],mx=Math.max(...v);return v.map(x=>x/mx);})();
    const kk=1-Math.exp(-dts/0.15);for(let c=0;c<3;c++)slotDuty[c]+=(tgt[c]-slotDuty[c])*kk;
    if(!SLOT){const L0=LEDS[0],pr=primaries(L0);SLOT={cols:pr.map(([x,y],c)=>{const I=L0.mcd[c]/1000,X=x/y*I,Z=(1-x-y)/y*I;return X2R.map(r=>r[0]*X+r[1]*I+r[2]*Z);}),Y:L0.mcd.map(v=>v/1000),mA:L0.mA};}
-   const I=[0,1,2].map(r=>73*(slotDuty[0]*SLOT.cols[0][r]+slotDuty[1]*SLOT.cols[1][r]+slotDuty[2]*SLOT.cols[2][r]));
-   uni(P2,'uSlotI','uniform3f',I[0],I[1],I[2]);uni(P2,'uSlotL','uniform3f',I[0]/(.46*.04),I[1]/(.46*.04),I[2]/(.46*.04));
-   slotLm=2*Math.PI*73*(slotDuty[0]*SLOT.Y[0]+slotDuty[1]*SLOT.Y[1]+slotDuty[2]*SLOT.Y[2]);
-   slotW=2*73*5*(slotDuty[0]*SLOT.mA[0]+slotDuty[1]*SLOT.mA[1]+slotDuty[2]*SLOT.mA[2])/1000+2*73*LEDS[0].idle*5/1000;
-   for(let c=0;c<3;c++)slotRGB[c]=2*Math.PI*I[c];}
+   const g=prtG*S.prtB,du=slotDuty.map(v=>v*g),NL=PORT.NLED;
+   const Phi=[0,1,2].map(r=>Math.PI*NL*(du[0]*SLOT.cols[0][r]+du[1]*SLOT.cols[1][r]+du[2]*SLOT.cols[2][r]));  /* per ring, Lambertian LEDs */
+   uni(P2,'uSlotPhi','uniform3f',Phi[0],Phi[1],Phi[2]);
+   slotLm=2*Math.PI*NL*(du[0]*SLOT.Y[0]+du[1]*SLOT.Y[1]+du[2]*SLOT.Y[2]);slotOut=slotLm*PORT.esc;
+   slotW=2*NL*5*(du[0]*SLOT.mA[0]+du[1]*SLOT.mA[1]+du[2]*SLOT.mA[2])/1000+2*NL*LEDS[0].idle*5/1000;
+   for(let c=0;c<3;c++)slotRGB[c]=2*Phi[c]*PORT.esc;}
+  /* bulbs: one DMX dimmer channel per row, 8 bit; the dimmer passes the channel value as voltage (linear curve).
+     Tungsten: light ~ V^3.4, filament temperature ~ V^0.42 (2700 K at full), power ~ V^1.55; the coil lags behind the voltage. */
+  blbFlux=0;
+  {const B=BULBS[S.blbW],now=performance.now()/1000,sp=S.blbS,u=blbU.fill(0);let pw=0;
+   if(S.amb===4){
+     if(S.blbP===1){blbHist.push([now,Math.min(1,S.blbF+S.blbSens*1.8*(.55*bass+.9*beat))]);while(blbHist.length&&blbHist[0][0]<now-12)blbHist.shift();}
+     for(let j=0;j<10;j++){let v=1;const ph=now*sp;
+       if(S.blbP===1){const tt=now-j/sp;v=0;for(let k=blbHist.length-1;k>=0;k--)if(blbHist[k][0]<=tt){v=blbHist[k][1];break;}}
+       else if(S.blbP===2){const d=((ph%10)-j+10)%10;v=d<1?1:Math.exp(-(d-1)*1.5);}
+       else if(S.blbP===3){const q=(ph/9)%2,pos=9*(1-Math.abs(q-1));v=Math.exp(-(pos-j)*(pos-j)*1.5);}
+       else if(S.blbP===4){const k=Math.floor(ph/10*3+j*.37),h=Math.sin(k*127.1+j*311.7)*43758.5453;v=Math.pow(h-Math.floor(h),1.5);}
+       else if(S.blbP===5)v=.5+.5*Math.sin(2*Math.PI*(ph/10-j/10));
+       else if(S.blbP===6)v=S.blbC[j]/255;
+       const dmx=Math.round(Math.max(0,Math.min(1,v*S.blbM))*255);blbDmx[j]=dmx;const V=dmx/255;
+       blbV[j]+=(V-blbV[j])*(1-Math.exp(-dts/(V>blbV[j]?B.tau:B.tau*1.6)));
+       const Vf=blbV[j],fl=B.lm*Math.pow(Vf,3.4),col=cctRGB(Math.max(1700,2700*Math.pow(Vf,.42))),I=fl/(4*Math.PI);
+       for(let c=0;c<3;c++)u[j*3+c]=col[c]*I;blbFlux+=10*fl;pw+=10*parseFloat(B.n)*Math.pow(Vf,1.55);}
+     if(frameN%6===0){for(let j=0;j<10;j++){blbOut[j].textContent=blbDmx[j];if(S.blbP!==6)blbIn[j].value=blbDmx[j];}
+       $('blbLive').textContent='bulbs '+fN(blbFlux)+' lm · '+fN(pw)+' W · row 1 '+(blbV[0]<.15?'dark':'at '+Math.round(2700*Math.pow(blbV[0],.42))+' K');}
+   }
+   uni(P2,'uBulb[0]','uniform3fv',u);}
   /* every further bounce in the hall at once: E = flux × mean reflectance / (area × (1 − mean reflectance)).
-     Hall 24 × 18 × 5 m: floor 0.20, walls 0.50, ceiling 0.75 → mean 0.48 over 1284 m². Outdoors there is no hall to bounce in. */
-  {const HALL_A=1284,HALL_RHO=(432*.2+420*.5+432*.75)/1284,k=S.amb===2?0:HALL_RHO/(HALL_A*(1-HALL_RHO)),cone=2*Math.PI*(1-Math.cos(7*D2R));
-   const fl=[0,1,2].map(c=>{let f=Math.PI*m.self[c]+slotRGB[c];for(let i=0;i<6;i++)f+=djC[i*3+c]*cone;return f*k;});
+     Hall 10 × 18 m, ceiling 3 m above the trailer: floor 0.20, walls 0.50, ceiling 0.75. Outdoors there is no hall to bounce in. */
+  {const k=S.amb===2?0:HALL.rho/(HALL.A*(1-HALL.rho)),cone=2*Math.PI*(1-Math.cos(7*D2R));
+   const fl=[0,1,2].map(c=>{let f=Math.PI*m.self[c]+slotRGB[c];for(let i=0;i<6;i++)f+=djC[i*3+c]*cone;
+     if(S.amb===4)for(let j=0;j<10;j++)f+=10*4*Math.PI*blbU[j*3+c];return f*k;});
    irLux=.2126*fl[0]+.7152*fl[1]+.0722*fl[2];uni(P2,'uIR','uniform3f',fl[0],fl[1],fl[2]);}
   uni(P2,'uDjP[0]','uniform3fv',djP);uni(P2,'uDjA[0]','uniform3fv',djA);uni(P2,'uDjC[0]','uniform3fv',djC);
   if(adFbo&&frameN%3===0){
