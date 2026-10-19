@@ -452,6 +452,11 @@ const frmBtns=[...document.querySelectorAll('[data-frm]')];
 function syncFrm(){frmBtns.forEach(b=>b.setAttribute('aria-checked',String(+b.dataset.frm===S.frMode)));outs.frRate.inp.parentElement.hidden=S.frMode!==2;}
 frmBtns.forEach(b=>b.addEventListener('click',()=>{S.frMode=+b.dataset.frm;save();syncFrm();}));
 syncFrm();
+/* square or circle: shapes the frame on top, and switches the tunnel pattern too when one is showing */
+const ovBtns=[...document.querySelectorAll('[data-ovlc]')];
+function syncOvl(){ovBtns.forEach(b=>b.setAttribute('aria-checked',String(+b.dataset.ovlc===S.ovlC)));}
+ovBtns.forEach(b=>b.addEventListener('click',()=>{S.ovlC=+b.dataset.ovlc;if(S.pat===31||S.pat===32){S.pat=S.ovlC?32:31;syncPat();}save();syncOvl();}));
+syncOvl();
 function setCtl(k,v){S[k]=v;const o=outs[k];if(o){o.inp.value=o.c.inv?o.c.inv(v):v;o.out.textContent=o.c.f(v);}}
 
 /* pattern chips */
@@ -460,7 +465,7 @@ for(const grp of PGROUPS){
   const lab=document.createElement('div');lab.className='glabel';lab.textContent=grp.g;patChips.appendChild(lab);
   const box=document.createElement('div');box.className='chips';
   for(const [id,name] of grp.items){const b=document.createElement('button');b.type='button';b.textContent=name;b.setAttribute('role','radio');b.dataset.id=id;
-    b.addEventListener('click',()=>{S.pat=id;save();syncPat();});box.appendChild(b);}
+    b.addEventListener('click',()=>{S.pat=id;if(id===31||id===32){S.ovlC=id===32?1:0;syncOvl();}save();syncPat();});box.appendChild(b);}
   patChips.appendChild(box);
 }
 function syncPat(){patChips.querySelectorAll('button').forEach(b=>b.setAttribute('aria-checked',String(+b.dataset.id===S.pat)));
