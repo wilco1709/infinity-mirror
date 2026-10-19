@@ -160,7 +160,7 @@ ul.checks .wn{color:var(--accent);font-weight:600}
       <div class="kpi"><span class="lab">Brightest LED, first copy</span><span><span class="val" id="mLmax">0</span><span class="unit">nits</span></span><span class="s2">averaged over its cell</span></div>
       <div class="kpi"><span class="lab">Room mirrored in the glass</span><span><span class="val" id="mVeil">0</span><span class="unit">nits</span></span><span class="s2" id="mCon"></span><span class="s2" id="mIR"></span></div>
       <div class="kpi"><span class="lab">On your face</span><span><span class="val" id="mLux">0</span><span class="unit">lux</span></span><span class="s2" id="mLuxD"></span></div>
-      <div class="kpi"><span class="lab">Power at 5 V</span><span><span class="val" id="mW">0</span><span class="unit">W</span></span><span class="s2" id="mA"></span></div>
+      <div class="kpi"><span class="lab">Power at 5 V</span><span><span class="val" id="mW">0</span><span class="unit">W</span></span><span class="s2" id="mA"></span><span class="s2" id="mSlot"></span></div>
       <div class="kpi"><span class="lab">Light out per watt</span><span><span class="val" id="mEff">0</span><span class="unit">lm/W</span></span></div>
       <div class="kpi"><span class="lab">Copies above 1 %</span><span><span class="val" id="mCopies">0</span></span></div>
     </div>
@@ -965,7 +965,8 @@ function cartGLSL(){
     +'const float COLX='+((C.px-29)/100).toFixed(4)+',SUBY='+((C.bed+107*s-C.py)/100).toFixed(4)+',SUBR='+(72*s/100).toFixed(4)
     +',PRT0='+((C.bed+2.5-C.py)/100).toFixed(4)+',PRT1='+((C.bed+6.5-C.py)/100).toFixed(4)+',PRTW=.26'
     +',HRY='+((top-40*s-C.py)/100).toFixed(4)+',HRW='+(95*s/100).toFixed(4)+',HRH='+(41*s/100).toFixed(4)
-    +',TWY='+((top-115*s-C.py)/100).toFixed(4)+',TWR='+(50*s*.92/100).toFixed(4)+';';
+    +',TWY='+((top-115*s-C.py)/100).toFixed(4)+',TWR='+(50*s*.92/100).toFixed(4)
+    +',PLZ0='+((-26-60)/100).toFixed(4)+',PLZ1='+((26-60)/100).toFixed(4)+',PLY0='+((17-C.py)/100).toFixed(4)+',PLY1='+((28-C.py)/100).toFixed(4)+';';
 }
 /* Pass 2: you stand at (0,0,D) looking at the panel centre (origin). The panel turns about its centre.
    Every light value in here is a luminance in cd/m2 (nits), linear sRGB. Tone mapping happens at the very end. */
@@ -978,6 +979,7 @@ uniform vec2 uRes;
 uniform float uTanH,uD,uN,uPitch,uSig,uHalfOut,uHalfWin,uBox,uTbg,uTrans,uQ,uRo,uScale,uGlare,uRoomZ,uHaze,uFloor;
 uniform vec3 uEyeW;
 uniform vec3 uIR; // illuminance from all higher light bounces in the hall (lux), integrating-sphere formula
+uniform vec3 uSlotL,uSlotI; // port LED strips in the subs: mean luminance of the slot (nits) and intensity per strip (cd), dominant colour
 //CARTDATA
 uniform vec3 uLay,uIdx,uSelf,uSunDir,uSunL,uSunE,uSkyL,uGndE,uGlowC,uAur,uTL;
 uniform int uMode,uAmb;
@@ -993,6 +995,11 @@ vec3 selfLight(vec3 p,vec3 n,float rho){
   float r2=max(dot(p,p),.04);vec3 vd=p*inversesqrt(r2);
   return rho/PI*uSelf*max(dot(uRotI[2],vd),0.)*max(dot(n,-vd),0.)/r2;
 }
+/* light from the two port LED strips, Lambertian, facing out of the speaker fronts */
+vec3 slotLight(vec3 p,vec3 n){vec3 E=vec3(0.);
+  for(int s=0;s<2;s++){vec3 c=vec3(s==0?-COLX:COLX,(PRT0+PRT1)*.5,.0),v=p-c;float r2=max(dot(v,v),.01);vec3 vd=v*inversesqrt(r2);
+    E+=uSlotI*(max(vd.z,0.)*max(dot(n,-vd),0.)/r2);}
+  return E;}
 float djCone(int i,vec3 p,out float r2,out vec3 wd){vec3 w=p-uDjP[i];r2=max(dot(w,w),.04);wd=w*inversesqrt(r2);return smoothstep(DJC0,DJC1,dot(wd,uDjA[i]));}
 vec3 djSurf(vec3 p,vec3 n,float rho){vec3 L=vec3(0.);for(int i=0;i<6;i++){float r2;vec3 wd;float c=djCone(i,p,r2,wd);L+=uDjC[i]*(c*max(dot(n,-wd),0.)/r2);}return L*rho/PI;}
 vec3 djHaze(vec3 ro,vec3 rd,float tmax){
@@ -1014,7 +1021,7 @@ vec3 envRoom(vec3 ro,vec3 rd){
   if(t==tf.y){n=vec3(0.,-sign(r.y),0.);face=r.y<0.?0:1;rho=r.y<0.?.2:.75;}
   else if(t==tf.x){n=vec3(-sign(r.x),0.,0.);face=2;rho=.5;}
   else{n=vec3(0.,0.,-sign(r.z));face=2;rho=.5;}
-  vec3 L=selfLight(p,n,rho)+uIR*(rho/PI);
+  vec3 L=selfLight(p,n,rho)+(uIR+slotLight(p,n))*(rho/PI);
   if(uAmb==0)L+=vec3(.004);
   else if(uAmb==1){
     L+=uTL*(face==0?32.:face==1?22.:40.);
@@ -1025,7 +1032,7 @@ vec3 envRoom(vec3 ro,vec3 rd){
 vec3 envSky(vec3 ro,vec3 rd){
   vec3 hor=uSkyL*.33+uGlowC*.6;
   if(rd.y<-1e-4){float t=(uFloor-ro.y)/rd.y;vec3 p=ro+rd*t;
-    vec3 L=uGndE*(.12/PI)+selfLight(p,vec3(0.,1.,0.),.12);
+    vec3 L=(uGndE+slotLight(p,vec3(0.,1.,0.)))*(.12/PI)+selfLight(p,vec3(0.,1.,0.),.12);
     return mix(L,hor,1.-exp(-t/900.));}
   float g=max(rd.y,0.);
   vec3 L=uSkyL*((1.+2.*g)/3.)+vec3(.003);
@@ -1040,7 +1047,7 @@ vec3 env(vec3 ro,vec3 rd){return uAmb==2?envSky(ro,rd):envRoom(ro,rd);}
 /* illuminance (lux) on a surface at p facing n, for matte objects: diffuse luminance = reflectance x E / pi */
 vec3 irr(vec3 p,vec3 n){
   float r2=max(dot(p,p),.04);vec3 vd=p*inversesqrt(r2);
-  vec3 E=uSelf*(max(dot(uRotI[2],vd),0.)*max(dot(n,-vd),0.)/r2)+(uAmb==2?vec3(0.):uIR);
+  vec3 E=uSelf*(max(dot(uRotI[2],vd),0.)*max(dot(n,-vd),0.)/r2)+(uAmb==2?vec3(0.):uIR)+slotLight(p,n);
   if(uAmb==0)E+=vec3(.004*PI);
   else if(uAmb==1)E+=uTL*(400.*max(n.y,0.)+180.*(1.-abs(n.y))+90.*max(-n.y,0.));
   else if(uAmb==2){vec3 dir=uSunE*max(uSunDir.y,0.);E+=uSunE*max(dot(n,uSunDir),0.)+(uGndE-dir)*(.5+.5*n.y)+uGndE*.12*(.5-.5*n.y);}
@@ -1082,46 +1089,91 @@ vec3 tunnel(vec3 h,vec3 d,float dist){
   return acc;
 }
 /* the speaker trailer at 185 cm, as a prop around the panel: boxes plus two wheels, in the panel's own frame */
-bool cartHit(vec3 ro,vec3 rd,out float tb,out vec3 nb,out int idb){
-  tb=1e9;nb=vec3(0.,0.,1.);idb=0;bool hit=false;
+bool cartHit(vec3 ro,vec3 rd,out float tb,out vec3 nb,out int idb,out int bib){
+  tb=1e9;nb=vec3(0.,0.,1.);idb=0;bib=-1;bool hit=false;
   vec3 inv=1./(rd+vec3(1e-9));
   for(int i=0;i<NCB;i++){
     vec3 t0=(CB0[i]-ro)*inv,t1=(CB1[i]-ro)*inv,tn=min(t0,t1),tf=max(t0,t1);
     float a=max(max(tn.x,tn.y),tn.z),b=min(min(tf.x,tf.y),tf.z);
-    if(a<b&&a>0.&&a<tb){tb=a;idb=CBI[i];hit=true;nb=a==tn.x?vec3(-sign(rd.x),0.,0.):a==tn.y?vec3(0.,-sign(rd.y),0.):vec3(0.,0.,-sign(rd.z));}
+    if(a<b&&a>0.&&a<tb){tb=a;idb=CBI[i];bib=i;hit=true;nb=a==tn.x?vec3(-sign(rd.x),0.,0.):a==tn.y?vec3(0.,-sign(rd.y),0.):vec3(0.,0.,-sign(rd.z));}
   }
   for(int s=0;s<2;s++){
     vec3 c=vec3(WHX,WHY,s==0?WHZA:WHZB);
     vec2 oc=ro.xy-c.xy;float A=dot(rd.xy,rd.xy),B=dot(oc,rd.xy),Cc=dot(oc,oc)-WHR*WHR,disc=B*B-A*Cc;
-    if(disc>0.&&A>1e-9){float t=(-B-sqrt(disc))/A;if(t>0.&&t<tb&&abs(ro.z+rd.z*t-c.z)<WHW){tb=t;idb=6;hit=true;nb=vec3(normalize(ro.xy+rd.xy*t-c.xy),0.);}}
+    if(disc>0.&&A>1e-9){float t=(-B-sqrt(disc))/A;if(t>0.&&t<tb&&abs(ro.z+rd.z*t-c.z)<WHW){tb=t;idb=6;bib=-1;hit=true;nb=vec3(normalize(ro.xy+rd.xy*t-c.xy),0.);}}
     for(int k=0;k<2;k++){float zc=c.z+(k==0?WHW:-WHW),t=(zc-ro.z)/(rd.z+1e-9);
-      if(t>0.&&t<tb){vec2 q=ro.xy+rd.xy*t-c.xy;if(dot(q,q)<WHR*WHR){tb=t;idb=7;hit=true;nb=vec3(0.,0.,k==0?1.:-1.);}}}
+      if(t>0.&&t<tb){vec2 q=ro.xy+rd.xy*t-c.xy;if(dot(q,q)<WHR*WHR){tb=t;idb=7;bib=-1;hit=true;nb=vec3(0.,0.,k==0?1.:-1.);}}}
+    /* mudguard: the top half of a cylinder shell over the wheel */
+    float R=WHR+.05;Cc=dot(oc,oc)-R*R;disc=B*B-A*Cc;
+    if(disc>0.&&A>1e-9){for(int k=0;k<2;k++){float t=(-B+(k==0?-1.:1.)*sqrt(disc))/A;vec3 q=ro+rd*t;
+      if(t>0.&&t<tb&&abs(q.z-c.z)<WHW+.02&&q.y>c.y-.01){tb=t;idb=8;bib=-1;hit=true;nb=normalize(vec3(q.xy-c.xy,0.))*(k==0?1.:-1.);break;}}}
   }
   return hit;
 }
-vec3 shadeCart(vec3 p,vec3 n,int id,vec3 rd){
-  float rho=.045,spec=.004;vec3 col=vec3(1.);
-  if(id==3){rho=.05;spec=.03;}
+float n3(vec3 p){vec3 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);float o=i.z*17.13;
+  return mix(mix(mix(hash(i.xy+o),hash(i.xy+vec2(1,0)+o),f.x),mix(hash(i.xy+vec2(0,1)+o),hash(i.xy+vec2(1,1)+o),f.x),f.y),
+             mix(mix(hash(i.xy+o+17.13),hash(i.xy+vec2(1,0)+o+17.13),f.x),mix(hash(i.xy+vec2(0,1)+o+17.13),hash(i.xy+vec2(1,1)+o+17.13),f.x),f.y),f.z);}
+float dots(vec2 q,float r){return step(length(q),r);}
+vec3 shadeCart(vec3 p,vec3 n,int id,int bi,vec3 rd,float dist){
+  float rho=.045,spec=.004;vec3 col=vec3(1.),emit=vec3(0.),n0=n;
+  bool cab=id<=2;
+  float fine=clamp(1.-dist/6.,0.,1.);                       /* detail fades out with distance, as the eye resolves less */
+  if(cab){float g=n3(p*900.);rho*=1.+.35*(g-.5)*fine;
+    n=normalize(n+(vec3(n3(p*700.+3.1),n3(p*700.+7.7),n3(p*700.+11.3))-.5)*.35*fine*(1.-abs(n)));}
+  if(id==3||id==8){rho=.05;spec=.03;}
   else if(id==4){col=vec3(.95,.72,.05);rho=.6;}
-  else if(id==5){col=vec3(.6,.03,.03);rho=.3;}
-  else if(id==6){rho=.03;spec=.01;}
-  else if(id==7){float r=length(p.xy-vec2(WHX,WHY));rho=r<WHR*.55?.12:.03;spec=r<WHR*.55?.1:.01;}
-  if((id==1||id==2)&&n.z>.5){
+  else if(id==5){col=vec3(.6,.03,.03);rho=.3;spec=.05;}
+  else if(id==6){float a=atan(p.y-WHY,p.x-WHX)*11.459;rho=mix(.035,.018,step(.5,fract(a)));spec=.01;}
+  else if(id==7){float r=length(p.xy-vec2(WHX,WHY));rho=.03;spec=.01;
+    if(r<WHR*.62){rho=.06;spec=.1;}if(r<WHR*.16){rho=.4;spec=.4;}
+    for(int k=0;k<4;k++){float a=float(k)*1.5708;if(length(p.xy-vec2(WHX,WHY)-vec2(cos(a),sin(a))*WHR*.3)<.008){rho=.3;spec=.2;}}}
+  if(bi>=0&&id!=4){
+    /* rounded edges: within 8 mm of an edge the surface turns towards the next face and catches a highlight */
+    vec3 dl=p-CB0[bi],dh=CB1[bi]-p,e=min(dl,dh),m=vec3(1.)-abs(n0),bend=vec3(0.);const float RB=.008;
+    if(m.x>.5&&e.x<RB)bend.x=(dl.x<dh.x?-1.:1.)*(1.-e.x/RB);
+    if(m.y>.5&&e.y<RB)bend.y=(dl.y<dh.y?-1.:1.)*(1.-e.y/RB);
+    if(m.z>.5&&e.z<RB)bend.z=(dl.z<dh.z?-1.:1.)*(1.-e.z/RB);
+    if(dot(bend,bend)>0.){n=normalize(n+bend*1.3);spec=max(spec,.02);}
+    /* steel ball corners on every cabinet corner */
+    if(cab||id==0){vec3 ee=e+(1.-m)*9.;float c=step(ee.x,.045)+step(ee.y,.045)+step(ee.z,.045);
+      if(c>1.5){rho=.05;spec=.07;}}
+    /* recessed bar handles on the cabinet sides */
+    if(cab&&abs(n0.x)>.5){float yc=(CB0[bi].y+CB1[bi].y)*.5;vec2 q=vec2(p.z+.6,p.y-yc);
+      if(abs(q.x)<.1&&abs(q.y)<.05){rho=.02;spec=.03;if(abs(q.y)<.009&&abs(q.x)<.085){rho=.06;spec=.08;}}}
+  }
+  if(cab&&n0.z>.5){
     float cx=p.x<0.?-COLX:COLX;
     if(id==1){
-      float r=length(p.xy-vec2(cx,SUBY));
-      if(r<SUBR){rho=.02*(.6+.4*step(.4,fract(p.x*160.)*fract(p.y*160.)));spec=.01;}
-      if(abs(r-SUBR)<.008){rho=.08;spec=.08;}
-      if(p.y>PRT0&&p.y<PRT1&&abs(p.x-cx)<PRTW)rho=.004;
+      vec2 q=p.xy-vec2(cx,SUBY);float r=length(q);
+      if(r<SUBR){vec2 hp=fract(p.xy*230.)-.5;float hole=step(length(hp),.34)*fine;
+        float cone=.012*(.6+.4*r/SUBR);rho=mix(.025,cone,hole);spec=mix(.03,.005,hole);n=n0;}
+      if(r>SUBR&&r<SUBR+.012){rho=.06;spec=.08;n=n0;
+        for(int k=0;k<6;k++){float a=float(k)*1.0472+.3;if(length(q-vec2(cos(a),sin(a))*(SUBR+.006))<.0045){rho=.3;spec=.2;}}}
+      if(p.y>PRT0&&p.y<PRT1&&abs(p.x-cx)<PRTW){rho=.004;spec=0.;
+        float u=fract((p.x-cx)/.00625)-.5;emit=uSlotL*(exp(-u*u*40.)/.28*mix(1.,.6,1.-fine)+.04);}
     }else{
-      if(abs(p.x-cx)<HRW*.5&&abs(p.y-HRY)<HRH*.5)rho=.006+.01*max(abs(p.x-cx)/(HRW*.5),abs(p.y-HRY)/(HRH*.5));
-      float r=length(p.xy-vec2(cx,TWY));
-      if(r<TWR){rho=.02;if(r<TWR*.3){rho=.06;spec=.08;}}
-      if(abs(r-TWR)<.006){rho=.08;spec=.08;}
+      vec2 hq=vec2(p.x-cx,p.y-HRY);
+      if(abs(hq.x)<HRW*.5+.012&&abs(hq.y)<HRH*.5+.012){rho=.04;spec=.03;n=n0;
+        if(abs(hq.x)<HRW*.5&&abs(hq.y)<HRH*.5)rho=.004+.014*max(abs(hq.x)/(HRW*.5),abs(hq.y)/(HRH*.5));
+        for(int k=0;k<4;k++){vec2 c=vec2(k<2?-1.:1.,mod(float(k),2.)<.5?-1.:1.)*(vec2(HRW,HRH)*.5+.006);if(length(hq-c)<.0035){rho=.3;spec=.2;}}}
+      vec2 q=p.xy-vec2(cx,TWY);float r=length(q),t=r/TWR;
+      if(t<1.){n=n0;
+        if(t>.9){rho=.05;spec=.06;}else if(t>.78){rho=.02*(.7+.3*cos((t-.84)*52.));spec=.01;}
+        else if(t>.3){rho=.016*(.75+.35*t);spec=.004;}else{rho=.05;spec=.08;}
+        for(int k=0;k<8;k++){float a=float(k)*.7854+.39;if(length(q-vec2(cos(a),sin(a))*TWR*.95)<.0035){rho=.3;spec=.2;}}}
     }
   }
+  if(id==4&&abs(n0.x)>.5){
+    /* Dutch number plate: blue EU strip, then dark character blocks for WX-12-34 */
+    float u=(p.z-PLZ0)/(PLZ1-PLZ0),v=(p.y-PLY0)/(PLY1-PLY0);
+    if(u<.085){col=vec3(.02,.12,.6);rho=.5;}
+    else{float cu=(u-.1)/.9*8.,ci=floor(cu),fu=fract(cu);
+      bool dash=ci==2.||ci==5.;
+      if(!dash&&abs(fu-.5)<.33&&abs(v-.5)<.32)col=vec3(.02);
+      if(dash&&abs(fu-.5)<.25&&abs(v-.5)<.05)col=vec3(.02);}
+  }
   vec3 p0=p+n*2e-3;
-  return col*rho*irr(p0,n)/PI+spec*env(p0,reflect(rd,n));
+  return emit+col*rho*irr(p0,n)/PI+spec*env(p0,reflect(rd,n));
 }
 void main(){
   vec2 ndc=gl_FragCoord.xy/uRes*2.-1.;
@@ -1134,9 +1186,9 @@ void main(){
   vec3 t0=(bmin-e)*inv,t1=(bmax-e)*inv,tn=min(t0,t1),tf=max(t0,t1);
   float tN=max(max(tn.x,tn.y),tn.z),tF=min(min(tf.x,tf.y),tf.z);
   vec3 L;float veil=-1.;
-  float tc;vec3 nc;int cid;
-  bool hc=cartHit(e,d,tc,nc,cid),hp=tN<tF&&tN>0.;
-  if(hc&&(!hp||tc<tN))L=shadeCart(e+d*tc,nc,cid,dw);
+  float tc;vec3 nc;int cid,cbi;
+  bool hc=cartHit(e,d,tc,nc,cid,cbi),hp=tN<tF&&tN>0.;
+  if(hc&&(!hp||tc<tN))L=shadeCart(e+d*tc,nc,cid,cbi,dw,tc);
   else if(hp){
     vec3 h=e+d*tN,hW=uRotI*h;
     if(tN==tn.z){
@@ -1572,13 +1624,18 @@ function buildLUT(){
 }
 
 /* ---------- the light meter: every LED of every frame ---------- */
+const DB=new Float32Array(52);   /* dominant-colour bins: 12 hues + white, each r, g, b, weight */
 function meter(buf,n,out){
   const C=CFG,lut=LUT,lm=C.lm,Yc=C.Yc,Wc=C.Wc,eo=C.eo,eb=C.eb,ew=C.ew,M=C.M;
   let e=0,o=0,b=0,w=0,Y=0,Ymax=0,P=0,lit=0,sr=0,sg=0,sb=0;
+  if(out)DB.fill(0);
   for(let i=0;i<n;i++){const j=i*4,r=lut[buf[j]],g=lut[256+buf[j+1]],bl=lut[512+buf[j+2]];
     if(out){out[j]=r;out[j+1]=g;out[j+2]=bl;}
     if(r+g+bl===0)continue;
     lit++;
+    if(out){const mx=Math.max(r,g,bl),mn=Math.min(r,g,bl);let bin=12;
+      if(mx-mn>.15*mx){let h=mx===r?(g-bl)/(mx-mn):mx===g?2+(bl-r)/(mx-mn):4+(r-g)/(mx-mn);h=((h/6)%1+1)%1;bin=Math.floor(h*12)%12;}
+      const wv=.2126*r+.7152*g+.0722*bl,k=bin*4;DB[k]+=r*wv;DB[k+1]+=g*wv;DB[k+2]+=bl*wv;DB[k+3]+=wv;}
     const f=r*lm[0]+g*lm[1]+bl*lm[2],fo=eo[i];
     e+=f;o+=f*fo;b+=f*eb[i];w+=f*ew[i];
     const y=r*Yc[0]+g*Yc[1]+bl*Yc[2];Y+=y;if(y>Ymax)Ymax=y;
@@ -1779,7 +1836,7 @@ cv.addEventListener('dblclick',faceIt);
 cv.addEventListener('wheel',e=>{e.preventDefault();setCtl('dist',clampD(S.dist*Math.exp(e.deltaY*0.0012)));save();},{passive:false});
 
 /* ---------- live meter display ---------- */
-const mEls={};['mOut','mOutMax','mEmit','mLit','mL1','mLall','mLmax','mVeil','mCon','mLux','mLuxD','mW','mA','mEff','lOut','lFilm','lWall','lBoard','sOut','sFilm','sWall','sBoard','mIR'].forEach(k=>mEls[k]=$(k));
+const mEls={};['mOut','mOutMax','mEmit','mLit','mL1','mLall','mLmax','mVeil','mCon','mLux','mLuxD','mW','mA','mEff','lOut','lFilm','lWall','lBoard','sOut','sFilm','sWall','sBoard','mIR','mSlot'].forEach(k=>mEls[k]=$(k));
 function txt(k,v){const e=mEls[k];if(e.textContent!==v)e.textContent=v;}
 function fN(v){if(!isFinite(v))return '–';const a=Math.abs(v);return a===0?'0':a>=100?fmt(v,0):a>=10?fmt(v,1):a>=1?fmt(v,2):a>=0.001?fmt(v,3):v.toExponential(1);}
 let veilNow=NaN;
@@ -1791,6 +1848,7 @@ function updateMeter(m){
   const ep=eyePos(),a=C.win/2/Math.hypot(ep[0],ep[1],ep[2]),E=4*Lall*a/Math.sqrt(1+a*a)*Math.atan(a/Math.sqrt(1+a*a))*Math.max(0,viewCos());
   txt('mLux',fN(E));txt('mLuxD','at '+outs.dist.c.f(S.dist));
   txt('mIR',S.amb===2?'outdoors: no hall to bounce in':'bounced light in the hall '+fN(irLux)+' lux');
+  txt('mSlot','port LEDs '+fN(slotLm)+' lm · '+fN(slotW)+' W');
   txt('mW',fN(m.P));txt('mA',fN(m.P/5)+' A');txt('mEff',fN(m.P>0?m.o/m.P:0));
   const src=m.e>0?m:C.full,tot=src.e||1,fr=[src.o/tot,src.a/tot,src.w/tot,src.b/tot];
   ['sOut','sFilm','sWall','sBoard'].forEach((k,i)=>{mEls[k].style.width='calc('+(fr[i]*100).toFixed(2)+'% - 2px)';});
@@ -1819,7 +1877,7 @@ spark.addEventListener('pointermove',e=>{const r=spark.getBoundingClientRect(),i
 spark.addEventListener('pointerleave',()=>{sHover=-1;});
 
 /* ---------- render loop ---------- */
-let frameN=0,lastTs=0,fpsAvg=60,adapt=5,adaptT=5,irLux=0;
+let frameN=0,lastTs=0,fpsAvg=60,adapt=5,adaptT=5,irLux=0,SLOT=null,slotLm=0,slotW=0;const slotDuty=[0,0,0],slotRGB=[0,0,0];
 const hudTR=$('hudTR'),TANH=0.441,TLC=cctRGB(4000),ADAPT_FALLBACK=[1,40,3000,0.5];
 function uni(P,name,fn,...a){if(P.u[name]!=null)gl[fn](P.u[name],...a);}
 const adY=new Float32Array(AD*AD);
@@ -1885,10 +1943,20 @@ function frame(ts){
   uni(P2,'uSunDir','uniform3fv',sn?sn.dir:[0,1,0]);uni(P2,'uSunL','uniform3fv',sn?sn.sunL:z3);uni(P2,'uSunE','uniform3fv',sn?sn.sunE:z3);
   uni(P2,'uSkyL','uniform3fv',sn?sn.skyL:z3);uni(P2,'uGndE','uniform3fv',sn?sn.gndE:z3);uni(P2,'uGlowC','uniform3fv',sn?sn.glowC:z3);uni(P2,'uAur','uniform3fv',sn?sn.aur:z3);
   if(S.amb===3)djUpdate(t*S.speed);else djC.fill(0);
+  /* port LED strips in the subs: 2 × 73 WS2812B-2020 at 6.25 mm, driven with the panel's dominant colour (the heaviest hue bin) */
+  {let best=-1,bw=0;for(let i=0;i<13;i++)if(DB[i*4+3]>bw){bw=DB[i*4+3];best=i;}
+   const tgt=best<0?[0,0,0]:(()=>{const v=[DB[best*4],DB[best*4+1],DB[best*4+2]],mx=Math.max(...v);return v.map(x=>x/mx*S.bright);})();
+   const kk=1-Math.exp(-dts/0.15);for(let c=0;c<3;c++)slotDuty[c]+=(tgt[c]-slotDuty[c])*kk;
+   if(!SLOT){const L0=LEDS[0],pr=primaries(L0);SLOT={cols:pr.map(([x,y],c)=>{const I=L0.mcd[c]/1000,X=x/y*I,Z=(1-x-y)/y*I;return X2R.map(r=>r[0]*X+r[1]*I+r[2]*Z);}),Y:L0.mcd.map(v=>v/1000),mA:L0.mA};}
+   const I=[0,1,2].map(r=>73*(slotDuty[0]*SLOT.cols[0][r]+slotDuty[1]*SLOT.cols[1][r]+slotDuty[2]*SLOT.cols[2][r]));
+   uni(P2,'uSlotI','uniform3f',I[0],I[1],I[2]);uni(P2,'uSlotL','uniform3f',I[0]/(.46*.04),I[1]/(.46*.04),I[2]/(.46*.04));
+   slotLm=2*Math.PI*73*(slotDuty[0]*SLOT.Y[0]+slotDuty[1]*SLOT.Y[1]+slotDuty[2]*SLOT.Y[2]);
+   slotW=2*73*5*(slotDuty[0]*SLOT.mA[0]+slotDuty[1]*SLOT.mA[1]+slotDuty[2]*SLOT.mA[2])/1000+2*73*LEDS[0].idle*5/1000;
+   for(let c=0;c<3;c++)slotRGB[c]=2*Math.PI*I[c];}
   /* every further bounce in the hall at once: E = flux × mean reflectance / (area × (1 − mean reflectance)).
      Hall 24 × 18 × 5 m: floor 0.20, walls 0.50, ceiling 0.75 → mean 0.48 over 1284 m². Outdoors there is no hall to bounce in. */
   {const HALL_A=1284,HALL_RHO=(432*.2+420*.5+432*.75)/1284,k=S.amb===2?0:HALL_RHO/(HALL_A*(1-HALL_RHO)),cone=2*Math.PI*(1-Math.cos(7*D2R));
-   const fl=[0,1,2].map(c=>{let f=Math.PI*m.self[c];for(let i=0;i<6;i++)f+=djC[i*3+c]*cone;return f*k;});
+   const fl=[0,1,2].map(c=>{let f=Math.PI*m.self[c]+slotRGB[c];for(let i=0;i<6;i++)f+=djC[i*3+c]*cone;return f*k;});
    irLux=.2126*fl[0]+.7152*fl[1]+.0722*fl[2];uni(P2,'uIR','uniform3f',fl[0],fl[1],fl[2]);}
   uni(P2,'uDjP[0]','uniform3fv',djP);uni(P2,'uDjA[0]','uniform3fv',djA);uni(P2,'uDjC[0]','uniform3fv',djC);
   if(adFbo&&frameN%3===0){
