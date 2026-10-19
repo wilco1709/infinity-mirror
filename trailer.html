@@ -56,7 +56,7 @@ input[type=range]{width:100%;accent-color:var(--accent);min-height:28px}
   <aside class="rail">
     <header>
       <h1>Speaker Trailer</h1>
-      <p class="sub">The 185 cm sound trailer with the 600 mm infinity mirror right above the wheel case, and the open gap for the DJ. Same model as the Blender renders.</p>
+      <p class="sub">The sound trailer with the 600 mm infinity mirror right above the wheel case, the open gap for the DJ, the fog machine on the right and an optional 1 × 1 m LED screen. Same model as the Blender renders.</p>
     </header>
     <section aria-labelledby="h-light">
       <h2 id="h-light">Light</h2>
@@ -82,6 +82,14 @@ input[type=range]{width:100%;accent-color:var(--accent);min-height:28px}
       <input type="range" id="ringD" min="0" max="50" step="1" value="30" aria-label="Depth of the LED ring in the slot">
       <p class="note">A ring of WS2812B-2020 strip, 3 LEDs wide (3 × 179 per slot), lines the inside of each 46 × 10 cm slot like a bracelet turned inside out, LEDs facing the middle. The slot is raw birch plywood inside. It shows the panel's dominant colour: <span class="sw" id="domSw"></span><span id="domTxt"></span>. <span id="ringTxt"></span></p>
     </section>
+    <section aria-labelledby="h-scr">
+      <h2 id="h-scr">LED screen</h2>
+      <div class="chips" role="radiogroup" aria-label="LED screen">
+        <button type="button" data-scr="0" aria-pressed="true">Not fitted</button>
+        <button type="button" data-scr="1" aria-pressed="false">1 × 1 m P10 screen</button>
+      </div>
+      <p class="note">A Dahua PHGOA10-FC cabinet: 1000 × 1000 mm, 96 × 96 LEDs at 10.42 mm, 5,500 nits, 24 kg, on a road case for its power supplies at the number-plate end. The trailer gets 106 cm longer. The simulator also has the 960 mm P10-module and the self-built WS2812B versions.</p>
+    </section>
     <section aria-labelledby="h-view">
       <h2 id="h-view">View</h2>
       <div class="chips">
@@ -96,7 +104,7 @@ input[type=range]{width:100%;accent-color:var(--accent);min-height:28px}
     <section aria-labelledby="h-dim">
       <h2 id="h-dim">Measurements</h2>
       <dl>
-        <dt>Number plate to right sub</dt><dd>185 cm</dd><dt>Front to back</dt><dd>120 cm</dd><dt>Height to the top</dt><dd>158 cm</dd>
+        <dt>Number plate to right sub</dt><dd id="dLen">185 cm</dd><dt>Front to back</dt><dd>120 cm</dd><dt>Height to the top</dt><dd>158 cm</dd>
         <dt>Sub cabinet</dt><dd>58 × 67 cm</dd><dt>Top cabinet</dt><dd>58 × 58 cm</dd><dt>LED panel</dt><dd>60 × 60 cm</dd>
         <dt>Slot for the panel</dt><dd>61 × 61 cm</dd><dt>Open view to the DJ</dt><dd>65 × 55 cm</dd><dt>Floor height</dt><dd>33 cm</dd>
       </dl>
@@ -349,16 +357,23 @@ async function setEnv(name){
     const sh=new THREE.Mesh(new THREE.CircleGeometry(30,64),new THREE.ShadowMaterial({opacity:.5}));sh.rotation.x=-Math.PI/2;sh.position.y=.001;sh.receiveShadow=true;lights.add(sh);
     bloom.strength=.3;portMat.emissiveIntensity=8;tunnelMat.uniforms.uGain.value=9;LIGHT_SCALE=1e-4;
   }
+  SCR_GAIN={studio:5,night:2.6,sunset:8}[name];syncScreen();
   syncGlow();
 }
 
 /* ---------- load the model ---------- */
-let model=null;
-new GLTFLoader().load('trailer/speaker_trailer.glb',g=>{
+let model=null,SCR=false;const scrMats=[];
+function loadModel(withScreen){
+ SCR=withScreen;const ld=document.getElementById('loading')||Object.assign(document.createElement('div'),{id:'loading'});ld.textContent='Loading the trailer…';view.appendChild(ld);
+ new GLTFLoader().load(withScreen?'trailer/speaker_trailer_screen.glb':'trailer/speaker_trailer.glb',g=>{
+  if(model){scene.remove(model);mouthLights.forEach(l=>scene.remove(l));}
+  mouthLights.length=0;ringObjs.length=0;scrMats.length=0;
   model=g.scene;
   model.traverse(o=>{
     if(!o.isMesh)return;
     const n=o.material&&o.material.name||'';
+    if(o.name.startsWith('S_screen_leds')){const mp=o.material.emissiveMap;if(mp)mp.colorSpace=THREE.SRGBColorSpace;
+      o.material=new THREE.MeshStandardMaterial({color:0x010101,roughness:.95,envMapIntensity:.05,emissive:0xffffff,emissiveMap:mp,emissiveIntensity:1});   /* black louvred mask */scrMats.push(o.material);syncScreen();return;}
     if(/^panel_(front_film|back_film|front_glass|back_glass|led_grid|cavity_wall)/.test(o.name)){o.visible=false;return;}
     if(n.startsWith('port_ring')){o.material=portMat;o.userData.z0=o.position.z;ringObjs.push(o);return;}
     if(/^port_(birch|mdf|black)/.test(n)){o.material=glowMat;o.receiveShadow=true;
@@ -372,11 +387,15 @@ new GLTFLoader().load('trailer/speaker_trailer.glb',g=>{
       for(let i=0;i<p.count;i++){uv[i*2]=p.getX(i)*230;uv[i*2+1]=p.getY(i)*230;}o.geometry.setAttribute('uv',new THREE.BufferAttribute(uv,2));}
     o.castShadow=true;o.receiveShadow=true;
   });
-  scene.add(model);envStrength(ENVI);document.getElementById('loading').remove();
+  scene.add(model);envStrength(ENVI);const l0=document.getElementById('loading');if(l0)l0.remove();
   /* the two slot mouths: 46 x 10 cm, centred 7 cm above the bed (33 cm), in front of each sub */
   for(const x of [.29,1.52]){const l=new THREE.RectAreaLight(0xff8f33,1,2*PORT.W,PORT.H);l.position.set(x,.33+.02+PORT.H/2,.003);l.lookAt(x,.40,5);scene.add(l);mouthLights.push(l);}
   setRing(+document.getElementById('ringD').value);
-},undefined,e=>{document.getElementById('loading').textContent='Could not load the model: '+e.message;});
+  document.getElementById('dLen').textContent=withScreen?'291 cm':'185 cm';
+ },undefined,e=>{document.getElementById('loading').textContent='Could not load the model: '+e.message;});}
+/* the LED screen shows the Buddha picture; on this page it is scaled for the screen per light set-up, like the mirror */
+let SCR_GAIN=2.5;function syncScreen(){scrMats.forEach(m=>m.emissiveIntensity=SCR_GAIN);}
+loadModel(false);
 
 /* ---------- controls ---------- */
 const VIEWS={three:[[-2.2,1.75,4.4],[.92,.78,-.5]],front:[[.905,1.0,4.8],[.905,.82,-.6]],panel:[[.62,1.0,1.2],[.905,.7,0]],side:[[4.8,1.2,2.4],[1.1,.7,-.5]],back:[[2.8,1.8,-5.2],[.9,.8,-.6]]};
@@ -386,7 +405,7 @@ const bSpin=document.getElementById('bSpin');bSpin.addEventListener('click',()=>
 function radio(sel,attr,fn){const bs=[...document.querySelectorAll(sel)];bs.forEach(b=>b.addEventListener('click',()=>{bs.forEach(x=>x.setAttribute('aria-pressed',String(x===b)));fn(b.dataset[attr]);}));}
 {const rd=document.getElementById('ringD');let tm=0;
  rd.addEventListener('input',()=>{document.getElementById('ringDo').textContent=rd.value==='0'?'at the mouth':rd.value+' cm in';clearTimeout(tm);tm=setTimeout(()=>setRing(+rd.value),60);});}
-radio('[data-env]','env',setEnv);radio('[data-pat]','pat',p=>{PAT=p;});
+radio('[data-env]','env',setEnv);radio('[data-scr]','scr',v=>{if((v==='1')!==SCR)loadModel(v==='1');});radio('[data-pat]','pat',p=>{PAT=p;});
 setView('three');setEnv('studio');
 
 function resize(){const w=view.clientWidth,h=view.clientHeight;renderer.setSize(w,h,false);composer.setSize(w,h);camera.aspect=w/Math.max(1,h);camera.updateProjectionMatrix();}

@@ -195,6 +195,7 @@ ul.checks .wn{color:var(--accent);font-weight:600}
       <button type="button" role="tab" data-tabbtn="woofer">Woofer LEDs</button>
       <button type="button" role="tab" data-tabbtn="room">Room</button>
       <button type="button" role="tab" data-tabbtn="smoke">Smoke</button>
+      <button type="button" role="tab" data-tabbtn="screen">LED screen</button>
     </nav>
 
     <section aria-labelledby="h-pre" data-tab="mirror">
@@ -323,6 +324,25 @@ ul.checks .wn{color:var(--accent);font-weight:600}
       <p class="note" id="srcNote">Demo beat drives the audio visuals without a microphone. Pick Video sound to drive them from the video that is playing.</p>
     </section>
 
+    <section aria-labelledby="h-scr" data-tab="screen">
+      <h2 id="h-scr">LED screen, 1 × 1 m</h2>
+      <div class="seg" role="radiogroup" aria-label="LED screen fitted">
+        <button type="button" data-scr="0" role="radio">Not fitted</button>
+        <button type="button" data-scr="1" role="radio">On the trailer</button>
+      </div>
+      <p class="note">An extra column at the number-plate end: a 25 cm road case for the power supplies and receiving cards, and the screen on top in a steel frame, its top level with the speaker tops at 158 cm. The trailer gets 106 cm longer: 291 cm from number plate to right sub.</p>
+      <div class="glabel">Which screen</div>
+      <div class="chips" role="radiogroup" aria-label="Screen type" id="scrT"></div>
+      <p class="note" id="scrNote"></p>
+      <div class="seg" role="radiogroup" aria-label="Screen content">
+        <button type="button" data-scrc="0" role="radio">Same as the mirror</button>
+        <button type="button" data-scrc="1" role="radio">Black</button>
+      </div>
+      <div id="scrCtl" style="display:flex;flex-direction:column;gap:10px"></div>
+      <p class="note" id="scrLive" style="font-family:var(--mono)"></p>
+      <p class="note">LED screens are built for daylight. At night operators run them at 5 to 20 %, otherwise they outshine everything around them, the mirror included.</p>
+    </section>
+
     <section aria-labelledby="h-fog" data-tab="smoke">
       <h2 id="h-fog">Smoke machine</h2>
       <p class="note">A 1200 W fog machine (Antari Z-1200 class, 2.5 L tank) on a steel shelf against the right sub, nozzle towards the dancefloor.</p>
@@ -414,19 +434,29 @@ const BULBS=[{n:'25 W',lm:220,tau:.05},{n:'40 W',lm:415,tau:.07},{n:'60 W',lm:71
 /* linings for the inside of the sub ports: diffuse reflectance per channel (linear sRGB), and gloss (Schlick F0) */
 const WALLS=[{n:'Birch plywood, raw',rho:[.66,.46,.27],F0:0},{n:'MDF, raw',rho:[.38,.22,.12],F0:0},
              {n:'Black paint, matte',rho:[.04,.04,.04],F0:0},{n:'Black paint, gloss',rho:[.04,.04,.04],F0:.04}];
+/* LED screens of about 1 x 1 m at about 10 mm pitch that exist: size (mm, active area), pixels, white luminance (nits,
+   balanced), max and average power, weight. sig = LED package size as a fraction of the pitch, for the dot shape. */
+const SCREENS=[
+ {n:'P10 cabinet, 1 × 1 m',full:'Dahua PHGOA10-FC outdoor cabinet',size:1000,N:96,pitch:10.42,nits:5500,Pmax:750,Pavg:260,kg:24,d:9.8,sig:.09,
+  d2:'1000 × 1000 × 98 mm, 96 × 96 SMD2727 at 10.42 mm, 5,500 nits calibrated white (6,000 max), 260 W average and 750 W max, 24 kg, IP65 front and back, 3,840 Hz refresh. LEDSOLUTION sells the same format (S1000-P10.41, 6,000 nits, 23 kg).'},
+ {n:'P10 modules, 960 cabinet',full:'18 standard P10 modules 320 × 160 mm in a 960 × 960 mm cabinet',size:960,N:96,pitch:10,nits:4000,Pmax:540,Pavg:185,kg:30,d:13,sig:.12,
+  d2:'The common way to build a P10 wall: 3 × 6 modules of 320 × 160 mm (32 × 16 SMD3535 each) in a 960 × 960 × 130 mm cabinet, 96 × 96 pixels. Brightness differs per supplier, 3,600 to 5,600 nits; 4,000 is taken here. Max about 586 W/m², 28 to 32 kg.'},
+ {n:'Self-built, 36 WS2812B 16 × 16',full:'36 flexible WS2812B 16 × 16 matrices (160 × 160 mm, 10 mm pitch) on a backing plate',size:960,N:96,pitch:10,nits:17500,Pmax:2210,Pavg:0,kg:12,d:4,sig:.17,
+  d2:'6 × 6 flexible 16 × 16 matrices of WS2812B-5050 at exactly 10 mm, 96 × 96 = 9,216 LEDs on a 960 × 960 mm aluminium composite plate. Worked out from the WS2812B data sheet (550–700 / 1100–1400 / 200–400 mcd at 16 mA): about 17,500 nits white-balanced, brighter than the cabinets, but up to about 2.2 kW at full white (440 A at 5 V: feed power into every matrix). Not weatherproof. With one data line a frame takes 0.28 s; split it over 12 outputs for about 40 fps. Weight is an estimate.'}];
 const BULB_PROGS=['Full on','On the sound','Chase','Bounce','Random','Breathe','Manual'];
 const FACES=['north','north-east','east','south-east','south','south-west','west','north-west'];
 
 /* ---------- state ---------- */
 const DEF={pat:31,pal:0,solid:0,speed:1,gain:1.4,trail:0,soft:0,ovl:0,ovlC:0,frW:2,frIn:0,frMode:1,frRate:2,fit:0,vContrast:1.15,vSat:1.1,vGamma:1,loop:'all',
   led:0,bal:0,bright:1,cgam:2.2,front:1,back:4,gap:9,dist:2,yaw:0,pitch:0,eyeH:1.65,amb:0,clock:21.5,face:6,prtM:0,prtB:1,prtS:0.6,prtF:0.12,prtD:30,prtW:0,
-  tab:'view',look:0,fogM:0,fogOut:.7,fogLen:3,fogInt:30,fogAch:2,blbW:2,blbP:0,blbM:1,blbS:1,blbSens:0.6,blbF:0.08,blbC:[255,230,200,170,140,110,80,60,40,20]};
+  tab:'view',look:0,scr:0,scrT:0,scrB:.25,scrC:0,fogM:0,fogOut:.7,fogLen:3,fogInt:30,fogAch:2,blbW:2,blbP:0,blbM:1,blbS:1,blbSens:0.6,blbF:0.08,blbC:[255,230,200,170,140,110,80,60,40,20]};
 const S=Object.assign({},DEF);
 const KEY='infinity-grid-v12';
 try{const j=JSON.parse(localStorage.getItem(KEY)||'null');if(j&&typeof j==='object'){for(const k in DEF)if(k in j&&typeof j[k]===typeof DEF[k])S[k]=j[k];}}catch(e){}
 {const LIM={led:LEDS.length-1,front:FILMS.length-1,back:FILMS.length-1,gap:GAPS.length-1,amb:AMBS.length-1,face:FACES.length-1};
  for(const k in LIM)S[k]=Math.max(0,Math.min(LIM[k],Math.round(S[k])||0));
  if(!Array.isArray(S.blbC)||S.blbC.length!==10)S.blbC=DEF.blbC.slice();S.blbC=S.blbC.map(v=>Math.max(0,Math.min(255,Math.round(+v)||0)));
+ S.scrT=Math.max(0,Math.min(2,Math.round(S.scrT)||0));S.scr=S.scr?1:0;
  S.blbW=Math.max(0,Math.min(3,Math.round(S.blbW)||0));S.prtW=Math.max(0,Math.min(3,Math.round(S.prtW)||0));S.blbP=Math.max(0,Math.min(6,Math.round(S.blbP)||0));}
 let saveT=0;function save(){clearTimeout(saveT);saveT=setTimeout(()=>{try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}},250)}
 
@@ -640,7 +670,19 @@ function syncTab(){tabBtns.forEach(b=>b.setAttribute('aria-selected',String(b.da
   document.querySelectorAll('#rail [data-tab]').forEach(s=>s.hidden=s.dataset.tab!==S.tab);}
 tabBtns.forEach(b=>b.addEventListener('click',()=>{S.tab=b.dataset.tabbtn;save();syncTab();const rl=document.getElementById('rail');rl.scrollTop=0;
   if(getComputedStyle(rl).overflowY==='visible'){const tb=rl.querySelector('nav.tabs'),want=tb.offsetTop+rl.getBoundingClientRect().top+scrollY-parseFloat(getComputedStyle(tb).top);if(scrollY>want)scrollTo(0,want);}}));
-if(!['view','av','vis','mirror','woofer','room','smoke'].includes(S.tab))S.tab='view';
+if(!['view','av','vis','mirror','woofer','room','smoke','screen'].includes(S.tab))S.tab='view';
+/* LED screen controls */
+buildCtl('scrCtl',[{k:'scrB',l:'Screen brightness',min:.01,max:1,step:.01,f:v=>Math.round(v*100)+' %'}]);
+{const box=document.getElementById('scrT');SCREENS.forEach((s,i)=>{const b=document.createElement('button');b.type='button';b.setAttribute('role','radio');b.textContent=s.n;b.dataset.i=i;
+  b.addEventListener('click',()=>{S.scrT=i;save();syncScr();if(S.scr)rebuildCart();});box.appendChild(b);});}
+function syncScr(){document.querySelectorAll('[data-scr]').forEach(b=>b.setAttribute('aria-checked',String(+b.dataset.scr===S.scr)));
+  document.querySelectorAll('[data-scrc]').forEach(b=>b.setAttribute('aria-checked',String(+b.dataset.scrc===S.scrC)));
+  document.querySelectorAll('#scrT button').forEach(b=>b.setAttribute('aria-checked',String(+b.dataset.i===S.scrT)));
+  const s=SCREENS[S.scrT];document.getElementById('scrNote').innerHTML='<b>'+s.full+'.</b> '+s.d2;
+  if(!S.scr)document.getElementById('scrLive').textContent='';}
+document.querySelectorAll('[data-scr]').forEach(b=>b.addEventListener('click',()=>{const v=+b.dataset.scr;if(v===S.scr)return;S.scr=v;save();syncScr();rebuildCart();}));
+document.querySelectorAll('[data-scrc]').forEach(b=>b.addEventListener('click',()=>{S.scrC=+b.dataset.scrc;save();syncScr();}));
+syncScr();
 /* smoke machine controls */
 buildCtl('fogCtl',[{k:'fogOut',l:'Output',min:.1,max:1,step:.01,f:v=>Math.round(v*100)+' % · '+(v*100).toFixed(0)+' ml/min of fluid'},
   {k:'fogLen',l:'Burst length',min:.5,max:15,step:.5,f:v=>v+' s'},
@@ -1145,13 +1187,17 @@ function portMC(D0,wi){
   Object.assign(PORT,{D0,wall:wi,T,Mt,escC:e,backC:bk,absC:a,omSum,TI,esc:Y(e),back:Y(bk),abs:Y(a)});}
 portMC(S.prtD/100,S.prtW);
 function cartGLSL(){
-  const C=CART,L=(x,y,z)=>[(x-C.px)/100,(y-C.py)/100,(z-60)/100];
+  const C=CART,L=(x,y,z)=>[(x-C.px)/100,(y-C.py)/100,(z-60)/100],SCR=SCREENS[S.scrT],SH=S.scr?106:0;
+  const sa=SCR.size/10,sx0=-54-sa/2,sy0=C.bed+75-sa/2;   /* active area, centred in the 100 x 100 cm opening */
   const B=[ /* x0,y0,z0, x1,y1,z1, id: 0 cabinet, 1 sub, 2 top, 3 steel, 4 number plate, 5 rear light */
     [0,C.bed,-60,58,C.subTop,60,1],[0,C.subTop,-60,58,C.top,60,2],[123,C.bed,-60,181,C.subTop,60,1],[123,C.subTop,-60,181,C.top,60,2],
     [58,C.bed,-60,123,C.slotBot,60,0],[58,C.slotBot,-60,60,C.slotTop,60,0],[121,C.slotBot,-60,123,C.slotTop,60,0],
     [58,C.slotTop,-60,123,C.slotTop+2,60,0],[60,C.slotBot,-60,121,C.slotTop,48,0],
-    [-3,C.bed-C.chT,-56,183,C.bed,56,3],[181,29,-3,238,33,3,3],[236,30,-5,244,36,5,3],[222,6,-1.5,225,31,1.5,3],[218,0,-2,229,12,2,3],
-    [-4.6,17,-26,-4,28,26,4],[-5,23,-56,-4,28.2,-38,5],[-5,23,38,-4,28.2,56,5],
+    [-3-SH,C.bed-C.chT,-56,183,C.bed,56,3],[181,29,-3,238,33,3,3],[236,30,-5,244,36,5,3],[222,6,-1.5,225,31,1.5,3],[218,0,-2,229,12,2,3],
+    [-4.6-SH,17,-26,-4-SH,28,26,4],[-5-SH,23,-56,-4-SH,28.2,-38,5],[-5-SH,23,38,-4-SH,28.2,56,5],
+    /* LED screen column at the number-plate end: road case for power supplies and receiving cards, steel frame, the screen */
+    ...(SH?[[-105,C.bed,-60,-3,C.bed+25,60,0],[-105,C.bed+25,44,-104,C.bed+127,60,3],[-4,C.bed+25,44,-3,C.bed+127,60,3],
+            [-105,C.bed+125,44,-3,C.bed+127,60,3],[-104,C.bed+25,60-SCR.d,-4,C.bed+125,60,10]]:[]),
     /* fog machine on a steel shelf against the outer side of the right sub, nozzle towards the dancefloor */
     [181,33,14,208,35,60,3],[182,35,15,207,55,59,9],[190.5,42,59,198.5,48,61.5,3]];
   const v=a=>'vec3('+a.map(n=>n.toFixed(4)).join(',')+')';
@@ -1167,6 +1213,8 @@ function cartGLSL(){
     +',HRY='+((top-40*s-C.py)/100).toFixed(4)+',HRW='+(95*s/100).toFixed(4)+',HRH='+(41*s/100).toFixed(4)
     +',TWY='+((top-115*s-C.py)/100).toFixed(4)+',TWR='+(50*s*.92/100).toFixed(4)
     +',FOGX='+((194.5-C.px)/100).toFixed(4)+',FOGY='+((45-C.py)/100).toFixed(4)
+    +',SCX0='+((sx0-C.px)/100).toFixed(4)+',SCY0='+((sy0-C.py)/100).toFixed(4)+',SCA='+(sa/100).toFixed(4)+',SCN='+SCR.N.toFixed(1)+',SCSIG='+SCR.sig.toFixed(3)
+    +',SCON='+(SH?'1.':'0.')
     +',HALLW='+(HALL.W/2).toFixed(4)+',HALLH='+HALL.H.toFixed(4)+',BULBY='+(HALL.H-.12+C.floor).toFixed(4)
     +',PLZ0='+((-26-60)/100).toFixed(4)+',PLZ1='+((26-60)/100).toFixed(4)+',PLY0='+((17-C.py)/100).toFixed(4)+',PLY1='+((28-C.py)/100).toFixed(4)+';';
 }
@@ -1192,6 +1240,8 @@ uniform vec4 uPuffB[4];  // fog: peak extinction of each puff (1/m), four per ve
 uniform int uNPuff;
 uniform float uFogBg;    // fog: haze spread evenly through the hall (extinction, 1/m)
 uniform vec3 uFogLed;    // fog machine status light
+uniform vec3 uScrK;      // LED screen: luminance per channel for a pattern value of 1, divided by the panel's own LED duty for 1
+uniform vec3 uScrI;      // LED screen: its whole face as a Lambertian source, intensity straight ahead (cd)
 //CARTDATA
 uniform vec3 uLay,uIdx,uSelf,uSunDir,uSunL,uSunE,uSkyL,uGndE,uGlowC,uAur,uTL;
 uniform int uMode,uAmb;
@@ -1207,6 +1257,11 @@ vec3 selfLight(vec3 p,vec3 n,float rho){
   float r2=max(dot(p,p),.04);vec3 vd=p*inversesqrt(r2);
   return rho/PI*uSelf*max(dot(uRotI[2],vd),0.)*max(dot(n,-vd),0.)/r2;
 }
+/* light from the LED screen onto a surface: its face as four Lambertian quarters, facing out of the trailer front */
+vec3 scrLight(vec3 p,vec3 n){if(SCON<.5)return vec3(0.);float E=0.;
+  for(int s=0;s<4;s++){vec3 v=p-vec3(SCX0+SCA*(s%2==0?.25:.75),SCY0+SCA*(s<2?.25:.75),0.);float r2=max(dot(v,v),.02);vec3 vd=v*inversesqrt(r2);
+    E+=max(vd.z,0.)*max(dot(n,-vd),0.)/r2;}
+  return uScrI*(.25*E);}
 /* light leaving a port mouth in direction d, per sr, per unit flux of the ring (from the photon tracer) */
 vec3 portTex(vec2 b){return texture(uPort,clamp(b,vec2(.5),vec2(23.5))/vec2(56.,25.)).rgb;}
 vec3 portT(vec3 d){vec2 a=vec2(atan(d.x,d.z),atan(d.y,d.z))/(PI*.5),u=sign(a)*sqrt(abs(a));
@@ -1272,7 +1327,7 @@ vec3 envRoom(vec3 ro,vec3 rd){
   if(t==tf.y){n=vec3(0.,-sign(r.y),0.);face=r.y<0.?0:1;rho=r.y<0.?.2:.75;}
   else if(t==tf.x){n=vec3(-sign(r.x),0.,0.);face=2;rho=.5;}
   else{n=vec3(0.,0.,-sign(r.z));face=2;rho=.5;}
-  vec3 L=selfLight(p,n,rho)+(uIR+slotLight(p,n))*(rho/PI);
+  vec3 L=selfLight(p,n,rho)+(uIR+slotLight(p,n)+scrLight(p,n))*(rho/PI);
   if(uAmb==0)L+=vec3(.004);
   else if(uAmb==1){
     L+=uTL*(face==0?32.:face==1?22.:40.);
@@ -1284,7 +1339,7 @@ vec3 envRoom(vec3 ro,vec3 rd){
 vec3 envSky(vec3 ro,vec3 rd){
   vec3 hor=uSkyL*.33+uGlowC*.6;
   if(rd.y<-1e-4){float t=(uFloor-ro.y)/rd.y;vec3 p=ro+rd*t;
-    vec3 L=(uGndE+slotLight(p,vec3(0.,1.,0.)))*(.12/PI)+selfLight(p,vec3(0.,1.,0.),.12);
+    vec3 L=(uGndE+slotLight(p,vec3(0.,1.,0.))+scrLight(p,vec3(0.,1.,0.)))*(.12/PI)+selfLight(p,vec3(0.,1.,0.),.12);
     return mix(L,hor,1.-exp(-t/900.));}
   float g=max(rd.y,0.);
   vec3 L=uSkyL*((1.+2.*g)/3.)+vec3(.003);
@@ -1299,7 +1354,7 @@ vec3 env(vec3 ro,vec3 rd){return uAmb==2?envSky(ro,rd):envRoom(ro,rd);}
 /* illuminance (lux) on a surface at p facing n, for matte objects: diffuse luminance = reflectance x E / pi */
 vec3 irr(vec3 p,vec3 n){
   float r2=max(dot(p,p),.04);vec3 vd=p*inversesqrt(r2);
-  vec3 E=uSelf*(max(dot(uRotI[2],vd),0.)*max(dot(n,-vd),0.)/r2)+(uAmb==2?vec3(0.):uIR)+slotLight(p,n);
+  vec3 E=uSelf*(max(dot(uRotI[2],vd),0.)*max(dot(n,-vd),0.)/r2)+(uAmb==2?vec3(0.):uIR)+slotLight(p,n)+scrLight(p,n);
   if(uAmb==0)E+=vec3(.004*PI);
   else if(uAmb==1)E+=uTL*(400.*max(n.y,0.)+180.*(1.-abs(n.y))+90.*max(-n.y,0.));
   else if(uAmb==2){vec3 dir=uSunE*max(uSunDir.y,0.);E+=uSunE*max(dot(n,uSunDir),0.)+(uGndE-dir)*(.5+.5*n.y)+uGndE*.12*(.5-.5*n.y);}
@@ -1393,6 +1448,12 @@ vec3 shadeCart(vec3 p,vec3 n,int id,int bi,vec3 rd,float dist){
   else if(id==9){rho=.03;spec=.05;   /* fog machine: black powder-coated steel, vent slots on the sides, a small status light */
     if(abs(n0.x)>.5&&fract((p.z+.6)*40.)<.45&&abs(p.y-FOGY)<.06)rho=.006;
     if(n0.z>.5&&length(p.xy-vec2(FOGX+.09,FOGY+.07))<.004)emit=uFogLed;}
+  else if(id==10){rho=.025;spec=.02;   /* LED screen: black louvred mask, one RGB LED per pixel showing what the panel shows */
+    vec2 uv=(p.xy-vec2(SCX0,SCY0))/SCA;
+    if(n0.z>.5&&uv.x>0.&&uv.y>0.&&uv.x<1.&&uv.y<1.){vec2 c=uv*SCN,ic=floor(c),q=c-ic-.5;
+      vec3 du=max(texelFetch(uDuty,ivec2((ic+.5)/SCN*uN),0).rgb,0.);
+      float sg=SCSIG*.5,dotv=exp(-dot(q,q)/(2.*sg*sg))/(2.*PI*sg*sg);
+      emit=du*uScrK*mix(1.,dotv,fine);}}
   else if(id==4){col=vec3(.95,.72,.05);rho=.6;}
   else if(id==5){col=vec3(.6,.03,.03);rho=.3;spec=.05;}
   else if(id==6){float a=atan(p.y-WHY,p.x-WHX)*11.459;rho=mix(.035,.018,step(.5,fract(a)));spec=.01;}
@@ -1461,6 +1522,8 @@ vec3 fogSrc(vec3 p,vec3 rd){vec3 S=uIR/PI;   /* hall bounce: from all directions
   {float r2=max(dot(p,p),.04);vec3 vd=p*inversesqrt(r2);S+=uSelf*(max(dot(uRotI[2],vd),0.)/r2*hgP(dot(vd,-rd)));}
   for(int s=0;s<4;s++){vec3 v=p-vec3((s<2?-COLX:COLX)+(s%2==0?-.5:.5)*PRTW,PRT0+PRTH*.5,0.);float r2=max(dot(v,v),.01);vec3 vd=v*inversesqrt(r2);
     if(vd.z>0.)S+=uSlotPhi*(.5*portT1(vd))*(hgP(dot(vd,-rd))/r2);}
+  if(SCON>.5)for(int s=0;s<4;s++){vec3 v=p-vec3(SCX0+SCA*(s%2==0?.25:.75),SCY0+SCA*(s<2?.25:.75),0.);float r2=max(dot(v,v),.02);vec3 vd=v*inversesqrt(r2);
+    if(vd.z>0.)S+=uScrI*(.25*vd.z*hgP(dot(vd,-rd))/r2);}
   if(uAmb==1)S+=uTL*35.;
   else if(uAmb==2)S+=uSunE*hgP(dot(uSunDir,rd))+uSkyL*.6;
   else if(uAmb==3){for(int i=0;i<6;i++){float r2;vec3 wd;float c=djCone(i,p,r2,wd);S+=uDjC[i]*(c/r2*hgP(dot(wd,-rd)));}}
@@ -1514,7 +1577,7 @@ void main(){
   vec3 c=pow(m,vec3(1./2.2));
   c+=(hash(gl_FragCoord.xy)-.5)/255.;
   o=vec4(c,1.);
-}`.replace('//CARTDATA',cartGLSL());
+}`;
 
 function compile(type,src){const s=gl.createShader(type);gl.shaderSource(s,src);gl.compileShader(s);
   if(!gl.getShaderParameter(s,gl.COMPILE_STATUS)){console.error(gl.getShaderInfoLog(s));}return s;}
@@ -1522,7 +1585,9 @@ function program(fs){const p=gl.createProgram();gl.attachShader(p,compile(gl.VER
   if(!gl.getProgramParameter(p,gl.LINK_STATUS))console.error(gl.getProgramInfoLog(p));
   const u={};const n=gl.getProgramParameter(p,gl.ACTIVE_UNIFORMS);
   for(let i=0;i<n;i++){const nm=gl.getActiveUniform(p,i).name;u[nm]=gl.getUniformLocation(p,nm);}return{p,u};}
-const P1=program(FS1),P2=program(FS2);
+const P1=program(FS1);let P2=program(FS2.replace('//CARTDATA',cartGLSL()));
+/* the trailer geometry is baked into the shader: rebuild it when the screen is fitted or changed */
+function rebuildCart(){const old=P2;P2=program(FS2.replace('//CARTDATA',cartGLSL()));gl.deleteProgram(old.p);}
 const vao=gl.createVertexArray();gl.bindVertexArray(vao);
 
 /* textures */
@@ -1938,11 +2003,12 @@ function buildLUT(){
 const DB=new Float32Array(52);   /* dominant-colour bins: 12 hues + white, each r, g, b, weight */
 function meter(buf,n,out){
   const C=CFG,lut=LUT,lm=C.lm,Yc=C.Yc,Wc=C.Wc,eo=C.eo,eb=C.eb,ew=C.ew,M=C.M;
-  let e=0,o=0,b=0,w=0,Y=0,Ymax=0,P=0,lit=0,sr=0,sg=0,sb=0;
+  let e=0,o=0,b=0,w=0,Y=0,Ymax=0,P=0,lit=0,sr=0,sg=0,sb=0,dr=0,dg=0,db=0;
   if(out)DB.fill(0);
   for(let i=0;i<n;i++){const j=i*4,r=lut[buf[j]],g=lut[256+buf[j+1]],bl=lut[512+buf[j+2]];
     if(out){out[j]=r;out[j+1]=g;out[j+2]=bl;}
     if(r+g+bl===0)continue;
+    dr+=r;dg+=g;db+=bl;
     lit++;
     if(out){const mx=Math.max(r,g,bl),mn=Math.min(r,g,bl);let bin=12;
       if(mx-mn>.15*mx){let h=mx===r?(g-bl)/(mx-mn):mx===g?2+(bl-r)/(mx-mn):4+(r-g)/(mx-mn);h=((h/6)%1+1)%1;bin=Math.floor(h*12)%12;}
@@ -1953,7 +2019,7 @@ function meter(buf,n,out){
     sr+=fo*(M[0]*r+M[3]*g+M[6]*bl);sg+=fo*(M[1]*r+M[4]*g+M[7]*bl);sb+=fo*(M[2]*r+M[5]*g+M[8]*bl);
     P+=r*Wc[0]+g*Wc[1]+bl*Wc[2];}
   P+=n*C.idleW;
-  return{e,o,b,w,a:Math.max(0,e-o-b-w),Yavg:Y/n,Ymax,P,lit:lit/n,self:[sr*C.cell,sg*C.cell,sb*C.cell]};
+  return{e,o,b,w,a:Math.max(0,e-o-b-w),Yavg:Y/n,Ymax,P,lit:lit/n,self:[sr*C.cell,sg*C.cell,sb*C.cell],duty:[dr/n,dg/n,db/n]};
 }
 function full255(){const n=CFG.N*CFG.N*4;if(!F255||F255.length!==n)F255=new Uint8Array(n).fill(255);return F255;}
 
@@ -2217,7 +2283,7 @@ spark.addEventListener('pointerleave',()=>{sHover=-1;});
 
 /* ---------- render loop ---------- */
 let frameN=0,lastTs=0,fpsAvg=60,adapt=5,adaptT=5,irLux=0,SLOT=null,slotLm=0,slotOut=0,slotW=0,prtG=1,blbFlux=0;const blbV=new Float32Array(10),blbDmx=new Uint8Array(10),blbHist=[],blbU=new Float32Array(30);
-let fogHold=false;const FOG={puffs:[],bg:0,heat:1,ready:true,phase:0,clear:0,spawn:0,beatCD:0,burst:0,fluid:0};
+let fogHold=false,scrRGB=[0,0,0],scrW=0,scrLm=0;const FOG={puffs:[],bg:0,heat:1,ready:true,phase:0,clear:0,spawn:0,beatCD:0,burst:0,fluid:0};
 const fogP=new Float32Array(64),fogB=new Float32Array(16);const slotDuty=[0,0,0],slotRGB=[0,0,0];
 const hudTR=$('hudTR'),TANH=0.441,TLC=cctRGB(4000),ADAPT_FALLBACK=[1,40,3000,0.5,20];
 function uni(P,name,fn,...a){if(P.u[name]!=null)gl[fn](P.u[name],...a);}
@@ -2277,6 +2343,14 @@ function frame(ts){
   uni(P2,'uTrans','uniform1f',C.Tf*C.Tb);uni(P2,'uQ','uniform1f',C.q);uni(P2,'uRo','uniform1f',C.Ff.Ro);
   uni(P2,'uGlare','uniform1f',0.03);uni(P2,'uRoomZ','uniform1f',S.dist+5);uni(P2,'uAmb','uniform1i',S.amb);uni(P2,'uHaze','uniform1f',0.012);
   uni(P2,'uSelf','uniform3f',m.self[0],m.self[1],m.self[2]);
+  /* LED screen: the same picture as the panel, at its own (calibrated) white luminance and brightness setting */
+  {const SC=SCREENS[S.scrT],on=S.scr&&S.scrC===0,Lw=on?SC.nits*S.scrB:0,A=(SC.size/1000)**2;
+   const full=[0,1,2].map(c=>LUT[c*256+255]),rat=[0,1,2].map(c=>full[c]>0?m.duty[c]/full[c]:0);
+   const K=full.map(f=>f>0?Lw/f:0),I=rat.map(r=>r*Lw*A);
+   uni(P2,'uScrK','uniform3f',K[0],K[1],K[2]);uni(P2,'uScrI','uniform3f',I[0],I[1],I[2]);scrRGB=I;
+   const Yf=.2126*rat[0]+.7152*rat[1]+.0722*rat[2];
+   scrW=!S.scr?0:S.scrT===2?9216*5*(.016*S.scrB*(rat[0]*.6+rat[1]+rat[2]*.42)*(S.scrC===0?1:0)+.0006):30*A+(SC.Pmax-30*A)*Yf*S.scrB*(S.scrC===0?1:0);
+   scrLm=Math.PI*(.2126*I[0]+.7152*I[1]+.0722*I[2]);}
   uni(P2,'uTL','uniform3f',TLC[0],TLC[1],TLC[2]);
   {const il=S.amb===1?TLC:S.amb===2?cctRGB(5500):S.amb===4?cctRGB(2700):[1,1,1],k=S.amb===2?0.6:0.8;
    const wb=il.map(v=>1+(1/Math.max(v,0.05)-1)*k),Y=.2126*wb[0]+.7152*wb[1]+.0722*wb[2];uni(P2,'uWB','uniform3f',wb[0]/Y,wb[1]/Y,wb[2]/Y);}
@@ -2348,12 +2422,13 @@ function frame(ts){
    fogP.fill(0);fogB.fill(0);F.puffs.forEach((p,i)=>{fogP.set([p.x,p.y,p.z,p.s],i*4);fogB[i]=KEXT*p.m/(Math.pow(2*Math.PI,1.5)*p.s*p.s*p.s);});
    uni(P2,'uPuff[0]','uniform4fv',fogP);uni(P2,'uPuffB[0]','uniform4fv',fogB);uni(P2,'uNPuff','uniform1i',F.puffs.length);uni(P2,'uFogBg','uniform1f',bgB);
    uni(P2,'uFogLed','uniform3f',...(F.ready?(firing?[0,60,0]:[0,25,0]):[60,8,0]));
+   if(frameN%10===0&&S.scr)$('scrLive').textContent='screen '+fN(scrLm)+' lm · '+fN(scrW)+' W · '+fN(SCREENS[S.scrT].nits*S.scrB)+' nits for white';
    if(frameN%10===0)$('fogLive').textContent=(firing?'fogging':F.ready?'ready':'heating up')+' · heater '+Math.round(F.heat*100)+' % · haze: '+(bgB>1e-4?'visibility '+fN(3.9/bgB)+' m':'clear air')+' · fluid used '+fN(F.fluid)+' ml of 2500';}
   /* every further bounce in the hall at once: E = flux × mean reflectance / (area × (1 − mean reflectance)).
      Hall 10 × 18 m, ceiling 3 m above the trailer: floor 0.20, walls 0.50, ceiling 0.75. Outdoors there is no hall to bounce in. */
   {const k=S.amb===2?0:HALL.rho/(HALL.A*(1-HALL.rho)),cone=2*Math.PI*(1-Math.cos(7*D2R));
    const fl=[0,1,2].map(c=>{let f=Math.PI*m.self[c]+slotRGB[c];for(let i=0;i<6;i++)f+=djC[i*3+c]*cone;
-     if(S.amb===4)for(let j=0;j<10;j++)f+=10*4*Math.PI*blbU[j*3+c];return f*k;});
+     if(S.amb===4)for(let j=0;j<10;j++)f+=10*4*Math.PI*blbU[j*3+c];f+=Math.PI*scrRGB[c];return f*k;});
    irLux=.2126*fl[0]+.7152*fl[1]+.0722*fl[2];uni(P2,'uIR','uniform3f',fl[0],fl[1],fl[2]);}
   uni(P2,'uDjP[0]','uniform3fv',djP);uni(P2,'uDjA[0]','uniform3fv',djA);uni(P2,'uDjC[0]','uniform3fv',djC);
   if(adFbo&&frameN%3===0){
