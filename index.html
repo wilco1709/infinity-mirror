@@ -36,11 +36,11 @@ canvas{display:block;width:100%;height:100%;image-rendering:auto}
 .fsbtn{position:absolute;left:10px;top:8px}
 .rail{background:var(--panel);border-left:1px solid var(--line);overflow-y:auto;min-height:0;min-width:0;padding:16px 18px 28px;display:flex;flex-direction:column;gap:18px}
 .rail section{gap:10px}
-.tabs{position:sticky;top:-16px;z-index:3;display:grid;grid-template-columns:repeat(3,1fr);gap:4px;margin:0 -18px;padding:10px 18px;background:var(--panel);border-bottom:1px solid var(--line)}
+.tabs{position:sticky;top:-16px;z-index:3;display:grid;grid-template-columns:repeat(4,1fr);gap:4px;margin:0 -18px;padding:10px 18px;background:var(--panel);border-bottom:1px solid var(--line)}
 .tabs button{font:500 12.5px/1.15 var(--ui);color:var(--mute);background:transparent;border:1px solid var(--line);border-radius:6px;padding:8px 4px;min-height:40px;cursor:pointer}
 .tabs button[aria-selected=true]{color:var(--accent-ink,#111);background:var(--accent);border-color:var(--accent)}
 .tabs button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
-.rail section[aria-labelledby=h-pat]{order:1}.rail section[aria-labelledby=h-led]{order:2}.rail section[aria-labelledby=h-mir]{order:3}.rail section[aria-labelledby=h-pre]{order:4}
+.rail section[aria-labelledby=h-pat]{order:1}.rail section[aria-labelledby=h-pre]{order:1}.rail section[aria-labelledby=h-led]{order:2}.rail section[aria-labelledby=h-mir]{order:3}
 .rail section[aria-labelledby=h-src]{order:1}.rail section[aria-labelledby=h-vid]{order:2}
 .rail details{order:9}
 .meter{background:var(--panel);border-left:1px solid var(--line);overflow-y:auto;min-height:0;min-width:0;padding:18px 16px 24px;display:flex;flex-direction:column;gap:16px}
@@ -194,17 +194,14 @@ ul.checks .wn{color:var(--accent);font-weight:600}
       <button type="button" role="tab" data-tabbtn="mirror">Mirror</button>
       <button type="button" role="tab" data-tabbtn="woofer">Woofer LEDs</button>
       <button type="button" role="tab" data-tabbtn="room">Room</button>
+      <button type="button" role="tab" data-tabbtn="smoke">Smoke</button>
     </nav>
 
     <section aria-labelledby="h-pre" data-tab="mirror">
-      <h2 id="h-pre">Presets</h2>
-      <div class="chips">
-        <button type="button" id="preDrawn">As drawn, 6 mm acrylic</button>
-        <button type="button" id="preAir">28 mm air gap</button>
-        <button type="button" id="preHD">HD107S, 28 mm air</button>
-        <button type="button" id="preP6">P6 panels, 28 mm air</button>
-      </div>
-      <p class="note">Recommended silver films: Llumar R20 in front, Llumar R35 at the back. Every dotted slider steps through parts you can buy.</p>
+      <h2 id="h-pre">Six buildable stacks</h2>
+      <div class="chips" id="preChips" aria-label="Mirror configurations"></div>
+      <div id="preCard" style="display:flex;flex-direction:column;gap:8px"></div>
+      <p class="note">Figures from the Pilkington MirroView bulletin (ATS-191), the LLumar architectural specifications, the 3M Silver 35 and Silver 15 Plastic bulletins, and Kuraray's acrylic tables. Every dotted slider below steps through parts you can buy.</p>
     </section>
 
     <section aria-labelledby="h-view" data-tab="view">
@@ -326,6 +323,21 @@ ul.checks .wn{color:var(--accent);font-weight:600}
       <p class="note" id="srcNote">Demo beat drives the audio visuals without a microphone. Pick Video sound to drive them from the video that is playing.</p>
     </section>
 
+    <section aria-labelledby="h-fog" data-tab="smoke">
+      <h2 id="h-fog">Smoke machine</h2>
+      <p class="note">A 1200 W fog machine (Antari Z-1200 class, 2.5 L tank) on a steel shelf against the right sub, nozzle towards the dancefloor.</p>
+      <div class="seg" role="radiogroup" aria-label="Smoke machine" id="fogSeg">
+        <button type="button" data-fogm="0" role="radio">Off</button>
+        <button type="button" data-fogm="1" role="radio">Timer</button>
+        <button type="button" data-fogm="2" role="radio">On the beat</button>
+        <button type="button" data-fogm="3" role="radio">Non-stop</button>
+      </div>
+      <div class="chips"><button type="button" id="fogHold">Hold for fog</button><button type="button" id="fogClear">Open the doors</button></div>
+      <div id="fogCtl" style="display:flex;flex-direction:column;gap:10px"></div>
+      <p class="note" id="fogLive" style="font-family:var(--mono)"></p>
+      <p class="note">Glycol fog droplets of about a micron scatter light forwards and hardly absorb it, so beams show best when you look towards the light. A puff leaves the nozzle at a few m/s, slows down, spreads and turns into haze that fills the hall; ventilation and slow evaporation clear it. The heater can't keep up with non-stop output: when it cools, the machine pauses until it is hot again. Figures are typical for this class of machine, not one model's data sheet.</p>
+    </section>
+
     <section aria-labelledby="h-port" data-tab="woofer">
       <h2 id="h-port">Port LEDs in the subs</h2>
       <div class="seg" role="radiogroup" aria-label="Port LED mode">
@@ -381,11 +393,12 @@ const FILMS=[
  {n:'Silver 5',full:'TintFit Very Dark Silver 05',T:.05,R:.60,Ro:.60,src:'vendor figures, calculated on 3 mm glass'},
  {n:'Llumar R20',full:'Llumar R20 SR CDF',T:.15,R:.63,Ro:.62,src:'Llumar spec sheet, NFRC on 3 mm clear'},
  {n:'3M Silver 20',full:'3M Silver 20',T:.17,R:.58,Ro:.57,src:'3M product bulletin, EN 410'},
- {n:'MirroView',full:'Pilkington MirroView 3 mm (coated glass, not a film)',T:.20,R:.76,Ro:.70,glass:1,src:'Pilkington ATS-191'},
+ {n:'MirroView',full:'Pilkington MirroView 3.2 mm (coated glass, not a film), coating towards the viewer',T:.20,R:.70,Ro:.76,glass:1,src:'Pilkington ATS-191: 20 % T, 76 % coated side, 70 % glass side; Pilkington mounts the coating facing the viewer'},
  {n:'Llumar R35',full:'Llumar R35 SR CDF',T:.28,R:.46,Ro:.47,src:'Llumar spec sheet'},
- {n:'3M Silver 35',full:'3M Silver 35 Exterior',T:.36,R:.34,Ro:.32,src:'3M data sheet, on 6 mm clear'},
- {n:'MirroView 50/50',full:'Pilkington MirroView 50/50 6 mm (coated glass)',T:.45,R:.53,Ro:.50,glass:1,src:'Pilkington ATS-191 (table and text differ by a few %)'},
- {n:'Llumar R50',full:'Llumar R50 SR CDF',T:.49,R:.25,Ro:.26,src:'Llumar spec sheet'}];
+ {n:'3M Silver 35',full:'3M Silver 35 Exterior',T:.35,R:.34,Ro:.32,src:'3M data sheet RE35SIARL: 35 % visible transmitted on 6 mm clear'},
+ {n:'MirroView 50/50',full:'Pilkington MirroView 50/50 6 mm (coated glass), coating towards the viewer',T:.45,R:.50,Ro:.53,glass:1,src:'Pilkington ATS-191 table: 45 % T, 53 % coated side, 50 % glass side (the text says 50 / 49)'},
+ {n:'Llumar R50',full:'Llumar R50 SR CDF',T:.49,R:.25,Ro:.26,src:'Llumar spec sheet'},
+ {n:'3M Silver 15 Plastic',full:'3M Silver 15 Plastic (made for acrylic and polycarbonate)',T:.14,R:.65,Ro:.56,plastic:1,src:'3M product bulletin, EN 410 on clear PC: 14 % T, 56 % film side, 65 % through the sheet'}];
 const GAPS=[3,4,5,6,8,10].map(mm=>({air:0,mm})).concat([10,15,20,28,30,40,50].map(mm=>({air:1,mm})));
 const STACK={glassMm:4,nGlass:1.52,nAcr:1.49,ledAirMm:3.45,rhoGlass:2500,rhoAcr:1190,drawnMm:65.1,outerMm:600};
 const AMBS=[
@@ -407,7 +420,7 @@ const FACES=['north','north-east','east','south-east','south','south-west','west
 /* ---------- state ---------- */
 const DEF={pat:31,pal:0,solid:0,speed:1,gain:1.4,trail:0,soft:0,ovl:0,ovlC:0,frW:2,frIn:0,frMode:1,frRate:2,fit:0,vContrast:1.15,vSat:1.1,vGamma:1,loop:'all',
   led:0,bal:0,bright:1,cgam:2.2,front:1,back:4,gap:9,dist:2,yaw:0,pitch:0,eyeH:1.65,amb:0,clock:21.5,face:6,prtM:0,prtB:1,prtS:0.6,prtF:0.12,prtD:30,prtW:0,
-  tab:'view',look:0,blbW:2,blbP:0,blbM:1,blbS:1,blbSens:0.6,blbF:0.08,blbC:[255,230,200,170,140,110,80,60,40,20]};
+  tab:'view',look:0,fogM:0,fogOut:.7,fogLen:3,fogInt:30,fogAch:2,blbW:2,blbP:0,blbM:1,blbS:1,blbSens:0.6,blbF:0.08,blbC:[255,230,200,170,140,110,80,60,40,20]};
 const S=Object.assign({},DEF);
 const KEY='infinity-grid-v12';
 try{const j=JSON.parse(localStorage.getItem(KEY)||'null');if(j&&typeof j==='object'){for(const k in DEF)if(k in j&&typeof j[k]===typeof DEF[k])S[k]=j[k];}}catch(e){}
@@ -627,7 +640,19 @@ function syncTab(){tabBtns.forEach(b=>b.setAttribute('aria-selected',String(b.da
   document.querySelectorAll('#rail [data-tab]').forEach(s=>s.hidden=s.dataset.tab!==S.tab);}
 tabBtns.forEach(b=>b.addEventListener('click',()=>{S.tab=b.dataset.tabbtn;save();syncTab();const rl=document.getElementById('rail');rl.scrollTop=0;
   if(getComputedStyle(rl).overflowY==='visible'){const tb=rl.querySelector('nav.tabs'),want=tb.offsetTop+rl.getBoundingClientRect().top+scrollY-parseFloat(getComputedStyle(tb).top);if(scrollY>want)scrollTo(0,want);}}));
-if(!['view','av','vis','mirror','woofer','room'].includes(S.tab))S.tab='view';
+if(!['view','av','vis','mirror','woofer','room','smoke'].includes(S.tab))S.tab='view';
+/* smoke machine controls */
+buildCtl('fogCtl',[{k:'fogOut',l:'Output',min:.1,max:1,step:.01,f:v=>Math.round(v*100)+' % · '+(v*100).toFixed(0)+' ml/min of fluid'},
+  {k:'fogLen',l:'Burst length',min:.5,max:15,step:.5,f:v=>v+' s'},
+  {k:'fogInt',l:'Time between bursts',min:5,max:180,step:5,f:v=>v+' s'},
+  {k:'fogAch',l:'Ventilation',min:0,max:12,step:.5,f:v=>v===0?'closed hall':v+' air changes per hour'}]);
+function syncFog(){document.querySelectorAll('[data-fogm]').forEach(b=>b.setAttribute('aria-checked',String(+b.dataset.fogm===S.fogM)));
+  outs.fogLen.inp.parentElement.hidden=outs.fogInt.inp.parentElement.hidden=S.fogM!==1;}
+document.querySelectorAll('[data-fogm]').forEach(b=>b.addEventListener('click',()=>{S.fogM=+b.dataset.fogm;save();syncFog();}));
+{const h=document.getElementById('fogHold');const on=e=>{fogHold=true;h.setAttribute('aria-pressed','true');e.preventDefault();},off=()=>{fogHold=false;h.setAttribute('aria-pressed','false');};
+ h.addEventListener('pointerdown',on);h.addEventListener('pointerup',off);h.addEventListener('pointerleave',off);h.addEventListener('pointercancel',off);
+ document.getElementById('fogClear').addEventListener('click',()=>{FOG.clear=8;});}
+syncFog();
 syncTab();
 let sunPlay=false;const sunBtn=document.getElementById('sunPlay');
 sunBtn.addEventListener('click',()=>{sunPlay=!sunPlay;sunBtn.setAttribute('aria-pressed',String(sunPlay));sunBtn.textContent=sunPlay?'Pause the clock':'Run the clock (10 min per second)';});
@@ -1107,6 +1132,11 @@ function portMC(D0,wi){
     for(let q=0;q<SS;q++)for(let p=0;p<SS;p++){const ua=-1+(ia*SS+p+.5)*du,ub=-1+(ib*SS+q+.5)*du,a=inv(ua),b=inv(ub),ta=Math.tan(a),tb=Math.tan(b);
       o+=(1+ta*ta)*(1+tb*tb)/Math.pow(1+ta*ta+tb*tb,1.5)*(Math.PI*Math.abs(ua))*(Math.PI*Math.abs(ub))*du*du;}
     om[ib*NB+ia]=o;omSum+=o;}
+  /* only a few % of the photons escape, so the direction table is noisy: smooth it twice with a 1-2-1 kernel that
+     only moves counts between neighbouring bins (at the edge they stay put), so the total is kept exactly */
+  for(let pass=0;pass<4;pass++){const ax=pass%2,src=cnt.slice();cnt.fill(0);
+    for(let ib=0;ib<NB;ib++)for(let ia=0;ia<NB;ia++)for(let c=0;c<3;c++){const v=src[(ib*NB+ia)*3+c];if(!v)continue;
+      for(const[o,wt]of[[-1,.25],[0,.5],[1,.25]]){let ja=ia+(ax?0:o),jb=ib+(ax?o:0);if(ja<0||ja>=NB||jb<0||jb>=NB){ja=ia;jb=ib;}cnt[(jb*NB+ja)*3+c]+=v*wt;}}}
   const T=new Float32Array(NB*NB*3),Mt=new Float32Array(MB*3),TI=[0,0,0];
   for(let k=0;k<NB*NB;k++)for(let c=0;c<3;c++){T[k*3+c]=cnt[k*3+c]/(N*om[k]);TI[c]+=T[k*3+c]*om[k];}
   for(let k=0;k<MB*3;k++)Mt[k]=Mc[k]/(N*P*(L/MB));
@@ -1121,7 +1151,9 @@ function cartGLSL(){
     [58,C.bed,-60,123,C.slotBot,60,0],[58,C.slotBot,-60,60,C.slotTop,60,0],[121,C.slotBot,-60,123,C.slotTop,60,0],
     [58,C.slotTop,-60,123,C.slotTop+2,60,0],[60,C.slotBot,-60,121,C.slotTop,48,0],
     [-3,C.bed-C.chT,-56,183,C.bed,56,3],[181,29,-3,238,33,3,3],[236,30,-5,244,36,5,3],[222,6,-1.5,225,31,1.5,3],[218,0,-2,229,12,2,3],
-    [-4.6,17,-26,-4,28,26,4],[-5,23,-56,-4,28.2,-38,5],[-5,23,38,-4,28.2,56,5]];
+    [-4.6,17,-26,-4,28,26,4],[-5,23,-56,-4,28.2,-38,5],[-5,23,38,-4,28.2,56,5],
+    /* fog machine on a steel shelf against the outer side of the right sub, nozzle towards the dancefloor */
+    [181,33,14,208,35,60,3],[182,35,15,207,55,59,9],[190.5,42,59,198.5,48,61.5,3]];
   const v=a=>'vec3('+a.map(n=>n.toFixed(4)).join(',')+')';
   const top=C.top,s=C.s;
   return 'const int NCB='+B.length+';'
@@ -1134,6 +1166,7 @@ function cartGLSL(){
     +',PRTW='+(PORT.W).toFixed(4)+',PRTH='+(PORT.H).toFixed(4)+',PRTL='+(PORT.L).toFixed(4)+',PRTB='+(PORT.BW).toFixed(5)+',PRTA='+(PORT.P*PORT.BW).toFixed(5)
     +',HRY='+((top-40*s-C.py)/100).toFixed(4)+',HRW='+(95*s/100).toFixed(4)+',HRH='+(41*s/100).toFixed(4)
     +',TWY='+((top-115*s-C.py)/100).toFixed(4)+',TWR='+(50*s*.92/100).toFixed(4)
+    +',FOGX='+((194.5-C.px)/100).toFixed(4)+',FOGY='+((45-C.py)/100).toFixed(4)
     +',HALLW='+(HALL.W/2).toFixed(4)+',HALLH='+HALL.H.toFixed(4)+',BULBY='+(HALL.H-.12+C.floor).toFixed(4)
     +',PLZ0='+((-26-60)/100).toFixed(4)+',PLZ1='+((26-60)/100).toFixed(4)+',PLY0='+((17-C.py)/100).toFixed(4)+',PLY1='+((28-C.py)/100).toFixed(4)+';';
 }
@@ -1154,6 +1187,11 @@ uniform float uPrtD;     // depth of the LED ring inside the slot (m)
 uniform float uPrtF0;    // gloss of the slot lining (0 for raw wood and matte paint)
 uniform vec3 uBulb[10];  // bulbs: intensity of one bulb in each of the 10 rows (cd, linear RGB)
 uniform float uLook;     // how far you look up from the panel (rad)
+uniform vec4 uPuff[16];  // fog: puffs from the machine, centre (m) and size sigma (m)
+uniform vec4 uPuffB[4];  // fog: peak extinction of each puff (1/m), four per vec4
+uniform int uNPuff;
+uniform float uFogBg;    // fog: haze spread evenly through the hall (extinction, 1/m)
+uniform vec3 uFogLed;    // fog machine status light
 //CARTDATA
 uniform vec3 uLay,uIdx,uSelf,uSunDir,uSunL,uSunE,uSkyL,uGndE,uGlowC,uAur,uTL;
 uniform int uMode,uAmb;
@@ -1170,8 +1208,13 @@ vec3 selfLight(vec3 p,vec3 n,float rho){
   return rho/PI*uSelf*max(dot(uRotI[2],vd),0.)*max(dot(n,-vd),0.)/r2;
 }
 /* light leaving a port mouth in direction d, per sr, per unit flux of the ring (from the photon tracer) */
+vec3 portTex(vec2 b){return texture(uPort,clamp(b,vec2(.5),vec2(23.5))/vec2(56.,25.)).rgb;}
 vec3 portT(vec3 d){vec2 a=vec2(atan(d.x,d.z),atan(d.y,d.z))/(PI*.5),u=sign(a)*sqrt(abs(a));
-  vec2 tc=clamp((u+1.)*12.,vec2(.5),vec2(23.5))/vec2(56.,25.);return texture(uPort,tc).rgb;}
+  /* cubic B-spline over the 24 x 24 bins (4 bilinear taps), so the floor light has no creases at bin edges */
+  vec2 t=(u+1.)*12.-.5,i=floor(t),f=t-i,f2=f*f,f3=f2*f;
+  vec2 w0=(1.-3.*f+3.*f2-f3)/6.,w1=(4.-6.*f2+3.*f3)/6.,w2=(1.+3.*f+3.*f2-3.*f3)/6.,w3=f3/6.,s0=w0+w1,s1=w2+w3;
+  vec2 p0=i-1.+w1/s0+.5,p1=i+1.+w3/s1+.5;
+  return s0.y*(s0.x*portTex(p0)+s1.x*portTex(vec2(p1.x,p0.y)))+s1.y*(s0.x*portTex(vec2(p0.x,p1.y))+s1.x*portTex(p1));}
 vec3 portM(float z){return texture(uPort,vec2(clamp(z/PRTL*55.,.5,54.5)/56.,24.5/25.)).rgb;}
 /* light from the two ports onto a surface: each 46 cm mouth as two points, with the traced angular spread */
 vec3 slotLight(vec3 p,vec3 n){vec3 E=vec3(0.);
@@ -1270,6 +1313,19 @@ vec3 frontHaze(vec3 p,vec3 n){
   if(uAmb==3)for(int i=0;i<6;i++){float r2;vec3 wd;float c=djCone(i,p,r2,wd);E+=uDjC[i]*(c*max(dot(n,-wd),0.)/r2);}
   return E*(.01/PI);
 }
+/* the LED image at a coarser mip level, read with a cubic B-spline (4 bilinear taps) instead of plain bilinear,
+   so a blurred version has no square blocks or kinks */
+vec3 dutyBS(vec2 uv,float lod){
+  vec2 sz=vec2(textureSize(uDuty,int(lod))),t=uv*sz-.5,i=floor(t),f=t-i,f2=f*f,f3=f2*f;
+  vec2 w0=(1.-3.*f+3.*f2-f3)/6.,w1=(4.-6.*f2+3.*f3)/6.,w2=(1.+3.*f+3.*f2-3.*f3)/6.,w3=f3/6.;
+  vec2 s0=w0+w1,s1=w2+w3,p0=(i-1.+w1/s0+.5)/sz,p1=(i+1.+w3/s1+.5)/sz;
+  return s0.y*(s0.x*textureLod(uDuty,vec2(p0.x,p0.y),lod).rgb+s1.x*textureLod(uDuty,vec2(p1.x,p0.y),lod).rgb)
+        +s1.y*(s0.x*textureLod(uDuty,vec2(p0.x,p1.y),lod).rgb+s1.x*textureLod(uDuty,vec2(p1.x,p1.y),lod).rgb);}
+/* glare: light scattered in the films and glass plus the veiling glare of the eye. A real point-spread falls off
+   smoothly with distance (roughly 1/r^2), so it is built from five blur widths (2 to 32 LEDs) with equal weight per
+   octave; the weights add up to 1, so the total glare stays the same. */
+vec3 glareAt(vec2 uv){
+  return .30*dutyBS(uv,1.)+.25*dutyBS(uv,2.)+.20*dutyBS(uv,3.)+.15*dutyBS(uv,4.)+.10*dutyBS(uv,5.);}
 /* the tunnel: copy k is the LED plane seen after k round trips, every layer refracts the ray */
 vec3 tunnel(vec3 h,vec3 d,float dist){
   float s0=length(d.xy);vec2 tau=s0>1e-7?d.xy/s0:vec2(1.,0.);
@@ -1290,8 +1346,9 @@ vec3 tunnel(vec3 h,vec3 d,float dist){
       vec2 ic=floor(g);vec2 dv=(g-ic-.5)*uPitch;
       vec3 led=max(uLedM*texelFetch(uDuty,ivec2(ic),0).rgb,0.);
       float shape=uPitch*uPitch/(2.*PI*s2)*exp(-dot(dv,dv)/(2.*s2));
-      vec3 avg=max(uLedM*textureLod(uDuty,g/uN,log2(max(1.,2.*sr))).rgb,0.);
-      acc+=att*(mix(led*shape,avg,smoothstep(.22,.5,sr))+uGlare*max(uLedM*textureLod(uDuty,g/uN,3.).rgb,0.));
+      vec3 avg=vec3(0.);
+      if(sr>.22){float lv=log2(max(1.,2.*sr)),l0=floor(lv);avg=max(uLedM*mix(dutyBS(g/uN,l0),dutyBS(g/uN,l0+1.),lv-l0),0.);}
+      acc+=att*(mix(led*shape,avg,smoothstep(.22,.5,sr))+(k<6?uGlare*max(uLedM*glareAt(g/uN),0.):vec3(0.)));
     }
     att*=uQ;
     if(att<uTrans*2e-5)break; /* stop once a copy is 50,000 times weaker than the first */
@@ -1333,6 +1390,9 @@ vec3 shadeCart(vec3 p,vec3 n,int id,int bi,vec3 rd,float dist){
   if(cab){float g=n3(p*350.);rho*=1.+.3*(g-.5)*max(peb,.3*fine);
     n=normalize(n+(vec3(n3(p*300.+3.1),n3(p*300.+7.7),n3(p*300.+11.3))-.5)*.18*peb*(1.-abs(n)));}
   if(id==3||id==8){rho=.05;spec=.03;}
+  else if(id==9){rho=.03;spec=.05;   /* fog machine: black powder-coated steel, vent slots on the sides, a small status light */
+    if(abs(n0.x)>.5&&fract((p.z+.6)*40.)<.45&&abs(p.y-FOGY)<.06)rho=.006;
+    if(n0.z>.5&&length(p.xy-vec2(FOGX+.09,FOGY+.07))<.004)emit=uFogLed;}
   else if(id==4){col=vec3(.95,.72,.05);rho=.6;}
   else if(id==5){col=vec3(.6,.03,.03);rho=.3;spec=.05;}
   else if(id==6){float a=atan(p.y-WHY,p.x-WHX)*11.459;rho=mix(.035,.018,step(.5,fract(a)));spec=.01;}
@@ -1388,6 +1448,32 @@ vec3 shadeCart(vec3 p,vec3 n,int id,int bi,vec3 rd,float dist){
   vec3 sp=cab&&spec<.0201?irr(p0,rr)/PI*mix(3.,10.,pow(1.-abs(dot(rd,n)),5.)):env(p0,rr);
   return emit+col*rho*irr(p0,n)/PI+spec*sp;
 }
+/* ---------- fog ----------
+   Glycol fog droplets (~1 µm) hardly absorb, they scatter: albedo 1, mostly forwards (Henyey-Greenstein, g = 0.6).
+   Along the view ray: what is behind is dimmed by exp(-optical depth), and every bit of fog adds the light it
+   scatters towards you from the panel, the port rings, the spots, the bulbs, the sun and the light bouncing in the hall. */
+float hgP(float mu){float g=.6,q=1.+g*g-2.*g*mu;return(1.-g*g)/(4.*PI*q*sqrt(q));}
+float fogExt(vec3 p){float s=uFogBg;
+  for(int i=0;i<16;i++){if(i>=uNPuff)break;vec3 v=p-uPuff[i].xyz;s+=uPuffB[i/4][i%4]*exp(-dot(v,v)/(2.*uPuff[i].w*uPuff[i].w));}
+  return s;}
+vec3 portT1(vec3 d){vec2 a=vec2(atan(d.x,d.z),atan(d.y,d.z))/(PI*.5),u=sign(a)*sqrt(abs(a));return portTex((u+1.)*12.);}
+vec3 fogSrc(vec3 p,vec3 rd){vec3 S=uIR/PI;   /* hall bounce: from all directions */
+  {float r2=max(dot(p,p),.04);vec3 vd=p*inversesqrt(r2);S+=uSelf*(max(dot(uRotI[2],vd),0.)/r2*hgP(dot(vd,-rd)));}
+  for(int s=0;s<4;s++){vec3 v=p-vec3((s<2?-COLX:COLX)+(s%2==0?-.5:.5)*PRTW,PRT0+PRTH*.5,0.);float r2=max(dot(v,v),.01);vec3 vd=v*inversesqrt(r2);
+    if(vd.z>0.)S+=uSlotPhi*(.5*portT1(vd))*(hgP(dot(vd,-rd))/r2);}
+  if(uAmb==1)S+=uTL*35.;
+  else if(uAmb==2)S+=uSunE*hgP(dot(uSunDir,rd))+uSkyL*.6;
+  else if(uAmb==3){for(int i=0;i<6;i++){float r2;vec3 wd;float c=djCone(i,p,r2,wd);S+=uDjC[i]*(c/r2*hgP(dot(wd,-rd)));}}
+  else if(uAmb==4){for(int j=0;j<10;j++){float dy=p.y-BULBY,dz=p.z-(BZ0+BDZ*float(j)),dd=max(sqrt(dy*dy+dz*dz),.05);
+      /* a row of bulbs 1 m apart seen as a line source: integral of I/r^2 along it, isotropic phase */
+      S+=uBulb[j]*((atan((5.-p.x)/dd)-atan((-5.-p.x)/dd))/dd/(4.*PI));}}
+  return S;}
+vec3 fogMarch(vec3 ro,vec3 rd,float tmax,out float Tr){Tr=1.;vec3 L=vec3(0.);
+  if(uFogBg<1e-5&&uNPuff==0)return L;
+  float tm=min(tmax,uAmb==2?40.:30.),ds=tm/32.,j=hash(gl_FragCoord.xy+.37);
+  for(int k=0;k<32;k++){vec3 p=ro+rd*((float(k)+j)*ds);float s=fogExt(p);if(s<1e-6)continue;
+    float a=exp(-s*ds);L+=Tr*(1.-a)*fogSrc(p,rd);Tr*=a;if(Tr<.004)break;}
+  return L;}
 void main(){
   vec2 ndc=gl_FragCoord.xy/uRes*2.-1.;
   /* you stand at uEyeW and look at the panel centre; the room, the trailer and the panel stay put */
@@ -1416,6 +1502,10 @@ void main(){
       L=.05*irr(p0,nW)/PI+.01*env(p0,reflect(dw,nW));
     }
   }else L=env(eW,dw);
+  {float tS;if(hc&&(!hp||tc<tN))tS=tc;else if(hp)tS=tN;
+   else{vec3 hb0=vec3(-HALLW,uFloor,-4.),hb1=vec3(HALLW,uFloor+HALLH,14.),q0=(hb0-eW)/(dw+vec3(1e-9)),q1=(hb1-eW)/(dw+vec3(1e-9)),qf=max(q0,q1);
+     tS=uAmb==2?(dw.y<-1e-4?(uFloor-eW.y)/dw.y:60.):min(min(qf.x,qf.y),qf.z);}
+   float Tr;vec3 Lf=fogMarch(eW,dw,tS,Tr);L=L*Tr+Lf;}
   if(uMode==1){o=vec4(L,veil);return;}
   vec3 x=L*uWB*uScale;
   float mx=max(x.r,max(x.g,x.b));
@@ -2022,18 +2112,44 @@ function ledNote(){const C=CFG;$('ledNote').textContent='This LED covers '+C.gam
 function onConfig(){
   computeConfig();if(CFG.N!==gridN)makeGrid(CFG.N);
   buildLUT();CFG.full=meter(full255(),CFG.N*CFG.N,null);buildSolids();updateSheet();runChecks();ledNote();
-  const bad=CFG.acr&&(CFG.Ff.glass||CFG.Fb.glass);$('mirWarn').hidden=!bad;
+  const bad=CFG.acr&&(CFG.Ff.glass||CFG.Fb.glass),risky=CFG.acr&&!bad&&(!CFG.Ff.plastic||!CFG.Fb.plastic);$('mirWarn').hidden=!(bad||risky);
   if(bad)$('mirWarn').textContent='MirroView is coated glass, it cannot be laminated to an acrylic sheet. Choose an air gap, or a film.';
+  else if(risky)$('mirWarn').textContent='These window films are made for glass. On acrylic, warmth from the LEDs can make the plastic outgas and lift the film in bubbles (3M warns about this). On acrylic use 3M Silver 15 Plastic, or choose an air gap with the films on glass.';
   $('hudBL').innerHTML='<b>'+CFG.N+' × '+CFG.N+'</b> '+CFG.L.n+' · '+CFG.L.pitch+' mm · '+gapName(CFG.g);
+  if(typeof syncPre==='function')syncPre();
 }
 function onLight(){buildLUT();CFG.full=meter(full255(),CFG.N*CFG.N,null);buildSolids();updateSheet();runChecks();}
 function onView(){updateSheet();}
-const PRESETS={
-  preDrawn:{led:0,bal:0,front:1,back:4,gap:3},
-  preAir:{led:0,bal:0,front:1,back:4,gap:9},
-  preHD:{led:1,bal:0,front:1,back:4,gap:9},
-  preP6:{led:3,bal:0,front:1,back:4,gap:9}};
-for(const id in PRESETS)$(id).addEventListener('click',()=>{const p=PRESETS[id];for(const k in p){if(stops[k])stops[k].set(p[k]);else S[k]=p[k];}syncBal();onConfig();save();});
+/* Six buildable mirror stacks, from verified data sheets (Pilkington ATS-191, LLumar architectural specifications,
+   3M Silver 35 and Silver 15 Plastic bulletins, Kuraray acrylic deflection tables, Acrylite expansion data).
+   led / front / back / gap are indices into LEDS, FILMS and GAPS. */
+const PRESETS=[
+ {n:'Club, deepest tunnel',led:0,bal:0,front:1,back:4,gap:9,
+  why:'For a dark club or tent. LLumar R20 in front sends 63 % back into the cavity and still lets 15 % through, LLumar R35 at the back lets 28 % of the LED light through. Gives the longest tunnel per lumen.',
+  build:'Both films on 4 mm float glass, film side facing the 28 mm air gap. Seal the gap with an aluminium spacer frame and a dust-tight gasket; dust inside cannot be cleaned later. About 7 kg of glass.'},
+ {n:'All glass, no film',led:1,bal:0,front:3,back:6,gap:9,
+  why:'Pilkington MirroView 3.2 mm in front and MirroView 50/50 6 mm at the back: hard pyrolytic coatings, no film that can bubble or scratch, the crispest reflection. Pilkington names infinity mirrors as a use. HD107S-2020 runs its PWM at 27 kHz, so no flicker on phone cameras.',
+  build:'Coatings towards the viewer, as Pilkington specifies. Both sheets can be toughened after coating, which a trailer needs. About 8 kg (3.2 + 6 mm glass); frame the edges, never clamp the glass rigidly.'},
+ {n:'Daylight, on the trailer',led:4,bal:0,front:6,back:7,gap:11,
+  why:'For outdoors and festivals in daylight. Pilkington makes MirroView 50/50 for high ambient light (45 % through), LLumar R50 at the back passes 49 %. The P6 outdoor panels give about 5,500 nits from sealed modules made for sun and rain, for at most about 270 W for the whole panel; a bare 2020 LED matrix is brighter at full white, but would draw about 1.5 kW in a closed box. The tunnel is shorter, but it stays visible outdoors.',
+  build:'Front 6 mm MirroView 50/50, toughened or laminated for the road; back R50 on 4 mm glass; 40 mm air gap for the thicker panel modules. P6 outdoor modules draw up to 30 W each: vent the back of the box, not the mirror cavity. About 9 kg of glass.'},
+ {n:'Bright first copy',led:2,bal:1,front:4,back:7,gap:8,
+  why:'For a bar or a room with the lights on, where people stand close. LLumar R35 in front (28 % through) and R50 behind (49 %) put about 3.3 times more light in the first copy than the club stack (0.28 × 0.49 against 0.15 × 0.28), with a shorter tunnel. WS2816B-2020 has 16-bit colour, so slow dim fades stay smooth.',
+  build:'Both films on 4 mm float glass, 20 mm sealed air gap. White balanced to D65 in the controller.'},
+ {n:'Light for transport',led:0,bal:0,front:8,back:8,gap:4,
+  why:'Half the weight of the glass stacks: one 8 mm cast acrylic sheet with 3M Silver 15 Plastic on both faces, a film that 3M makes for acrylic and polycarbonate. Unbreakable on the road. The copies sit close together (8 mm acrylic looks like 5.4 mm of air), so the tunnel is dense rather than long.',
+  build:'8 mm acrylic sags only 0.2 mm over 600 mm (Kuraray table; 3 mm would sag 2.4 mm, twice that over time). Acrylic grows about 1.7 mm over a 40 °C swing (72 µm/m·K), so mount it in a frame with room to move. Test the film on an offcut first: warm plastic can outgas under film. About 3.5 kg.'},
+ {n:'Budget build',led:0,bal:0,front:2,back:5,gap:8,
+  why:'Off-the-shelf 3M Silver 20 and Silver 35 window film on ordinary 4 mm float glass, with the cheapest LED matrix. A slightly brighter, slightly shorter tunnel than the club stack, at the lowest price.',
+  build:'Apply the film wet, on the cavity side of each sheet. 20 mm aluminium spacer, sealed. About 7 kg.'}];
+{const box=$('preChips');PRESETS.forEach((p,i)=>{const b=document.createElement('button');b.type='button';b.textContent=p.n;b.dataset.i=i;
+  b.addEventListener('click',()=>{for(const k of ['led','bal','front','back','gap']){if(stops[k])stops[k].set(p[k]);else S[k]=p[k];}S.preset=i;syncBal();onConfig();save();syncPre();});box.appendChild(b);});}
+function syncPre(){const p=PRESETS.find(p=>['led','bal','front','back','gap'].every(k=>S[k]===p[k]));
+  document.querySelectorAll('#preChips button').forEach(b=>b.setAttribute('aria-pressed',String(p===PRESETS[+b.dataset.i])));
+  const c=$('preCard');if(!p){c.innerHTML='<p class="note">Your own stack. Pick one of the six above to compare.</p>';return;}
+  const g=GAPS[p.gap];
+  c.innerHTML='<dl class="sheet"><dt>LEDs</dt><dd>'+LEDS[p.led].n+'</dd><dt>Front</dt><dd>'+FILMS[p.front].full+'</dd><dt>Back</dt><dd>'+FILMS[p.back].full+'</dd><dt>Between</dt><dd>'+(g.air?g.mm+' mm air, films on 4 mm float glass':g.mm+' mm cast acrylic, films laminated on it')+'</dd></dl>'+
+    '<p class="note">'+p.why+'</p><p class="note"><b>Building it:</b> '+p.build+'</p>';}
 const faceIt=()=>{setCtl('yaw',0);setCtl('eyeH',1.65);save();onView();};
 $('viewReset').addEventListener('click',faceIt);
 /* one finger or the mouse: walk around (left/right) and change eye height (up/down).
@@ -2100,7 +2216,9 @@ spark.addEventListener('pointermove',e=>{const r=spark.getBoundingClientRect(),i
 spark.addEventListener('pointerleave',()=>{sHover=-1;});
 
 /* ---------- render loop ---------- */
-let frameN=0,lastTs=0,fpsAvg=60,adapt=5,adaptT=5,irLux=0,SLOT=null,slotLm=0,slotOut=0,slotW=0,prtG=1,blbFlux=0;const blbV=new Float32Array(10),blbDmx=new Uint8Array(10),blbHist=[],blbU=new Float32Array(30);const slotDuty=[0,0,0],slotRGB=[0,0,0];
+let frameN=0,lastTs=0,fpsAvg=60,adapt=5,adaptT=5,irLux=0,SLOT=null,slotLm=0,slotOut=0,slotW=0,prtG=1,blbFlux=0;const blbV=new Float32Array(10),blbDmx=new Uint8Array(10),blbHist=[],blbU=new Float32Array(30);
+let fogHold=false;const FOG={puffs:[],bg:0,heat:1,ready:true,phase:0,clear:0,spawn:0,beatCD:0,burst:0,fluid:0};
+const fogP=new Float32Array(64),fogB=new Float32Array(16);const slotDuty=[0,0,0],slotRGB=[0,0,0];
 const hudTR=$('hudTR'),TANH=0.441,TLC=cctRGB(4000),ADAPT_FALLBACK=[1,40,3000,0.5,20];
 function uni(P,name,fn,...a){if(P.u[name]!=null)gl[fn](P.u[name],...a);}
 const adY=new Float32Array(AD*AD);
@@ -2201,6 +2319,36 @@ function frame(ts){
        $('blbLive').textContent='bulbs '+fN(blbFlux)+' lm · '+fN(pw)+' W · row 1 '+(blbV[0]<.15?'dark':'at '+Math.round(2700*Math.pow(blbV[0],.42))+' K');}
    }
    uni(P2,'uBulb[0]','uniform3fv',u);}
+  /* fog machine. Fluid: 100 ml/min at full output; about half of it ends up as airborne droplets (the rest
+     re-condenses in the nozzle or evaporates at once). Droplets of r ~ 0.5 µm, Q_ext ~ 2, density 1.05 g/cm3
+     give a mass extinction of 3 Q / (4 rho r) = 2.9 m2 per gram. The heater stores heat for about 40 s of full
+     output and recovers in about 90 s; below 20 % it stops pumping until it is back at 50 %. */
+  {const F=FOG,out=S.fogOut,nx=(194.5-CART.px)/100,ny=(45-CART.py)/100,nz=.03,KEXT=2.9,V=HALL.W*HALL.D*HALL.H,outdoor=S.amb===2;
+   let want=fogHold;
+   if(S.fogM===1){F.phase=(F.phase+dts)%Math.max(S.fogInt,S.fogLen+1);want=want||F.phase<S.fogLen;}
+   else if(S.fogM===2){F.beatCD-=dts;if(beat>.55&&F.beatCD<=0){F.burst=.8;F.beatCD=4;}want=want||F.burst>0;F.burst-=dts;}
+   else if(S.fogM===3)want=true;
+   if(F.heat<.2)F.ready=false;else if(F.heat>.5)F.ready=true;
+   const firing=want&&F.ready;
+   F.heat=Math.min(1,F.heat+dts/90-(firing?dts*out/40:0));
+   const rate=firing?out*100/60*1.05*.5:0;F.fluid+=firing?out*100/60*dts:0;   /* g/s airborne, ml used */
+   F.spawn+=dts;
+   if(firing&&F.spawn>=.2){const m=rate*F.spawn,v=2+3*out;F.puffs.push({x:nx,y:ny,z:nz,vx:0,vy:.25,vz:v,s:.05,m,age:0});F.spawn=0;}
+   if(!firing)F.spawn=Math.min(F.spawn,.2);
+   const wind=outdoor?[1.2,0,.3]:[0,0,.03];
+   for(const p of F.puffs){const k=Math.exp(-dts/.5);p.vx=wind[0]+(p.vx-wind[0])*k;p.vy=-.01+(p.vy+.01)*k;p.vz=wind[2]+(p.vz-wind[2])*k;
+     const sp=Math.hypot(p.vx-wind[0],p.vy,p.vz-wind[2]);
+     p.x+=p.vx*dts;p.y+=p.vy*dts;p.z+=p.vz*dts;p.s=Math.sqrt(p.s*p.s+2*.015*dts)+.2*sp*dts;p.age+=dts;   /* turbulent mixing (0.015 m2/s) plus jet spread, about 11 degrees */
+     if(p.y<CART.floor+p.s*.6)p.y=CART.floor+p.s*.6;   /* fog that reaches the floor spreads along it */
+     if(!outdoor){p.x=Math.max(-HALL.W/2+p.s*.5,Math.min(HALL.W/2-p.s*.5,p.x));p.z=Math.min(14-p.s*.5,p.z);}}
+   while(F.puffs.length&&(F.puffs.length>16||F.puffs[0].s>1.4||F.puffs[0].age>40)){F.bg+=F.puffs.shift().m;}   /* puffs that have spread out join the haze */
+   const ach=S.fogAch+(F.clear>0?40:0),tau=outdoor?12:1/(ach/3600+1/900);F.clear=Math.max(0,F.clear-dts);
+   F.bg*=Math.exp(-dts/tau);for(const p of F.puffs)if(outdoor||F.clear>0)p.m*=Math.exp(-dts/(outdoor?6:20));
+   const bgB=outdoor?KEXT*F.bg/2000:KEXT*F.bg/V;
+   fogP.fill(0);fogB.fill(0);F.puffs.forEach((p,i)=>{fogP.set([p.x,p.y,p.z,p.s],i*4);fogB[i]=KEXT*p.m/(Math.pow(2*Math.PI,1.5)*p.s*p.s*p.s);});
+   uni(P2,'uPuff[0]','uniform4fv',fogP);uni(P2,'uPuffB[0]','uniform4fv',fogB);uni(P2,'uNPuff','uniform1i',F.puffs.length);uni(P2,'uFogBg','uniform1f',bgB);
+   uni(P2,'uFogLed','uniform3f',...(F.ready?(firing?[0,60,0]:[0,25,0]):[60,8,0]));
+   if(frameN%10===0)$('fogLive').textContent=(firing?'fogging':F.ready?'ready':'heating up')+' · heater '+Math.round(F.heat*100)+' % · haze: '+(bgB>1e-4?'visibility '+fN(3.9/bgB)+' m':'clear air')+' · fluid used '+fN(F.fluid)+' ml of 2500';}
   /* every further bounce in the hall at once: E = flux × mean reflectance / (area × (1 − mean reflectance)).
      Hall 10 × 18 m, ceiling 3 m above the trailer: floor 0.20, walls 0.50, ceiling 0.75. Outdoors there is no hall to bounce in. */
   {const k=S.amb===2?0:HALL.rho/(HALL.A*(1-HALL.rho)),cone=2*Math.PI*(1-Math.cos(7*D2R));
