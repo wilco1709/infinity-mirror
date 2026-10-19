@@ -1118,8 +1118,10 @@ vec3 shadeCart(vec3 p,vec3 n,int id,int bi,vec3 rd,float dist){
   float rho=.045,spec=.004;vec3 col=vec3(1.),emit=vec3(0.),n0=n;
   bool cab=id<=2;
   float fine=clamp(1.-dist/6.,0.,1.);                       /* detail fades out with distance, as the eye resolves less */
-  if(cab){float g=n3(p*900.);rho*=1.+.35*(g-.5)*fine;
-    n=normalize(n+(vec3(n3(p*700.+3.1),n3(p*700.+7.7),n3(p*700.+11.3))-.5)*.35*fine*(1.-abs(n)));}
+  /* tolex pebble (~3 mm) only where a pixel (~1.2 mrad) is clearly smaller than a pebble, otherwise it aliases into sparkle */
+  float peb=clamp(1.-dist*1.2e-3*350.*1.6,0.,1.);
+  if(cab){float g=n3(p*350.);rho*=1.+.3*(g-.5)*max(peb,.3*fine);
+    n=normalize(n+(vec3(n3(p*300.+3.1),n3(p*300.+7.7),n3(p*300.+11.3))-.5)*.18*peb*(1.-abs(n)));}
   if(id==3||id==8){rho=.05;spec=.03;}
   else if(id==4){col=vec3(.95,.72,.05);rho=.6;}
   else if(id==5){col=vec3(.6,.03,.03);rho=.3;spec=.05;}
@@ -1172,8 +1174,10 @@ vec3 shadeCart(vec3 p,vec3 n,int id,int bi,vec3 rd,float dist){
       if(!dash&&abs(fu-.5)<.33&&abs(v-.5)<.32)col=vec3(.02);
       if(dash&&abs(fu-.5)<.25&&abs(v-.5)<.05)col=vec3(.02);}
   }
-  vec3 p0=p+n*2e-3;
-  return emit+col*rho*irr(p0,n)/PI+spec*env(p0,reflect(rd,n));
+  vec3 p0=p+n*2e-3,rr=reflect(rd,n);
+  /* bare tolex is rough: its sheen is a wide lobe (the cosine-averaged surroundings), not a mirror image of the luminaires */
+  vec3 sp=cab&&spec<.0201?irr(p0,rr)/PI*mix(3.,10.,pow(1.-abs(dot(rd,n)),5.)):env(p0,rr);
+  return emit+col*rho*irr(p0,n)/PI+spec*sp;
 }
 void main(){
   vec2 ndc=gl_FragCoord.xy/uRes*2.-1.;
