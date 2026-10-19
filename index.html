@@ -36,7 +36,7 @@ canvas{display:block;width:100%;height:100%;image-rendering:auto}
 .fsbtn{position:absolute;left:10px;top:8px}
 .rail{background:var(--panel);border-left:1px solid var(--line);overflow-y:auto;min-height:0;min-width:0;padding:16px 18px 28px;display:flex;flex-direction:column;gap:18px}
 .rail section{gap:10px}
-.tabs{position:sticky;top:-16px;z-index:3;display:grid;grid-template-columns:repeat(4,1fr);gap:4px;margin:0 -18px;padding:10px 18px;background:var(--panel);border-bottom:1px solid var(--line)}
+.tabs{position:sticky;top:-16px;z-index:3;display:grid;grid-template-columns:repeat(3,1fr);gap:4px;margin:0 -18px;padding:10px 18px;background:var(--panel);border-bottom:1px solid var(--line)}
 .tabs button{font:500 12.5px/1.15 var(--ui);color:var(--mute);background:transparent;border:1px solid var(--line);border-radius:6px;padding:8px 4px;min-height:40px;cursor:pointer}
 .tabs button[aria-selected=true]{color:var(--accent-ink,#111);background:var(--accent);border-color:var(--accent)}
 .tabs button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
@@ -191,10 +191,12 @@ ul.checks .wn{color:var(--accent);font-weight:600}
       <button type="button" role="tab" data-tabbtn="view">View</button>
       <button type="button" role="tab" data-tabbtn="av">Audio / Video input</button>
       <button type="button" role="tab" data-tabbtn="vis">Visuals</button>
+      <button type="button" role="tab" data-tabbtn="mirror">Mirror</button>
+      <button type="button" role="tab" data-tabbtn="woofer">Woofer LEDs</button>
       <button type="button" role="tab" data-tabbtn="room">Room</button>
     </nav>
 
-    <section aria-labelledby="h-pre" data-tab="vis">
+    <section aria-labelledby="h-pre" data-tab="mirror">
       <h2 id="h-pre">Presets</h2>
       <div class="chips">
         <button type="button" id="preDrawn">As drawn, 6 mm acrylic</button>
@@ -235,7 +237,7 @@ ul.checks .wn{color:var(--accent);font-weight:600}
       <p class="note">The hall is 10 × 18 m with the ceiling 3 m above the top of the trailer.</p>
     </section>
 
-    <section aria-labelledby="h-led" data-tab="vis">
+    <section aria-labelledby="h-led" data-tab="mirror">
       <h2 id="h-led">LEDs</h2>
       <div id="ledCtl"></div>
       <div class="seg" role="radiogroup" aria-label="Colour balance" id="balSeg">
@@ -246,7 +248,7 @@ ul.checks .wn{color:var(--accent);font-weight:600}
       <div id="ledCtl2" style="display:flex;flex-direction:column;gap:10px"></div>
     </section>
 
-    <section aria-labelledby="h-mir" data-tab="vis">
+    <section aria-labelledby="h-mir" data-tab="mirror">
       <h2 id="h-mir">Mirror stack</h2>
       <div id="mirCtl" style="display:flex;flex-direction:column;gap:12px"></div>
       <p class="note warn" id="mirWarn" hidden></p>
@@ -324,7 +326,7 @@ ul.checks .wn{color:var(--accent);font-weight:600}
       <p class="note" id="srcNote">Demo beat drives the audio visuals without a microphone. Pick Video sound to drive them from the video that is playing.</p>
     </section>
 
-    <section aria-labelledby="h-port" data-tab="room">
+    <section aria-labelledby="h-port" data-tab="woofer">
       <h2 id="h-port">Port LEDs in the subs</h2>
       <div class="seg" role="radiogroup" aria-label="Port LED mode">
         <button type="button" data-prtm="0" role="radio">Always on</button>
@@ -333,6 +335,9 @@ ul.checks .wn{color:var(--accent);font-weight:600}
       </div>
       <div id="prtCtl" style="display:flex;flex-direction:column;gap:10px"></div>
       <p class="note" id="prtNote"></p>
+      <div class="glabel">Inside of the slot</div>
+      <div class="chips" role="radiogroup" aria-label="Inside of the slot" id="prtWall"></div>
+      <p class="note" id="prtWallNote"></p>
     </section>
 
     <details>
@@ -393,12 +398,15 @@ const AMBS=[
    the trailer, 12 cm under the ceiling. One DMX dimmer channel per row. Rated flux: EU label values for clear bulbs.
    tau: how fast the tungsten coil heats up and cools down (thicker filament in bigger bulbs is slower). */
 const BULBS=[{n:'25 W',lm:220,tau:.05},{n:'40 W',lm:415,tau:.07},{n:'60 W',lm:710,tau:.09},{n:'100 W',lm:1340,tau:.12}];
+/* linings for the inside of the sub ports: diffuse reflectance per channel (linear sRGB), and gloss (Schlick F0) */
+const WALLS=[{n:'Birch plywood, raw',rho:[.66,.46,.27],F0:0},{n:'MDF, raw',rho:[.38,.22,.12],F0:0},
+             {n:'Black paint, matte',rho:[.04,.04,.04],F0:0},{n:'Black paint, gloss',rho:[.04,.04,.04],F0:.04}];
 const BULB_PROGS=['Full on','On the sound','Chase','Bounce','Random','Breathe','Manual'];
 const FACES=['north','north-east','east','south-east','south','south-west','west','north-west'];
 
 /* ---------- state ---------- */
 const DEF={pat:31,pal:0,solid:0,speed:1,gain:1.4,trail:0,soft:0,ovl:0,ovlC:0,frW:2,frIn:0,frMode:1,frRate:2,fit:0,vContrast:1.15,vSat:1.1,vGamma:1,loop:'all',
-  led:0,bal:0,bright:1,cgam:2.2,front:1,back:4,gap:9,dist:2,yaw:0,pitch:0,eyeH:1.65,amb:0,clock:21.5,face:6,prtM:0,prtB:1,prtS:0.6,prtF:0.12,prtD:30,
+  led:0,bal:0,bright:1,cgam:2.2,front:1,back:4,gap:9,dist:2,yaw:0,pitch:0,eyeH:1.65,amb:0,clock:21.5,face:6,prtM:0,prtB:1,prtS:0.6,prtF:0.12,prtD:30,prtW:0,
   tab:'view',look:0,blbW:2,blbP:0,blbM:1,blbS:1,blbSens:0.6,blbF:0.08,blbC:[255,230,200,170,140,110,80,60,40,20]};
 const S=Object.assign({},DEF);
 const KEY='infinity-grid-v12';
@@ -406,7 +414,7 @@ try{const j=JSON.parse(localStorage.getItem(KEY)||'null');if(j&&typeof j==='obje
 {const LIM={led:LEDS.length-1,front:FILMS.length-1,back:FILMS.length-1,gap:GAPS.length-1,amb:AMBS.length-1,face:FACES.length-1};
  for(const k in LIM)S[k]=Math.max(0,Math.min(LIM[k],Math.round(S[k])||0));
  if(!Array.isArray(S.blbC)||S.blbC.length!==10)S.blbC=DEF.blbC.slice();S.blbC=S.blbC.map(v=>Math.max(0,Math.min(255,Math.round(+v)||0)));
- S.blbW=Math.max(0,Math.min(3,Math.round(S.blbW)||0));S.blbP=Math.max(0,Math.min(6,Math.round(S.blbP)||0));}
+ S.blbW=Math.max(0,Math.min(3,Math.round(S.blbW)||0));S.prtW=Math.max(0,Math.min(3,Math.round(S.prtW)||0));S.blbP=Math.max(0,Math.min(6,Math.round(S.blbP)||0));}
 let saveT=0;function save(){clearTimeout(saveT);saveT=setTimeout(()=>{try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}},250)}
 
 /* two families: the ones the audio drives, and the ones that run by themselves and ignore the sound */
@@ -516,7 +524,14 @@ function buildCtl(host,list,cb){
 }
 buildCtl('patCtl',CT.pat);buildCtl('vidCtl',CT.vid);buildCtl('ledCtl2',CT.led,()=>onLight());buildCtl('viewCtl',CT.view,()=>onView());buildCtl('sunCtl',CT.sun,()=>onView());buildCtl('frCtl',CT.frame);let prtDT=0;
 buildCtl('prtCtl',CT.port,k=>{if(k!=='prtD')return;clearTimeout(prtDT);   /* re-trace the light guide for the new depth, once the slider rests */
-  prtDT=setTimeout(()=>{portMC(S.prtD/100);portUpload();runChecks();},90);});
+  prtDT=setTimeout(()=>{portMC(S.prtD/100,S.prtW);portUpload();runChecks();syncWall();},90);});
+{const box=document.getElementById('prtWall');WALLS.forEach((w,i)=>{const b=document.createElement('button');b.type='button';b.setAttribute('role','radio');b.textContent=w.n;b.dataset.i=i;
+  b.addEventListener('click',()=>{S.prtW=i;save();portMC(S.prtD/100,S.prtW);portUpload();runChecks();syncWall();});box.appendChild(b);});}
+function syncWall(){document.querySelectorAll('#prtWall button').forEach(b=>b.setAttribute('aria-checked',String(+b.dataset.i===S.prtW)));
+  document.getElementById('prtWallNote').textContent=(PORT.esc*100).toFixed(1)+' % of the ring\'s light gets out of the slot, '+(PORT.abs*100).toFixed(0)+' % is absorbed inside. '+
+    (WALLS[S.prtW].F0>0?'Gloss paint reflects like a mirror at grazing angles, so you see reflections of the LEDs down the slot.':
+     S.prtW<2?'Raw wood scatters the light in all directions and tints it warmer: it reflects '+Math.round(WALLS[S.prtW].rho[0]*100)+' % of red but '+Math.round(WALLS[S.prtW].rho[2]*100)+' % of blue, so blue and violet glow fainter than red and orange.':
+     'Matte black swallows almost everything after the first bounce: only the light that leaves the ring towards the mouth gets out.');}
 const prtBtns=[...document.querySelectorAll('[data-prtm]')];
 function syncPrt(){prtBtns.forEach(b=>b.setAttribute('aria-checked',String(+b.dataset.prtm===S.prtM)));
   outs.prtS.inp.parentElement.hidden=outs.prtF.inp.parentElement.hidden=S.prtM!==1;outs.prtB.inp.parentElement.hidden=S.prtM===2;
@@ -612,7 +627,7 @@ function syncTab(){tabBtns.forEach(b=>b.setAttribute('aria-selected',String(b.da
   document.querySelectorAll('#rail [data-tab]').forEach(s=>s.hidden=s.dataset.tab!==S.tab);}
 tabBtns.forEach(b=>b.addEventListener('click',()=>{S.tab=b.dataset.tabbtn;save();syncTab();const rl=document.getElementById('rail');rl.scrollTop=0;
   if(getComputedStyle(rl).overflowY==='visible'){const tb=rl.querySelector('nav.tabs'),want=tb.offsetTop+rl.getBoundingClientRect().top+scrollY-parseFloat(getComputedStyle(tb).top);if(scrollY>want)scrollTo(0,want);}}));
-if(!['view','av','vis','room'].includes(S.tab))S.tab='view';
+if(!['view','av','vis','mirror','woofer','room'].includes(S.tab))S.tab='view';
 syncTab();
 let sunPlay=false;const sunBtn=document.getElementById('sunPlay');
 sunBtn.addEventListener('click',()=>{sunPlay=!sunPlay;sunBtn.setAttribute('aria-pressed',String(sunPlay));sunBtn.textContent=sunPlay?'Pause the clock':'Run the clock (10 min per second)';});
@@ -1055,34 +1070,36 @@ const HALL=(()=>{const W=10,D=18,H=(CART.top+300)/100,Af=W*D,Aw=2*(W+D)*H,A=2*Af
 /* The slot port at the bottom of each sub: 46 x 10 cm, 55 cm deep, then it opens into the cabinet.
    At a depth you choose (0 = at the mouth, up to 50 cm), a ring of WS2812B-2020 strip lines all four walls like a bracelet turned inside out:
    3 rows (3 x 6.25 mm) around the 112 cm inside, LEDs facing the middle of the slot.
-   The walls are black paint: 4 % diffuse, plus the gloss of the paint (Schlick, n = 1.5), which at grazing angles
-   reflects most of the light, so the slot works as a light guide. A Monte Carlo photon tracer gives, per watt
-   the ring emits: how much leaves the mouth and in which direction (table T, per steradian), and how bright the
-   walls are at each depth (table M, exitance per m2). The shader and the floor light both use these tables. */
-const PORT={W:.23,H:.10,L:.55,BW:3*.00625,F0:.04,RHO:.04,NB:24,MB:55};
+   The lining of the slot decides how the light gets out. Raw wood and matte paint scatter it (Lambertian, with the
+   colour of the wood: plywood reflects red far more than blue); gloss paint adds a mirror sheen (Schlick, n = 1.5)
+   that at grazing angles turns the slot into a light guide. A Monte Carlo photon tracer, per colour channel, gives
+   per watt the ring emits: how much leaves the mouth and in which direction (table T, per steradian), and how bright
+   the walls are at each depth (table M, exitance per m2). The shader and the floor light both use these tables. */
+const PORT={W:.23,H:.10,L:.55,BW:3*.00625,NB:24,MB:55};
 PORT.P=2*(2*PORT.W+PORT.H);PORT.NROW=Math.round(PORT.P/.00625);PORT.NLED=3*PORT.NROW;
-function portMC(D0){
-  const{W,H,L,BW,P,F0,RHO,NB,MB}=PORT;
-  const N=240000,cnt=new Float64Array(NB*NB),Mc=new Float64Array(MB);let esc=0,back=0,abs=0;
-  const fr=c=>F0+(1-F0)*Math.pow(1-c,5);
+function portMC(D0,wi){
+  const{W,H,L,BW,P,NB,MB}=PORT,WL=WALLS[wi],F0=WL.F0,RHO=WL.rho;
+  const N=160000,cnt=new Float64Array(NB*NB*3),Mc=new Float64Array(MB*3),esc=[0,0,0],back=[0,0,0],ab=[0,0,0];
+  const fr=c=>F0>0?F0+(1-F0)*Math.pow(1-c,5):0;
   let sd=12345;const rnd=()=>{sd=sd+0x6D2B79F5|0;let t=Math.imul(sd^sd>>>15,1|sd);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};
   const cosDir=(nx,ny)=>{const u=rnd(),ph=2*Math.PI*rnd(),r=Math.sqrt(u),a=r*Math.cos(ph),b=r*Math.sin(ph),c=Math.sqrt(1-u);return[c*nx-a*ny,c*ny+a*nx,b];};
   const amap=a=>{const s=a/(Math.PI/2);return Math.sign(s)*Math.sqrt(Math.abs(s));};
   for(let i=0;i<N;i++){
     let s=rnd()*P,x,y,nx,ny;
     if(s<2*W){x=-W+s;y=0;nx=0;ny=1;}else if((s-=2*W)<H){x=W;y=s;nx=-1;ny=0;}else if((s-=H)<2*W){x=W-s;y=H;nx=0;ny=-1;}else{s-=2*W;x=-W;y=H-s;nx=1;ny=0;}
-    let z=-D0-BW*rnd(),[dx,dy,dz]=cosDir(nx,ny),alive=false;
-    for(let b=0;b<400;b++){
+    /* each photon carries a weight per colour channel; a diffuse bounce multiplies it by the wall's reflectance */
+    let z=-D0-BW*rnd(),[dx,dy,dz]=cosDir(nx,ny);const w=[1,1,1];
+    for(let b=0;b<600;b++){
       const tx=dx>0?(W-x)/dx:dx<0?(-W-x)/dx:1e9,ty=dy>0?(H-y)/dy:dy<0?-y/dy:1e9,tz=dz>0?-z/dz:dz<0?(-L-z)/dz:1e9;
-      if(tz<=tx&&tz<=ty){if(dz>0){esc++;const ia=Math.min(NB-1,Math.floor((amap(Math.atan2(dx,dz))+1)/2*NB)),ib=Math.min(NB-1,Math.floor((amap(Math.atan2(dy,dz))+1)/2*NB));cnt[ib*NB+ia]++;}else back++;alive=true;break;}
+      if(tz<=tx&&tz<=ty){if(dz>0){const ia=Math.min(NB-1,Math.floor((amap(Math.atan2(dx,dz))+1)/2*NB)),ib=Math.min(NB-1,Math.floor((amap(Math.atan2(dy,dz))+1)/2*NB));
+          for(let c=0;c<3;c++){esc[c]+=w[c];cnt[(ib*NB+ia)*3+c]+=w[c];}}else for(let c=0;c<3;c++)back[c]+=w[c];break;}
       let wx=0,wy=0;
       if(tx<ty){x+=dx*tx;y+=dy*tx;z+=dz*tx;wx=dx>0?-1:1;x=-wx*W;}else{x+=dx*ty;y+=dy*ty;z+=dz*ty;wy=dy>0?-1:1;y=dy>0?H:0;}
-      const F=fr(Math.abs(wx?dx:dy)),r=rnd();
-      if(r<F){if(wx)dx=-dx;else dy=-dy;}
-      else if(r<F+(1-F)*RHO){Mc[Math.min(MB-1,Math.floor(-z/L*MB))]++;[dx,dy,dz]=cosDir(wx,wy);}
-      else{abs++;alive=true;break;}
+      if(rnd()<fr(Math.abs(wx?dx:dy))){if(wx)dx=-dx;else dy=-dy;continue;}
+      const k=Math.min(MB-1,Math.floor(-z/L*MB));for(let c=0;c<3;c++){ab[c]+=w[c]*(1-RHO[c]);w[c]*=RHO[c];Mc[k*3+c]+=w[c];}
+      if(Math.max(w[0],w[1],w[2])<1e-4||b===599){for(let c=0;c<3;c++){ab[c]+=w[c];w[c]=0;}break;}   /* the last 0.01 % counts as absorbed */
+      [dx,dy,dz]=cosDir(wx,wy);
     }
-    if(!alive)abs++;
   }
   /* solid angle of each direction bin (bins are even in sqrt of the angle, so they are fine near the slot axis) */
   const om=new Float64Array(NB*NB),inv=u=>Math.sign(u)*u*u*Math.PI/2,SS=20,du=2/NB/SS;let omSum=0;
@@ -1090,11 +1107,13 @@ function portMC(D0){
     for(let q=0;q<SS;q++)for(let p=0;p<SS;p++){const ua=-1+(ia*SS+p+.5)*du,ub=-1+(ib*SS+q+.5)*du,a=inv(ua),b=inv(ub),ta=Math.tan(a),tb=Math.tan(b);
       o+=(1+ta*ta)*(1+tb*tb)/Math.pow(1+ta*ta+tb*tb,1.5)*(Math.PI*Math.abs(ua))*(Math.PI*Math.abs(ub))*du*du;}
     om[ib*NB+ia]=o;omSum+=o;}
-  const T=new Float32Array(NB*NB),Mt=new Float32Array(MB);let TI=0;
-  for(let k=0;k<NB*NB;k++){T[k]=cnt[k]/(N*om[k]);TI+=T[k]*om[k];}
-  for(let k=0;k<MB;k++)Mt[k]=Mc[k]/(N*P*(L/MB));
-  Object.assign(PORT,{D0,T,Mt,esc:esc/N,back:back/N,abs:abs/N,omSum,TI});}
-portMC(S.prtD/100);
+  const T=new Float32Array(NB*NB*3),Mt=new Float32Array(MB*3),TI=[0,0,0];
+  for(let k=0;k<NB*NB;k++)for(let c=0;c<3;c++){T[k*3+c]=cnt[k*3+c]/(N*om[k]);TI[c]+=T[k*3+c]*om[k];}
+  for(let k=0;k<MB*3;k++)Mt[k]=Mc[k]/(N*P*(L/MB));
+  const e=esc.map(v=>v/N),bk=back.map(v=>v/N);
+  const a=ab.map(v=>v/N),Y=v=>.2126*v[0]+.7152*v[1]+.0722*v[2];
+  Object.assign(PORT,{D0,wall:wi,T,Mt,escC:e,backC:bk,absC:a,omSum,TI,esc:Y(e),back:Y(bk),abs:Y(a)});}
+portMC(S.prtD/100,S.prtW);
 function cartGLSL(){
   const C=CART,L=(x,y,z)=>[(x-C.px)/100,(y-C.py)/100,(z-60)/100];
   const B=[ /* x0,y0,z0, x1,y1,z1, id: 0 cabinet, 1 sub, 2 top, 3 steel, 4 number plate, 5 rear light */
@@ -1132,6 +1151,7 @@ uniform vec3 uIR; // illuminance from all higher light bounces in the hall (lux)
 uniform vec3 uSlotPhi; // LED ring in each sub port: flux it emits (cd·sr, i.e. lm/683 per W), in the panel's dominant colour
 uniform sampler2D uPort; // Monte Carlo tables of the port light guide: rows 0-23 light out of the mouth per sr, row 24 wall exitance by depth
 uniform float uPrtD;     // depth of the LED ring inside the slot (m)
+uniform float uPrtF0;    // gloss of the slot lining (0 for raw wood and matte paint)
 uniform vec3 uBulb[10];  // bulbs: intensity of one bulb in each of the 10 rows (cd, linear RGB)
 uniform float uLook;     // how far you look up from the panel (rad)
 //CARTDATA
@@ -1150,11 +1170,11 @@ vec3 selfLight(vec3 p,vec3 n,float rho){
   return rho/PI*uSelf*max(dot(uRotI[2],vd),0.)*max(dot(n,-vd),0.)/r2;
 }
 /* light leaving a port mouth in direction d, per sr, per unit flux of the ring (from the photon tracer) */
-float portT(vec3 d){vec2 a=vec2(atan(d.x,d.z),atan(d.y,d.z))/(PI*.5),u=sign(a)*sqrt(abs(a));
-  vec2 tc=clamp((u+1.)*12.,vec2(.5),vec2(23.5))/vec2(56.,25.);return texture(uPort,tc).r;}
-float portM(float z){return texture(uPort,vec2(clamp(z/PRTL*55.,.5,54.5)/56.,24.5/25.)).r;}
+vec3 portT(vec3 d){vec2 a=vec2(atan(d.x,d.z),atan(d.y,d.z))/(PI*.5),u=sign(a)*sqrt(abs(a));
+  vec2 tc=clamp((u+1.)*12.,vec2(.5),vec2(23.5))/vec2(56.,25.);return texture(uPort,tc).rgb;}
+vec3 portM(float z){return texture(uPort,vec2(clamp(z/PRTL*55.,.5,54.5)/56.,24.5/25.)).rgb;}
 /* light from the two ports onto a surface: each 46 cm mouth as two points, with the traced angular spread */
-vec3 slotLight(vec3 p,vec3 n){float E=0.;
+vec3 slotLight(vec3 p,vec3 n){vec3 E=vec3(0.);
   for(int s=0;s<4;s++){vec3 c=vec3((s<2?-COLX:COLX)+(s%2==0?-.5:.5)*PRTW,PRT0+PRTH*.5,0.),v=p-c;float r2=max(dot(v,v),.01);vec3 vd=v*inversesqrt(r2);
     if(vd.z>0.)E+=.5*portT(vd)*max(dot(n,-vd),0.)/r2;}
   return E*uSlotPhi;}
@@ -1168,7 +1188,7 @@ vec3 portView(vec3 q,vec3 d,float fine){vec3 L=vec3(0.);float T=1.;
     if(z>uPrtD&&z<uPrtD+PRTB){vec2 g=vec2(fract(s/.00625),fract((z-uPrtD)/.00625))-.5;
       L+=T*uSlotPhi/(PI*PRTA)*mix(1.,exp(-dot(g,g)*40.)/.0785,fine);}
     else L+=T*uSlotPhi*(portM(z)/PI);
-    T*=.04+.96*pow(1.-c,5.);if(T<.003)break;
+    T*=uPrtF0>0.?uPrtF0+(1.-uPrtF0)*pow(1.-c,5.):0.;if(T<.003)break;   /* matte linings: what you see is the first wall */
     if(xw)d.x=-d.x;else d.y=-d.y;}
   return L;}
 float djCone(int i,vec3 p,out float r2,out vec3 wd){vec3 w=p-uDjP[i];r2=max(dot(w,w),.04);wd=w*inversesqrt(r2);return smoothstep(DJC0,DJC1,dot(wd,uDjA[i]));}
@@ -1444,10 +1464,10 @@ if(hasFloat){const t=tex(5,gl.NEAREST,gl.NEAREST);gl.texImage2D(gl.TEXTURE_2D,0,
 /* port light-guide tables from the photon tracer, on their own texture unit (8); half floats filter linearly in WebGL2 */
 const portTex=tex(8,gl.LINEAR,gl.LINEAR);
 function portUpload(){const w=56,h=PORT.NB+1,d=new Float32Array(w*h*4);
-  for(let j=0;j<PORT.NB;j++)for(let i=0;i<PORT.NB;i++)d[(j*w+i)*4]=PORT.T[j*PORT.NB+i];
-  for(let i=0;i<PORT.MB;i++)d[(PORT.NB*w+i)*4]=PORT.Mt[i];
+  for(let j=0;j<PORT.NB;j++)for(let i=0;i<PORT.NB;i++)for(let c=0;c<3;c++)d[(j*w+i)*4+c]=PORT.T[(j*PORT.NB+i)*3+c];
+  for(let i=0;i<PORT.MB;i++)for(let c=0;c<3;c++)d[(PORT.NB*w+i)*4+c]=PORT.Mt[i*3+c];
   gl.activeTexture(gl.TEXTURE8);gl.bindTexture(gl.TEXTURE_2D,portTex);gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA16F,w,h,0,gl.RGBA,gl.FLOAT,d);gl.activeTexture(gl.TEXTURE0);}
-portUpload();
+portUpload();syncWall();
 const waveTex=tex(4,gl.LINEAR,gl.LINEAR);
 const waveBytes=new Uint8Array(256).fill(128);
 gl.texImage2D(gl.TEXTURE_2D,0,gl.R8,256,1,0,gl.RED,gl.UNSIGNED_BYTE,waveBytes);
@@ -1988,8 +2008,8 @@ function runChecks(){
   add(Math.abs(F.e/cl-1)<1e-6,'<b>Meter loop.</b> Counting a white frame LED by LED gives '+fmt(F.e,1)+' lm; LEDs × flux per LED gives '+fmt(cl,1)+' lm.');
   {const rho=HALL.rho;let sb=0;for(let k=1;k<=400;k++)sb+=Math.pow(rho,k);
    add(Math.abs(sb/(rho/(1-rho))-1)<1e-9,'<b>Light bounces in the hall.</b> Adding 400 bounces one by one gives '+sb.toFixed(6)+' × the light, the closed form ρ/(1 − ρ) with ρ = '+rho.toFixed(3)+' gives '+(rho/(1-rho)).toFixed(6)+' ×. So every bounce is in, not just the first.');}
-  {const P=PORT,tot=P.esc+P.back+P.abs;
-   add(Math.abs(tot-1)<1e-9&&Math.abs(P.omSum/(2*Math.PI)-1)<2e-3&&Math.abs(P.TI/P.esc-1)<1e-6,'<b>Port light guide.</b> Of the light the ring '+(P.D0>0?Math.round(P.D0*100)+' cm inside':'at the mouth of')+' each slot emits, '+fmt(P.esc*100,1)+' % leaves the mouth, '+fmt(P.back*100,1)+' % goes on into the cabinet and '+fmt(P.abs*100,1)+' % is absorbed by the black paint (sum '+fmt(tot*100,6)+' %). The direction table covers '+(P.omSum/Math.PI).toFixed(4)+' π sr of the 2 π hemisphere and integrates back to the same '+fmt(P.TI*100,2)+' %.');}
+  {const P=PORT,tots=[0,1,2].map(c=>P.escC[c]+P.backC[c]+P.absC[c]),de=Math.max(...tots.map(v=>Math.abs(v-1))),dt=Math.max(...[0,1,2].map(c=>Math.abs(P.TI[c]/Math.max(P.escC[c],1e-12)-1)));
+   add(de<1e-9&&Math.abs(P.omSum/(2*Math.PI)-1)<2e-3&&dt<1e-6,'<b>Port light guide.</b> Of the light the ring '+(P.D0>0?Math.round(P.D0*100)+' cm inside':'at the mouth of')+' each slot emits, '+fmt(P.esc*100,1)+' % leaves the mouth, '+fmt(P.back*100,1)+' % goes on into the cabinet and '+fmt(P.abs*100,1)+' % is absorbed by the '+WALLS[P.wall].n.toLowerCase()+' (red / green / blue out: '+P.escC.map(v=>fmt(v*100,1)).join(' / ')+' %). Escaped + into the cabinet + absorbed = '+fmt(tots[1]*100,6)+' %; the direction table covers '+(P.omSum/Math.PI).toFixed(4)+' π sr of the 2 π hemisphere and integrates back to what escaped.');}
   const ss=sunsetClock();add(Math.abs(ss-(21+52/60))<6/60,'<b>Sun.</b> Computed sunset in Utrecht on 15 July: '+hhmm(ss)+' (almanac: 21:52).');
   const nb=res.filter(r=>r[0]===false).length,nw=res.filter(r=>r[0]==='warn').length;
   $('checks').innerHTML=res.map(([k,t])=>'<li><span class="'+(k===true?'ok':k==='warn'?'wn':'bad')+'">'+(k===true?'✓':k==='warn'?'!':'✗')+'</span><span>'+t+'</span></li>').join('');
@@ -2132,7 +2152,7 @@ function frame(ts){
   gl.uniformMatrix3fv(P2.u.uRot,false,I3);gl.uniformMatrix3fv(P2.u.uRotI,false,I3);
   uni(P2,'uEyeW','uniform3f',EYE[0],EYE[1],EYE[2]);uni(P2,'uLook','uniform1f',S.look*D2R);uni(P2,'uFloor','uniform1f',CART.floor);
   gl.uniformMatrix3fv(P2.u.uLedM,false,C.M);
-  uni(P2,'uDuty','uniform1i',0);uni(P2,'uPort','uniform1i',8);uni(P2,'uPrtD','uniform1f',PORT.D0);uni(P2,'uTanH','uniform1f',TANH);uni(P2,'uD','uniform1f',S.dist);
+  uni(P2,'uDuty','uniform1i',0);uni(P2,'uPort','uniform1i',8);uni(P2,'uPrtD','uniform1f',PORT.D0);uni(P2,'uPrtF0','uniform1f',WALLS[PORT.wall].F0);uni(P2,'uTanH','uniform1f',TANH);uni(P2,'uD','uniform1f',S.dist);
   uni(P2,'uN','uniform1f',N);uni(P2,'uPitch','uniform1f',C.pitch);uni(P2,'uSig','uniform1f',C.L.pkg/1000*0.3);
   uni(P2,'uHalfOut','uniform1f',STACK.outerMm/2000);uni(P2,'uHalfWin','uniform1f',C.win/2);uni(P2,'uBox','uniform1f',C.depthMm/1000);
   uni(P2,'uLay','uniform3f',st.tF,st.d,st.tBa);uni(P2,'uIdx','uniform3f',st.nF,st.nC,st.nB);uni(P2,'uTbg','uniform1f',st.tBg);
@@ -2157,9 +2177,9 @@ function frame(ts){
    const g=prtG*S.prtB,du=slotDuty.map(v=>v*g),NL=PORT.NLED;
    const Phi=[0,1,2].map(r=>Math.PI*NL*(du[0]*SLOT.cols[0][r]+du[1]*SLOT.cols[1][r]+du[2]*SLOT.cols[2][r]));  /* per ring, Lambertian LEDs */
    uni(P2,'uSlotPhi','uniform3f',Phi[0],Phi[1],Phi[2]);
-   slotLm=2*Math.PI*NL*(du[0]*SLOT.Y[0]+du[1]*SLOT.Y[1]+du[2]*SLOT.Y[2]);slotOut=slotLm*PORT.esc;
+   slotLm=2*Math.PI*NL*(du[0]*SLOT.Y[0]+du[1]*SLOT.Y[1]+du[2]*SLOT.Y[2]);slotOut=2*(.2126*Phi[0]*PORT.escC[0]+.7152*Phi[1]*PORT.escC[1]+.0722*Phi[2]*PORT.escC[2]);
    slotW=2*NL*5*(du[0]*SLOT.mA[0]+du[1]*SLOT.mA[1]+du[2]*SLOT.mA[2])/1000+2*NL*LEDS[0].idle*5/1000;
-   for(let c=0;c<3;c++)slotRGB[c]=2*Phi[c]*PORT.esc;}
+   for(let c=0;c<3;c++)slotRGB[c]=2*Phi[c]*PORT.escC[c];}
   /* bulbs: one DMX dimmer channel per row, 8 bit; the dimmer passes the channel value as voltage (linear curve).
      Tungsten: light ~ V^3.4, filament temperature ~ V^0.42 (2700 K at full), power ~ V^1.55; the coil lags behind the voltage. */
   blbFlux=0;

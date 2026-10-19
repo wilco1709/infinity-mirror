@@ -80,7 +80,7 @@ input[type=range]{width:100%;accent-color:var(--accent);min-height:28px}
       <h2 id="h-port">Port LEDs in the subs</h2>
       <div class="rowr"><label for="ringD">Depth of the LED ring</label><output id="ringDo">30 cm in</output></div>
       <input type="range" id="ringD" min="0" max="50" step="1" value="30" aria-label="Depth of the LED ring in the slot">
-      <p class="note">A ring of WS2812B-2020 strip, 3 LEDs wide (3 × 179 per slot), lines the inside of each 46 × 10 cm slot like a bracelet turned inside out, LEDs facing the middle. It shows the panel's dominant colour: <span class="sw" id="domSw"></span><span id="domTxt"></span>. <span id="ringTxt"></span></p>
+      <p class="note">A ring of WS2812B-2020 strip, 3 LEDs wide (3 × 179 per slot), lines the inside of each 46 × 10 cm slot like a bracelet turned inside out, LEDs facing the middle. The slot is raw birch plywood inside. It shows the panel's dominant colour: <span class="sw" id="domSw"></span><span id="domTxt"></span>. <span id="ringTxt"></span></p>
     </section>
     <section aria-labelledby="h-view">
       <h2 id="h-view">View</h2>
@@ -188,11 +188,13 @@ const MAT={
 const ringDot=ledDot.clone();ringDot.repeat.set(1,1);ringDot.needsUpdate=true;
 const portMat=new THREE.MeshStandardMaterial({color:0x000000,emissive:0xff8f33,emissiveMap:ringDot,emissiveIntensity:6,roughness:.5});
 
-/* The slot as a light guide, same photon tracer as the simulator: 46 x 10 cm, 55 cm deep, black gloss paint
-   (4 % diffuse + Schlick n = 1.5). It gives the share of light that gets out, and how bright the walls glow at each depth. */
+/* The slot, same photon tracer as the simulator: 46 x 10 cm, 55 cm deep, lined with raw birch plywood
+   (matte, reflects 66 / 46 / 27 % of red / green / blue; here its luminance, 49 %). It gives the share of light that
+   gets out, and how bright the walls glow at each depth. */
 const PORT={W:.23,H:.10,L:.55,BW:3*.00625,MB:55};PORT.P=2*(2*PORT.W+PORT.H);
+const WOOD=new THREE.Color(.66,.46,.27);   /* linear */
 function portMC(D0){
-  const{W,H,L,BW,P,MB}=PORT,N=120000,Mc=new Float64Array(MB),F0=.04,RHO=.04;let esc=0;
+  const{W,H,L,BW,P,MB}=PORT,N=120000,Mc=new Float64Array(MB),F0=0,RHO=.2126*WOOD.r+.7152*WOOD.g+.0722*WOOD.b;let esc=0;
   let sd=12345;const rnd=()=>{sd=sd+0x6D2B79F5|0;let t=Math.imul(sd^sd>>>15,1|sd);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};
   const cosDir=(nx,ny)=>{const u=rnd(),ph=2*Math.PI*rnd(),r=Math.sqrt(u),a=r*Math.cos(ph),b=r*Math.sin(ph),c=Math.sqrt(1-u);return[c*nx-a*ny,c*ny+a*nx,b];};
   for(let i=0;i<N;i++){
@@ -204,7 +206,7 @@ function portMC(D0){
       if(tz<=tx&&tz<=ty){if(dz>0)esc++;break;}
       let wx=0,wy=0;
       if(tx<ty){x+=dx*tx;y+=dy*tx;z+=dz*tx;wx=dx>0?-1:1;x=-wx*W;}else{x+=dx*ty;y+=dy*ty;z+=dz*ty;wy=dy>0?-1:1;y=dy>0?H:0;}
-      const F=F0+(1-F0)*Math.pow(1-Math.abs(wx?dx:dy),5),r=rnd();
+      const F=F0>0?F0+(1-F0)*Math.pow(1-Math.abs(wx?dx:dy),5):0,r=rnd();
       if(r<F){if(wx)dx=-dx;else dy=-dy;}else if(r<F+(1-F)*RHO){Mc[Math.min(MB-1,Math.floor(-z/L*MB))]++;[dx,dy,dz]=cosDir(wx,wy);}else break;
     }
   }
@@ -213,7 +215,9 @@ function portMC(D0){
   return{esc:esc/N,rel};}
 const glowData=new Uint8Array(64*4),glowTex=new THREE.DataTexture(glowData,64,1,THREE.RGBAFormat);
 glowTex.magFilter=glowTex.minFilter=THREE.LinearFilter;glowTex.colorSpace=THREE.NoColorSpace;
-const glowMat=new THREE.MeshPhysicalMaterial({color:0x090909,roughness:.2,emissive:0xff8f33,emissiveMap:glowTex,emissiveIntensity:1});
+/* inside a 10 cm slot the stage lights hardly reach (this page casts few shadows), so the wood only shows its own glow */
+const glowMat=new THREE.MeshStandardMaterial({color:WOOD.clone().multiplyScalar(.08),roughness:.8,emissive:0xff8f33,emissiveMap:glowTex,emissiveIntensity:1});
+const WOODN=WOOD.clone().multiplyScalar(1/WOOD.r);   /* the wood tints what it bounces: warmer */
 let glowMax=1,portEsc=0;
 const DOT_MEAN=.2;   /* mean of the dot texture over a cell, so the walls are scaled against the ring's average, not its peak */
 function setRing(cm){
@@ -226,8 +230,8 @@ function setRing(cm){
 const ringObjs=[],mouthLights=[];
 /* the wall glow texture is stored as sqrt (8 bit), so square it back in the shader */
 glowMat.onBeforeCompile=sh=>{sh.fragmentShader=sh.fragmentShader.replace('#include <emissivemap_fragment>','vec4 emC=texture2D(emissiveMap,vEmissiveMapUv);totalEmissiveRadiance*=emC.rgb*emC.rgb;');};
-function syncGlow(){glowMat.emissive.copy(portMat.emissive);glowMat.emissiveIntensity=portMat.emissiveIntensity*DOT_MEAN*glowMax;
-  mouthLights.forEach(l=>{l.color.copy(portMat.emissive);l.intensity=RING_NITS_PER_Y*portEsc*(PORT.P*PORT.BW)/(2*PORT.W*PORT.H)*LIGHT_SCALE;});}
+function syncGlow(){glowMat.emissive.copy(portMat.emissive).multiply(WOODN);glowMat.emissiveIntensity=portMat.emissiveIntensity*DOT_MEAN*glowMax;
+  mouthLights.forEach(l=>{l.color.copy(portMat.emissive).multiply(WOODN);l.intensity=RING_NITS_PER_Y*portEsc*(PORT.P*PORT.BW)/(2*PORT.W*PORT.H)*LIGHT_SCALE;});}
 /* Light out of each mouth, as a rectangular area light of the mouth's mean luminance. The ring at full duty averages about
    9,600 nits in the panel's orange (537 WS2812B-2020, simulator meter), i.e. 15,300 nits per unit of luminance of the colour.
    This page has no eye adaptation and an area light spreads like a Lambertian, while the real slot beams mostly straight
@@ -357,7 +361,7 @@ new GLTFLoader().load('trailer/speaker_trailer.glb',g=>{
     const n=o.material&&o.material.name||'';
     if(/^panel_(front_film|back_film|front_glass|back_glass|led_grid|cavity_wall)/.test(o.name)){o.visible=false;return;}
     if(n.startsWith('port_ring')){o.material=portMat;o.userData.z0=o.position.z;ringObjs.push(o);return;}
-    if(n.startsWith('port_black_paint')){o.material=glowMat;o.receiveShadow=true;
+    if(/^port_(birch|mdf|black)/.test(n)){o.material=glowMat;o.receiveShadow=true;
       /* u = depth into the slot (0 at the mouth, 1 at 55 cm), for the traced glow profile */
       o.updateWorldMatrix(true,false);const p=o.geometry.attributes.position,uv=new Float32Array(p.count*2),v=new THREE.Vector3();
       for(let i=0;i<p.count;i++){v.fromBufferAttribute(p,i).applyMatrix4(o.matrixWorld);uv[i*2]=Math.min(1,Math.max(0,-v.z/PORT.L));uv[i*2+1]=.5;}
