@@ -196,7 +196,8 @@ ul.checks .wn{color:var(--accent);font-weight:600}
       <button type="button" role="tab" data-tabbtn="woofer">Woofer LEDs</button>
       <button type="button" role="tab" data-tabbtn="room">Room</button>
       <button type="button" role="tab" data-tabbtn="smoke">Smoke</button>
-      <button type="button" role="tab" data-tabbtn="dj">DJ position</button>    </nav>
+      <button type="button" role="tab" data-tabbtn="dj">DJ position</button>
+      <button type="button" role="tab" data-tabbtn="booth">Booth Items</button>    </nav>
 
     <section aria-labelledby="h-pre" data-tab="mirror">
       <h2 id="h-pre">Panel size</h2>
@@ -349,6 +350,15 @@ ul.checks .wn{color:var(--accent);font-weight:600}
       <p class="note">The podium is a 60 cm deep plank on hinges along the back of the trailer, with two fold-out legs. Its lowest setting is wheel-centre height; up to the top of the mudguard the wheel sticks up through it, so it needs a half-round notch to fold up, smaller the higher it sits. The decks are two Pioneer CDJ-3000 (11.8 cm high) and a DJM-900NXS2. Good height: Digital DJ Tips gives 102 cm for men and 91 cm for women, DJ tables run 83 to 106 cm, and DJs put the controls halfway between hip and elbow, about 0.575 × body height above their feet.</p>
     </section>
 
+    <section aria-labelledby="h-booth" data-tab="booth">
+      <h2 id="h-booth">Booth items</h2>
+      <div class="chips"><button type="button" id="bBest">Best setup</button><button type="button" id="bView">Look from behind</button></div>
+      <p class="note" id="bootTip"></p>
+      <p class="note" id="bootLive"></p>
+      <div id="bootBox" style="display:flex;flex-direction:column;gap:12px"></div>
+      <p class="note">Snap each item to a spot along the desk and to the DJ's edge or the back, against the tops. A DJ set of two players sits either side of the mixer when you snap it to the same spot and row. The decks (mixer and DJ set) stand on the riser from DJ position; the laptop and VJ panel stay on the desk. The DJ stands in front of the decks.</p>
+    </section>
+
     <section aria-labelledby="h-fog" data-tab="smoke">
       <h2 id="h-fog">Smoke machine</h2>
       <p class="note">A 1200 W fog machine (Antari Z-1200 class, 2.5 L tank) on a steel shelf against the right sub, nozzle towards the dancefloor.</p>
@@ -483,20 +493,37 @@ const BULBS=[{n:'25 W',lm:220,tau:.05},{n:'40 W',lm:415,tau:.07},{n:'60 W',lm:71
 /* linings for the inside of the sub ports: diffuse reflectance per channel (linear sRGB), and gloss (Schlick F0) */
 const WALLS=[{n:'Birch plywood, raw',rho:[.66,.46,.27],F0:0},{n:'MDF, raw',rho:[.38,.22,.12],F0:0},
              {n:'Black paint, matte',rho:[.04,.04,.04],F0:0},{n:'Black paint, gloss',rho:[.04,.04,.04],F0:.04}];
+/* ---------- booth items: sizes (cm, width x depth x height) from manufacturer and retailer spec sheets ---------- */
+const BOOTH={
+ mixer:{n:'Mixer',w:52,d:53,h:12,id:16,src:'Your mixer, 52 × 53 cm; the 12 cm height is an estimate.'},
+ laptop:{n:'Laptop 15″',w:34,d:23.8,h:1.15,scr:22,src:'MacBook Air 15″: 34.0 × 23.8 × 1.15 cm (Apple); screen opened about 110°.'},
+ sets:[{n:'None'},
+  {n:'2 × Pioneer CDJ-3000',pair:1,w:32.9,d:45.3,h:11.8,id:12,src:'329 × 453 × 118 mm each, 5.5 kg (Pioneer spec, via BJS and Musicstore).'},
+  {n:'2 × Technics SL-1200MK7',pair:1,w:45.3,d:35.3,h:16.9,id:19,src:'453 × 353 × 169 mm each with the dust cover off, 9.6 kg (Thomann).'},
+  {n:'2 × Denon SC6000 Prime',pair:1,w:32,d:46.3,h:15.1,id:12,src:'320 × 463 × 151 mm each, 5.8 kg (Thomann).'},
+  {n:'Pioneer XDJ-XZ',w:87.8,d:46.6,h:11.8,id:21,src:'All-in-one with its own 4-channel mixer: 878 × 466 × 118 mm, 13 kg (djcenter.ee).'},
+  {n:'Pioneer DDJ-FLX10',w:71.6,d:40,h:7.3,id:21,src:'Controller for the laptop: 716 × 400 × 73 mm (retailers).'}],
+ vj:[{n:'None'},
+  {n:'Akai APC40 MkII',w:42.4,d:25.4,h:4.6,id:20,src:'Clip launcher for Resolume or Ableton: 424 × 254 × 46 mm (AVLGEAR).'},
+  {n:'Novation Launchpad X',w:24.1,d:24.1,h:1.75,id:20,src:'8 × 8 pads: 241 × 241 × 17.5 mm (Novation spec, via Reverb).'},
+  {n:'Blackmagic ATEM Mini Extreme',w:37,d:13.7,h:4,id:22,src:'8-input video switcher: 370 × 137 × 40 mm, 1.24 kg (Teko Broadcast).'}]};
+const SPOTS=['Left end','Left sub','Centre-left','Centre','Centre-right','Right sub','Right end'];
 const BULB_PROGS=['Full on','On the sound','Chase','Bounce','Random','Breathe','Manual'];
 const FACES=['north','north-east','east','south-east','south','south-west','west','north-west'];
 
 /* ---------- state ---------- */
 const DEF={pat:31,pal:0,solid:0,speed:1,gain:1.4,trail:0,soft:0,ovl:0,ovlC:0,frW:2,frIn:0,frMode:1,frRate:2,fit:0,vContrast:1.15,vSat:1.1,vGamma:1,loop:'all',
   led:0,bal:0,bright:1,cgam:2.2,front:1,back:4,gap:9,dist:2,yaw:0,pitch:0,eyeH:1.65,amb:0,clock:21.5,face:6,prtM:0,prtB:1,prtS:0.6,prtF:0.12,prtD:30,prtW:0,
-  tab:'view',look:0,djP:0,djH:30,djR:0,djStat:180,djShow:1,fogM:0,fogOut:.7,fogLen:3,fogInt:30,fogAch:2,blbW:2,blbP:0,blbM:1,blbS:1,blbSens:0.6,blbF:0.08,blbC:[255,230,200,170,140,110,80,60,40,20]};
+  tab:'view',look:0,djP:0,djH:30,djR:0,djStat:180,djShow:1,
+  bMix:1,bMixPos:3,bMixRow:0,bSet:1,bSetPos:3,bSetRow:0,bLap:1,bLapPos:1,bLapRow:1,bVj:1,bVjPos:5,bVjRow:0,fogM:0,fogOut:.7,fogLen:3,fogInt:30,fogAch:2,blbW:2,blbP:0,blbM:1,blbS:1,blbSens:0.6,blbF:0.08,blbC:[255,230,200,170,140,110,80,60,40,20]};
 const S=Object.assign({},DEF);
 const KEY='infinity-grid-v12';
 try{const j=JSON.parse(localStorage.getItem(KEY)||'null');if(j&&typeof j==='object'){for(const k in DEF)if(k in j&&typeof j[k]===typeof DEF[k])S[k]=j[k];}}catch(e){}
 {const LIM={led:LEDS.length-1,front:FILMS.length-1,back:FILMS.length-1,gap:GAPS.length-1,amb:AMBS.length-1,face:FACES.length-1};
  for(const k in LIM)S[k]=Math.max(0,Math.min(LIM[k],Math.round(S[k])||0));
  if(!Array.isArray(S.blbC)||S.blbC.length!==10)S.blbC=DEF.blbC.slice();S.blbC=S.blbC.map(v=>Math.max(0,Math.min(255,Math.round(+v)||0)));
- S.blbW=Math.max(0,Math.min(3,Math.round(S.blbW)||0));S.prtW=Math.max(0,Math.min(3,Math.round(S.prtW)||0));S.blbP=Math.max(0,Math.min(6,Math.round(S.blbP)||0));}
+ S.blbW=Math.max(0,Math.min(3,Math.round(S.blbW)||0));
+ for(const[k,mx]of [['bMix',1],['bSet',5],['bLap',1],['bVj',3],['bMixPos',6],['bSetPos',6],['bLapPos',6],['bVjPos',6],['bMixRow',1],['bSetRow',1],['bLapRow',1],['bVjRow',1]])S[k]=Math.max(0,Math.min(mx,Math.round(S[k])||0));S.prtW=Math.max(0,Math.min(3,Math.round(S.prtW)||0));S.blbP=Math.max(0,Math.min(6,Math.round(S.blbP)||0));}
 let saveT=0;function save(){clearTimeout(saveT);saveT=setTimeout(()=>{try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}},250)}
 
 /* two families: the ones the audio drives, and the ones that run by themselves and ignore the sound */
@@ -716,7 +743,26 @@ function syncTab(){tabBtns.forEach(b=>b.setAttribute('aria-selected',String(b.da
   document.querySelectorAll('#rail [data-tab]').forEach(s=>s.hidden=s.dataset.tab!==S.tab);}
 tabBtns.forEach(b=>b.addEventListener('click',()=>{S.tab=b.dataset.tabbtn;save();syncTab();const rl=document.getElementById('rail');rl.scrollTop=0;
   if(getComputedStyle(rl).overflowY==='visible'){const tb=rl.querySelector('nav.tabs'),want=tb.offsetTop+rl.getBoundingClientRect().top+scrollY-parseFloat(getComputedStyle(tb).top);if(scrollY>want)scrollTo(0,want);}}));
-if(!['view','av','vis','mirror','woofer','room','smoke','dj'].includes(S.tab))S.tab='view';
+if(!['view','av','vis','mirror','woofer','room','smoke','dj','booth'].includes(S.tab))S.tab='view';
+/* booth item controls: per item its type, a spot along the desk and a row */
+{const box=document.getElementById('bootBox');
+ const groups=[['Mix','Mixer (52 × 53 cm)',['Off','On'],()=>BOOTH.mixer.src],['Set','DJ set',BOOTH.sets.map(s=>s.n),()=>BOOTH.sets[S.bSet].src||''],
+   ['Lap','Laptop 15″',['Off','On'],()=>BOOTH.laptop.src],['Vj','VJ panel',BOOTH.vj.map(s=>s.n),()=>BOOTH.vj[S.bVj].src||'']];
+ for(const[k,label,types,src]of groups){const g=document.createElement('div');g.style.cssText='display:flex;flex-direction:column;gap:6px';
+   g.innerHTML='<div class="glabel">'+label+'</div><div class="chips" data-bt="'+k+'"></div><div class="chips" data-bp="'+k+'"></div><div class="seg" data-br="'+k+'"></div><p class="opt" data-bs="'+k+'"></p>';box.appendChild(g);
+   types.forEach((t,i)=>{const b=document.createElement('button');b.type='button';b.textContent=t;b.dataset.i=i;b.addEventListener('click',()=>{S['b'+k]=i;save();syncBooth();});g.querySelector('[data-bt]').appendChild(b);});
+   SPOTS.forEach((t,i)=>{const b=document.createElement('button');b.type='button';b.textContent=t;b.dataset.i=i;b.addEventListener('click',()=>{S['b'+k+'Pos']=i;save();syncBooth();});g.querySelector('[data-bp]').appendChild(b);});
+   ['DJ\'s edge','Back, against the tops'].forEach((t,i)=>{const b=document.createElement('button');b.type='button';b.setAttribute('role','radio');b.textContent=t;b.dataset.i=i;b.addEventListener('click',()=>{S['b'+k+'Row']=i;save();syncBooth();});g.querySelector('[data-br]').appendChild(b);});
+   g.dataset.src=k;g._src=src;}}
+function syncBooth(){for(const k of ['Mix','Set','Lap','Vj']){const on=S['b'+k]>0;
+  document.querySelectorAll('[data-bt="'+k+'"] button').forEach(b=>b.setAttribute('aria-pressed',String(+b.dataset.i===S['b'+k])));
+  document.querySelectorAll('[data-bp="'+k+'"] button').forEach(b=>b.setAttribute('aria-pressed',String(+b.dataset.i===S['b'+k+'Pos'])));
+  document.querySelectorAll('[data-br="'+k+'"] button').forEach(b=>b.setAttribute('aria-checked',String(+b.dataset.i===S['b'+k+'Row'])));
+  document.querySelector('[data-bp="'+k+'"]').hidden=document.querySelector('[data-br="'+k+'"]').hidden=!on;
+  const g=document.querySelector('[data-src="'+k+'"]');document.querySelector('[data-bs="'+k+'"]').textContent=on?g._src():'';}}
+document.getElementById('bBest').addEventListener('click',boothBest);
+document.getElementById('bView').addEventListener('click',()=>{setCtl('yaw',165);setCtl('eyeH',2.6);setCtl('dist',3.6);setCtl('look',0);save();onView();});
+syncBooth();
 /* DJ position controls */
 {const wc=17,mg=39;   /* wheel centre and mudguard top, cm (wheel 17 cm radius, mudguard 5 cm above the tyre) */
  buildCtl('djCtl',[{k:'djH',l:'Podium height (top)',min:wc,max:mg+6,step:1,f:v=>v+' cm'+(v<=wc+1?', wheel centre':v-3>=mg?', above the mudguard':'')},
@@ -1287,8 +1333,8 @@ uniform float uPrtF0;    // gloss of the slot lining (0 for raw wood and matte p
 uniform vec3 uBulb[10];  // bulbs: intensity of one bulb in each of the 10 rows (cd, linear RGB)
 uniform float uLook;     // how far you look up from the panel (rad)
 /* DJ position: extra boxes (fold-down podium, its legs, the riser and the DJ gear) and the DJ dummy as capsules */
-uniform vec3 uXB0[8],uXB1[8];
-uniform int uXI[8];
+uniform vec3 uXB0[16],uXB1[16];
+uniform int uXI[16];
 uniform int uNX;
 uniform vec4 uNotch;     // podium notch round the back wheel: centre x, back face z, radius (m); w > 0 when there is one
 uniform vec4 uCapA[12],uCapB[12];   // capsule end a (xyz, radius) and end b (xyz, material: 0 clothes, 1 skin)
@@ -1471,12 +1517,12 @@ bool cartHit(vec3 ro,vec3 rd,out float tb,out vec3 nb,out int idb,out int bib){
     if(a<b&&a>0.&&a<tb){tb=a;idb=CBI[i];bib=i;hit=true;nb=a==tn.x?vec3(-sign(rd.x),0.,0.):a==tn.y?vec3(0.,-sign(rd.y),0.):vec3(0.,0.,-sign(rd.z));}
   }
   /* fold-down podium, legs, riser and DJ gear; the podium has a notch round the wheel so it can fold up past it */
-  for(int i=0;i<8;i++){if(i>=uNX)break;
+  for(int i=0;i<16;i++){if(i>=uNX)break;
     vec3 t0=(uXB0[i]-ro)*inv,t1=(uXB1[i]-ro)*inv,tn=min(t0,t1),tf=max(t0,t1);
     float a=max(max(tn.x,tn.y),tn.z),b=min(min(tf.x,tf.y),tf.z);
     if(a<b&&a>0.&&a<tb){
       if(uXI[i]==13&&uNotch.w>0.){vec3 q=ro+rd*a;float dx=q.x-uNotch.x,dz=uNotch.y-q.z;if(dz<uNotch.z&&dx*dx+dz*dz<uNotch.z*uNotch.z)continue;}
-      tb=a;idb=uXI[i];bib=-1;hit=true;nb=a==tn.x?vec3(-sign(rd.x),0.,0.):a==tn.y?vec3(0.,-sign(rd.y),0.):vec3(0.,0.,-sign(rd.z));}
+      tb=a;idb=uXI[i];bib=100+i;hit=true;nb=a==tn.x?vec3(-sign(rd.x),0.,0.):a==tn.y?vec3(0.,-sign(rd.y),0.):vec3(0.,0.,-sign(rd.z));}
   }
   /* the DJ: capsules (Inigo Quilez's ray-capsule intersection) */
   for(int i=0;i<12;i++){if(i>=uNCap)break;
@@ -1516,11 +1562,28 @@ vec3 shadeCart(vec3 p,vec3 n,int id,int bi,vec3 rd,float dist){
     n=normalize(n+(vec3(n3(p*300.+3.1),n3(p*300.+7.7),n3(p*300.+11.3))-.5)*.18*peb*(1.-abs(n)));}
   if(id==3||id==8){rho=.05;spec=.03;}
   else if(id==11){rho=.06;spec=.035;}   /* desk top: black high-pressure laminate */
-  else if(id==12){rho=.035;spec=.06;     /* DJ gear: two players and a mixer, with lit screens on top */
-    if(n0.y>.5){vec2 q=p.xz;
-      for(int s=-1;s<=1;s+=2){vec2 jc=vec2(float(s)*.37,uNotch.y+.25);float r=length(q-jc);if(r<.1){rho=.07;spec=.12;}if(r<.1&&r>.093){rho=.18;}
-        if(abs(q.x-float(s)*.37)<.055&&abs(q.y-(uNotch.y+.385))<.035)emit=vec3(1.4,2.,3.)*2.;}
-      if(abs(q.x)<.19&&abs(q.y-(uNotch.y+.17))<.11&&fract(q.x*28.)<.25)rho=.25;}}
+  else if(id==12||(id>=16&&id<=22)){rho=.035;spec=.06;   /* booth items: details drawn on their top, in the box's own coordinates */
+    if(bi>=100){vec3 b0=uXB0[bi-100],b1=uXB1[bi-100],sz=b1-b0;vec2 q=p.xz-b0.xz;   /* q.y = 0 at the DJ's side */
+      if(n0.y>.5){
+        if(id==12){float r=length(q-vec2(sz.x*.5,.19));if(r<.1){rho=.07;spec=.12;}if(r<.1&&r>.093)rho=.18;          /* media player: jog wheel, screen */
+          if(abs(q.x-sz.x*.5)<.07&&abs(q.y-(sz.z-.12))<.045)emit=vec3(120.,160.,220.);}
+        else if(id==19){float r=length(q-vec2(sz.x*.42,sz.z*.5));if(r<.155){rho=.012;spec=.05;if(r<.02)rho=.5;}   /* turntable: record, label, tone arm */
+          vec2 ta=q-vec2(sz.x*.88,sz.z*.75);if(abs(ta.x+ta.y*.35)<.006&&ta.y<.02&&ta.y>-.22)rho=.4;}
+        else if(id==16){float fx=fract(q.x/sz.x*4.);if(abs(fx-.5)<.04&&q.y>.04&&q.y<.17)rho=.3;                        /* mixer: 4 channel faders, knobs, meters */
+          if(abs(fx-.5)<.18&&q.y>.2&&q.y<sz.z-.06&&fract(q.y*18.)<.3)rho=.18;
+          if(abs(fx-.5)<.02&&q.y>sz.z-.05&&q.y<sz.z-.015)emit=vec3(30.,200.,40.);}
+        else if(id==17){if(q.y>.03&&q.y<sz.z*.6&&q.x>.03&&q.x<sz.x-.03&&fract(q.x*55.)>.15&&fract(q.y*55.)>.15)rho=.07;}   /* laptop keyboard */
+        else if(id==20){vec2 g=fract(vec2(q.x/.03,(q.y)/.03));if(q.x>.02&&q.x<sz.x-.02&&q.y>.02&&q.y<sz.z-.02&&g.x>.15&&g.y>.15){   /* pad controller */
+          float hsh=hash(floor(vec2(q.x/.03,q.y/.03)));emit=(hsh<.33?vec3(255.,40.,120.):hsh<.66?vec3(40.,220.,255.):vec3(255.,180.,30.))*.25;}}
+        else if(id==21){for(int s=0;s<2;s++){float r=length(q-vec2(s==0?.17:sz.x-.17,.19));if(r<.1){rho=.07;spec=.12;}if(r<.1&&r>.093)rho=.18;}   /* all-in-one */
+          if(abs(q.x-sz.x*.5)<.15&&q.y>.05&&q.y<.2&&fract(q.x*25.)<.2)rho=.3;
+          if(abs(q.x-sz.x*.5)<.1&&abs(q.y-(sz.z-.09))<.05)emit=vec3(120.,160.,220.);}
+        else if(id==22){vec2 g=fract(vec2(q.x/.025,q.y/.025));if(q.y<.09&&q.x>.02&&q.x<sz.x-.02&&g.x>.2&&g.y>.2)rho=.25;   /* video switcher buttons */
+          if(q.y<.03&&q.x>.02&&q.x<.12&&g.x>.2&&g.y>.2)emit=vec3(255.,30.,30.)*.2;}
+      }
+      if(id==18&&n0.z<-.5){vec2 s2=vec2((p.x-b0.x)/sz.x,(p.y-b0.y)/sz.y);   /* laptop screen, facing the DJ */
+        if(s2.x>.03&&s2.x<.97&&s2.y>.04&&s2.y<.96)emit=vec3(90.,110.,150.)*(.6+.4*step(.5,fract(s2.y*6.)));}
+    }}
   else if(id==13){rho=.33;spec=.02;col=vec3(.95,.78,.55);   /* podium: birch plywood with anti-slip film (dark) on top */
     if(n0.y>.5){col=vec3(.25,.2,.15);rho=.12;}}
   else if(id==14){rho=.05;spec=.01;}    /* DJ: dark clothes */
@@ -1533,7 +1596,7 @@ vec3 shadeCart(vec3 p,vec3 n,int id,int bi,vec3 rd,float dist){
   else if(id==7){float r=length(p.xy-vec2(WHX,WHY));rho=.03;spec=.01;
     if(r<WHR*.62){rho=.06;spec=.1;}if(r<WHR*.16){rho=.4;spec=.4;}
     for(int k=0;k<4;k++){float a=float(k)*1.5708;if(length(p.xy-vec2(WHX,WHY)-vec2(cos(a),sin(a))*WHR*.3)<.008){rho=.3;spec=.2;}}}
-  if(bi>=0&&id!=4){
+  if(bi>=0&&bi<NCB&&id!=4){
     /* rounded edges: within 8 mm of an edge the surface turns towards the next face and catches a highlight */
     vec3 dl=p-CB0[bi],dh=CB1[bi]-p,e=min(dl,dh),m=vec3(1.)-abs(n0),bend=vec3(0.);const float RB=.008;
     if(m.x>.5&&e.x<RB)bend.x=(dl.x<dh.x?-1.:1.)*(1.-e.x/RB);
@@ -2377,6 +2440,46 @@ let fogHold=false;
    DJM-900NXS2 sizes) stands on the desk, on an optional riser. Ergonomics: Digital DJ Tips gives 102 cm for men (~1.78 m)
    and 91 cm for women; DJs put the controls halfway between hip and elbow: about 0.575 x body height above the feet. */
 const DJ={depth:60,thick:3,prot:19,gearH:11.8,ideal:.575};
+/* x centre (cart cm) of an item of width w at a spot */
+function spotX(i,w){const C=CART,RE=181+C.dX,R0=123+C.dX;
+  return[w/2+1,29,C.px-30,C.px,C.px+30,R0+29,RE-w/2-1][i];}
+/* lay out every item: footprints (x0,x1,z0,z1 in cart cm, z = 0 at the speaker fronts... desk runs from back to 60-30) */
+function boothLayout(){const C=CART,back=60-C.D,front=30,RE=181+C.dX,out=[];
+  const zRow=(row,d)=>row?[front-1-d,front-1]:[back+1,back+1+d];
+  const mx=S.bMix?spotX(S.bMixPos,BOOTH.mixer.w):null;
+  if(S.bMix){const m=BOOTH.mixer,[z0,z1]=zRow(S.bMixRow,m.d);out.push({k:'mixer',n:m.n,x0:mx-m.w/2,x1:mx+m.w/2,z0,z1,h:m.h,id:m.id,deck:1});}
+  const st=BOOTH.sets[S.bSet];
+  if(S.bSet){const[z0,z1]=zRow(S.bSetRow,st.d);
+    if(st.pair){let xs;
+      if(S.bMix&&S.bSetPos===S.bMixPos&&S.bSetRow===S.bMixRow){const o=BOOTH.mixer.w/2+st.w/2+.5;xs=[mx-o,mx+o];}   /* flank the mixer */
+      else{const c=spotX(S.bSetPos,2*st.w+1);xs=[c-st.w/2-.5,c+st.w/2+.5];}
+      xs.forEach((x,i)=>out.push({k:'set',n:st.n.replace('2 × ','')+(i?' (right)':' (left)'),x0:x-st.w/2,x1:x+st.w/2,z0,z1,h:st.h,id:st.id,deck:1}));}
+    else{const x=spotX(S.bSetPos,st.w);out.push({k:'set',n:st.n,x0:x-st.w/2,x1:x+st.w/2,z0,z1,h:st.h,id:st.id,deck:1});}}
+  if(S.bLap){const l=BOOTH.laptop,x=spotX(S.bLapPos,l.w),[z0,z1]=zRow(S.bLapRow,l.d);out.push({k:'laptop',n:l.n,x0:x-l.w/2,x1:x+l.w/2,z0,z1,h:l.h,id:17,lap:1});}
+  const vj=BOOTH.vj[S.bVj];
+  if(S.bVj){const x=spotX(S.bVjPos,vj.w),[z0,z1]=zRow(S.bVjRow,vj.d);out.push({k:'vj',n:vj.n,x0:x-vj.w/2,x1:x+vj.w/2,z0,z1,h:vj.h,id:vj.id});}
+  /* checks: overlaps and items hanging off the desk */
+  const issues=[];let bad=0;
+  for(let i=0;i<out.length;i++){const a=out[i],oh=Math.max(-1-a.x0,a.x1-RE-1);if(oh>.5){issues.push(a.n+' hangs '+Math.round(oh)+' cm over the end of the desk');bad+=oh*(a.z1-a.z0);}
+    for(let j=i+1;j<out.length;j++){const b=out[j],ox=Math.min(a.x1,b.x1)-Math.max(a.x0,b.x0),oz=Math.min(a.z1,b.z1)-Math.max(a.z0,b.z0);
+      if(ox>.5&&oz>.5){issues.push(a.n+' and '+b.n+' overlap '+Math.round(ox)+' × '+Math.round(oz)+' cm');bad+=ox*oz;}}}
+  const area=(RE+2)*(front-back),used=out.reduce((s,a)=>s+(a.x1-a.x0)*(a.z1-a.z0),0);
+  return{items:out,issues,bad,area,used,back,front,RE};}
+/* best setup: the decks (mixer + set) centred where the DJ stands, at the DJ's edge; laptop and VJ panel in the first free
+   spot nearest to them, DJ's edge first, then against the tops */
+function boothBest(){
+  /* try the decks at the centre first, then shifted; per deck spot every place for the laptop and the VJ panel;
+     keep the layout with the least overlap, and among equals the one with everything closest to the DJ */
+  const opts=[];for(let p=0;p<7;p++)for(let r=0;r<2;r++)opts.push([p,r]);
+  let best=null;
+  for(const dp of [3,2,4,1,5]){S.bMixPos=S.bSetPos=dp;S.bMixRow=S.bSetRow=0;
+    for(const[lp,lr]of S.bLap?opts:[[0,0]])for(const[vp,vr]of S.bVj?opts:[[0,0]]){
+      S.bLapPos=lp;S.bLapRow=lr;S.bVjPos=vp;S.bVjRow=vr;const L=boothLayout();
+      const dist=L.items.reduce((s,a)=>s+Math.abs((a.x0+a.x1)/2-CART.px)+(a.z0-L.back)*.5,0);
+      const score=L.bad*100+dist+Math.abs(dp-3)*30;
+      if(!best||score<best.score)best={score,bad:L.bad,s:{bMixPos:dp,bSetPos:dp,bLapPos:lp,bLapRow:lr,bVjPos:vp,bVjRow:vr}};}}
+  Object.assign(S,best.s,{bMixRow:0,bSetRow:0});save();syncBooth();
+  $('bootTip').textContent=best.bad>0?'This combination does not fit the '+(CART.len)+' cm trailer without overlap. Options: a smaller VJ panel (Launchpad X), the laptop on a stand above the decks, or a bigger mirror, which widens the desk (Mirror tab, Panel size).':'Best setup found: everything fits.';}
 function djGeom(){
   const C=CART,L=(x,y,z)=>[(x-C.px)/100,(y-C.py)/100,(z-60)/100],back=60-C.D,RE=181+C.dX;
   const R=C.wr+5,mgTop=C.wy+R;                         /* mudguard radius and its top (cm above the ground) */
@@ -2388,16 +2491,20 @@ function djGeom(){
       out.notch=[(C.px-C.px)/100,(back-60)/100,out.notchR/100,1];}
     out.stand=h;}
   else out.notch=[0,(back-60)/100,0,0];
-  /* gear on its riser */
-  const dt=C.subTop+2.5,r=S.djR,g0=back+3;
-  if(r>0){out.boxes.push([L(C.px-56,dt,g0-1),L(C.px+56,dt+r,g0+47)]);out.ids.push(0);}
-  const gb=dt+r;
-  out.boxes.push([L(C.px-53.6,gb,g0),L(C.px-20.6,gb+11.8,g0+45.3)],[L(C.px-20.6,gb,g0+2),L(C.px+20.6,gb+10.8,g0+42.8)],[L(C.px+20.6,gb,g0),L(C.px+53.6,gb+11.8,g0+45.3)]);
-  out.ids.push(12,12,12);
-  out.gearTop=gb+DJ.gearH;
-  /* the DJ: stands behind the wheel when it sticks up above the standing surface, else right at the trailer */
-  const H=S.djStat,y0=out.stand,wheelUp=y0<mgTop,zf=back-(wheelUp?Math.max(out.notchR,DJ.prot)+16:16);
-  const P=(x,y,z)=>L(C.px+x,y0+y,z);
+  /* the booth items; the decks (mixer and DJ set) stand on the riser */
+  const dt=C.subTop+2.5,r=S.djR,BL=boothLayout(),decks=BL.items.filter(a=>a.deck);out.booth=BL;
+  if(r>0&&decks.length){const x0=Math.min(...decks.map(a=>a.x0))-1,x1=Math.max(...decks.map(a=>a.x1))+1,z0=Math.min(...decks.map(a=>a.z0))-1,z1=Math.max(...decks.map(a=>a.z1))+1;
+    out.boxes.push([L(x0,dt,z0),L(x1,dt+r,z1)]);out.ids.push(0);}
+  for(const a of BL.items){const b=dt+(a.deck?r:0);
+    out.boxes.push([L(a.x0,b,a.z0),L(a.x1,b+a.h,a.z1)]);out.ids.push(a.id);
+    if(a.lap){out.boxes.push([L(a.x0,b+a.h,a.z1-.6-4),L(a.x1,b+a.h+BOOTH.laptop.scr*.94,a.z1-4)]);out.ids.push(18);}}   /* the opened screen */
+  const play=decks.length?decks:BL.items;
+  out.gearTop=play.length?Math.max(...play.map(a=>dt+(a.deck?r:0)+a.h)):dt;
+  const djx=play.length?(Math.min(...play.map(a=>a.x0))+Math.max(...play.map(a=>a.x1)))/2:C.px;
+  const g0=play.length?Math.min(...play.map(a=>a.z0)):back+3;
+  /* the DJ: stands behind the wheel when it sticks up above the standing surface (and they stand in front of it), else right at the trailer */
+  const H=S.djStat,y0=out.stand,wheelUp=y0<mgTop&&Math.abs(djx-C.px)<40,zf=back-(wheelUp?Math.max(out.notchR,DJ.prot)+16:16);
+  const P=(x,y,z)=>L(djx+x,y0+y,z);out.djx=djx;
   const cap=(a,b,r,m)=>out.caps.push([...a,r/100],[...b,m]);
   const hip=.53*H,sh=.81*H,legR=6.5;
   for(const s of [-1,1]){cap(P(s*9,legR,zf),P(s*9,hip,zf),legR,0);}
@@ -2413,10 +2520,14 @@ function djGeom(){
     out.reach=n;}
   out.surf=out.gearTop-y0;out.idealSurf=DJ.ideal*H;
   return out;}
-const djXB0=new Float32Array(24),djXB1=new Float32Array(24),djXI=new Int32Array(8),djCA=new Float32Array(48),djCB=new Float32Array(48);
+const djXB0=new Float32Array(48),djXB1=new Float32Array(48),djXI=new Int32Array(16),djCA=new Float32Array(48),djCB=new Float32Array(48);
 function djUniforms(){const g=djGeom();djXB0.fill(0);djXB1.fill(0);
-  g.boxes.forEach((b,i)=>{djXB0.set(b[0],i*3);djXB1.set(b[1],i*3);djXI[i]=g.ids[i];});
-  uni(P2,'uXB0[0]','uniform3fv',djXB0);uni(P2,'uXB1[0]','uniform3fv',djXB1);uni(P2,'uXI[0]','uniform1iv',djXI);uni(P2,'uNX','uniform1i',g.boxes.length);
+  g.boxes.slice(0,16).forEach((b,i)=>{djXB0.set(b[0],i*3);djXB1.set(b[1],i*3);djXI[i]=g.ids[i];});
+  uni(P2,'uXB0[0]','uniform3fv',djXB0);uni(P2,'uXB1[0]','uniform3fv',djXB1);uni(P2,'uXI[0]','uniform1iv',djXI);uni(P2,'uNX','uniform1i',Math.min(16,g.boxes.length));
+  if(frameN%10===0){const B=g.booth;
+    $('bootLive').innerHTML='Desk '+Math.round(B.RE+2)+' × '+Math.round(B.front-B.back)+' cm, '+Math.round(B.used/B.area*100)+' % in use. '+
+      (B.issues.length?'<span style="color:var(--warn)">'+B.issues.join('; ')+'.</span>':'<span style="color:var(--ok)">Everything fits.</span>')+
+      ' '+B.items.filter(a=>!a.deck).map(a=>{const d=Math.round(Math.abs((a.x0+a.x1)/2-g.djx));return a.n+' '+d+' cm to the side of the DJ'+(d>70?' (a step sideways)':'');}).join(', ')+(B.items.some(a=>!a.deck)?'.':'');}
   uni(P2,'uNotch','uniform4f',...g.notch);
   const nc=g.caps.length/2;g.caps.forEach((c,i)=>{(i%2?djCB:djCA).set(c,(i>>1)*4);});
   uni(P2,'uCapA[0]','uniform4fv',djCA);uni(P2,'uCapB[0]','uniform4fv',djCB);uni(P2,'uNCap','uniform1i',S.djShow?nc:0);
