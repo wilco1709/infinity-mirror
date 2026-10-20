@@ -564,7 +564,7 @@ try{const j=JSON.parse(localStorage.getItem(KEY)||'null');if(j&&typeof j==='obje
  S.blbW=Math.max(0,Math.min(3,Math.round(S.blbW)||0));
  for(const[k,mx]of [['bMix',1],['bSet',5],['bLap',1],['bVj',3],['bMixPos',6],['bSetPos',6],['bLapPos',6],['bVjPos',6],['bMixRow',1],['bSetRow',1],['bLapRow',1],['bVjRow',1]])S[k]=Math.max(0,Math.min(mx,Math.round(S[k])||0));S.prtW=Math.max(0,Math.min(3,Math.round(S.prtW)||0));
  S.advSc=Math.max(0,Math.min(4,Math.round(S.advSc)||0));S.advBars=Math.max(0,Math.min(3,Math.round(S.advBars)||0));S.advTxt=String(S.advTxt).slice(0,24);
- S.puG=Math.max(0,Math.min(30,Math.round(S.puG)||0));S.puC=Math.max(0,Math.min(16,Math.round(S.puC)||0));S.puEvery=Math.max(0,Math.min(2,Math.round(S.puEvery)||0));S.puBars=Math.max(0,Math.min(3,Math.round(S.puBars)||0));S.puMid=S.puMid?1:0;S.blbP=Math.max(0,Math.min(6,Math.round(S.blbP)||0));}
+ S.puG=Math.max(0,Math.min(31,Math.round(S.puG)||0));S.puC=Math.max(0,Math.min(16,Math.round(S.puC)||0));S.puEvery=Math.max(0,Math.min(2,Math.round(S.puEvery)||0));S.puBars=Math.max(0,Math.min(3,Math.round(S.puBars)||0));S.puMid=S.puMid?1:0;S.blbP=Math.max(0,Math.min(6,Math.round(S.blbP)||0));}
 let saveT=0;function save(){clearTimeout(saveT);saveT=setTimeout(()=>{try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}},250)}
 
 /* two families: the ones the audio drives, and the ones that run by themselves and ignore the sound */
@@ -820,7 +820,7 @@ function syncAdv(){document.querySelectorAll('#advScene button').forEach(b=>b.se
   const g=document.getElementById('advGo');g.setAttribute('aria-pressed',String(S.pat===49));g.textContent=S.pat===49?'■ Stop the show':'▶ Play the show on the mirror';syncPude();}
 syncAdv();
 /* PUDE logo show (pattern 51): pick a hand gesture and a cube look, or leave both on Auto */
-const PU_GN=['Logo hand','Wave','Rave hand','Fist pump','Fist bump','Middle finger','Point at the crowd','Come here','OK sign','Countdown','Peace','Horns','Thumbs up','Finger guns','Shaka','Jazz hands','Snap','Finger drums','Stomp','Talking hand','Grab a letter','Spider walk','Hide and peek','Spin','Clap','Crowd','Raise the roof','Rock paper scissors','Conductor','Pinch the cube'];
+const PU_GN=['Logo hand','Wave','Rave hand','Fist pump','Fist bump','Middle finger','Point at the crowd','Come here','OK sign','Countdown','Peace','Horns','Thumbs up','Finger guns','Shaka','Jazz hands','Snap','Finger drums','Stomp','Talking hand','Grab a letter','Spider walk','Hide and peek','Spin','Clap','Crowd','Raise the roof','Rock paper scissors','Conductor','Pinch the cube','Come here, all fingers'];
 const PU_CN=['Logo','Tumble','Explode','Lid','Unfold','Tunnel','Letter belt','Glitch','Wireframe','Melt','Stomp','Split','Letters pop','Ghost','Mirror','Jelly'],PU_EVERY=[1,2,4];
 {const mk=(id,names,k)=>{const box=document.getElementById(id);['Auto'].concat(names).forEach((n,i)=>{const b=document.createElement('button');b.type='button';b.setAttribute('role','radio');b.textContent=n;b.dataset.i=i;
    b.addEventListener('click',()=>{S[k]=i;if(S.pat!==51){S.pat=51;syncPat();}save();syncPude();});box.appendChild(b);});};
@@ -3507,7 +3507,7 @@ const PU_P={logo:[[-.4,.12,.3,0],[-.16,.08,0,0],[.02,.08,0,0],[.09,.08,0,0],[.48
   ok:[[-.37,.92,0,0],[-.08,.6,0,0],[.04,0,0,0],[.16,0,0,0],[.32,0,0,0]],
   claw:[[-.3,.4,0,0],[-.3,.5,0,0],[-.1,.5,0,0],[.12,.5,0,0],[.36,.5,0,0]],
   snapSet:[[-.05,.85,0,0],[-.1,.5,0,0],[0,.6,0,0],[.1,.8,0,0],[.2,.85,0,0]],snapGo:[[-.35,.25,0,0],[-.1,.5,0,0],[0,1,0,0],[.1,.85,0,0],[.2,.9,0,0]],
-  beckon:[[.1,.6,.4,0],[-.08,0,0,0],[0,.92,0,0],[.08,.92,0,0],[.16,.92,0,0]],
+  beckon:[[.1,.6,.4,0],[-.08,0,0,0],[0,.92,0,0],[.08,.92,0,0],[.16,.92,0,0]],beckonAll:[[.12,.15,0,0],[.07,0,0,0],[.01,0,0,0],[-.04,0,0,0],[-.1,0,0,0]],
   pinch:[[-.3,.9,0,0],[-.08,.62,0,0],PU_CC,PU_CC,PU_CC]};
 const puPz=n=>PU_P[n].map(d=>d.slice());
 function puWig(p,a,t){for(let f=0;f<5;f++){p[f][0]+=a*Math.sin(t*31+f*1.7);p[f][1]=Math.max(0,p[f][1]+a*.5*Math.sin(t*23+f*2.3));}return p;}
@@ -3555,9 +3555,9 @@ function puState(A,t){if(t-(A.dropT??-99)<32*60/A.bpm)return'drop';if(A.lull>.5)
 function puPickG(){const A=ADV,P=PUDE,f=P.feat||puFeat(A),fa=S.puFaith,now=performance.now()/1000,{kd,hd,sd,md,sw,gr,en}=f;
   const s=[.2+.3*fa,.3+.3*(1-kd)+.2*md,.15+.8*kd*(1-.4*sd),.15+.6*kd+(en>1.1?.3:0),.1+.5*kd,S.puMid?.05+.45*gr+.2*sd:-9,.25+.2*kd,.1+.4*(1-kd),
     .15+.4*md+.2*(1-kd),-9,.25+.3*md,.1+.8*gr+.2*kd,.2+.2*(1-kd),.1+.8*sd,.15+.4*hd*(1-gr),.05+.5*hd*kd,.1+.7*sd*(1-kd),.1+.9*hd,.1+.6*kd*gr+.3*kd,
-    .05+.9*md,.15+.3*sd,.1+.5*gr*(1-hd)+.2*(1-kd),.02,.05+1.2*sw,.1+.8*sd*kd,.05+.3*kd,.1+.6*kd*Math.min(1,en),.15+.3*kd,.1+.5*md*(1-gr),.15+.3*sd];
-  const B={break:{7:.9,22:.6,8:.5,0:.4,23:.5*sw,19:.3,1:.3,21:.3,28:.4,2:-.6,3:-.6,4:-.6,18:-.6,25:-.6,26:-.6,15:-.6},
-    build:{7:.6,23:.5,3:.4,18:.4,29:.3},drop:{4:.9,25:.8,26:.7,3:.6,11:.5,5:.3,15:.4,24:.4,2:.5},lull:{22:1.2,1:.4,0:.5}}[P.st]||{};
+    .05+.9*md,.15+.3*sd,.1+.5*gr*(1-hd)+.2*(1-kd),.02,.05+1.2*sw,.1+.8*sd*kd,.05+.3*kd,.1+.6*kd*Math.min(1,en),.15+.3*kd,.1+.5*md*(1-gr),.15+.3*sd,.1+.4*(1-kd)];
+  const B={break:{7:.9,30:.8,22:.6,8:.5,0:.4,23:.5*sw,19:.3,1:.3,21:.3,28:.4,2:-.6,3:-.6,4:-.6,18:-.6,25:-.6,26:-.6,15:-.6},
+    build:{7:.4,30:.6,23:.5,3:.4,18:.4,29:.3},drop:{4:.9,25:.8,26:.7,3:.6,11:.5,5:.3,15:.4,24:.4,2:.5},lull:{22:1.2,1:.4,0:.5}}[P.st]||{};
   for(const k in B)s[k]+=B[k];
   for(let i=0;i<s.length;i++)s[i]+=.3*Math.random()-.8*Math.exp(-(now-(P.usedG[i]??-99))/40);s[P.gest]-=.5;
   return s.indexOf(Math.max(...s));}
@@ -3665,8 +3665,8 @@ function puGest(id,G){const P=PUDE,PI=Math.PI,ph=G.ph,t=G.t,h=puBase(G),out=[h],
     h.r=-.05+.1*G.hat*sn(t*45);h.yaw=Math.PI;h.s=.21*(1+.06*G.kick);break;}
   case 6:{const T=[.85,.3,-.3,-.85],r0=T[(G.bar+3)%4],r1=T[G.bar];h.pose=puPz('point');h.r=r0+(r1-r0)*puEase(ph*5);
     if(G.b2%2===1&&G.bar===0){h.r=0;h.tilt=1.15;h.s=.2*(1+.5*ex(-ph*2.5));h.y+=.12;}break;}   /* every other bar: straight at you */
-  case 7:{h.pose=puPz('beckon');const cu=.88*Math.pow(sn(PI*ph),2);h.pose[1][1]=cu;
-    if(G.st==='build'||G.build>.3)for(let f=2;f<5;f++)h.pose[f][1]=Math.max(.05,cu);h.r=.2+.05*sn(t*.7);h.tilt=-.45;h.s=.2*(1+.03*Math.min(G.bk,10));break;}
+  case 7:{h.pose=puPz('beckon');h.pose[1][1]=.06+.84*puCome(ph);   /* palm up and tipped back so you look into it: the index pulls in on every beat */
+    h.r=.25+.05*sn(t*.7);h.tilt=-.95;h.s=.2*(1+.03*Math.min(G.bk,10));break;}
   case 8:h.pose=puPz('ok');h.r=-.15+.05*sn(t);h.yaw=-1.2;h.s=.24;   /* thumb side towards you, so the ring faces the crowd */h.y+=.03*cs(2*PI*ph);h.ok=true;break;
   case 9:{const n=G.count<0?5:G.count;puFree(h,.025*G.build*sn(t*53),.12,.2,-1.7);h.s=.25*(1+.18*ex(-ph*7));h.r=.04*sn(t*3);
     h.pose=puPz(['fist','point','peace','three','four','open'][Math.max(0,Math.min(5,n))]);if(n===0)h.x+=.03*sn(t*60);break;}
@@ -3703,8 +3703,12 @@ function puGest(id,G){const P=PUDE,PI=Math.PI,ph=G.ph,t=G.t,h=puBase(G),out=[h],
     puFree(h,a[0]+(b[0]-a[0])*e,.1+a[1]+(b[1]-a[1])*e-.05*ex(-ph*9),.75,-1.7);h.r=-.35+.25*h.x;h.pose=puPz('pinch');h.baton=true;break;}
   case 29:{if(G.oS>.25)P.pinchT=0;if(G.oK>.25)P.pinchT=1;P.pinch+=(P.pinchT-P.pinch)*(1-ex(-G.dts/.06));const o=P.pinch;
     h.pose=puPz('pinch');h.pose[1][1]=.35+.27*(1-o);h.pose[0][1]=.6+.3*(1-o);h.r=-.35;h.yaw=-1.1;h.y+=.05;break;}
+  case 30:{h.pose=puPz('beckonAll');for(let f=1;f<5;f++)h.pose[f][1]=.05+.6*puCome(ph-.05*(f-1));   /* the same, with the four fingers together, the index a hair ahead */
+    h.pose[0][0]-=.08*puCome(ph);h.r=.3+.05*sn(t*.7);h.tilt=-.95;h.s=.2*(1+.03*Math.min(G.bk,10));break;}
   }
   return out;}
+/* the pull of "come here": curled in on the beat, opens slowly, pulls in fast at the end of the beat */
+function puCome(ph){ph=((ph%1)+1)%1;return ph<.6?1-puEase(ph/.6):puEase((ph-.6)/.4);}
 function puBurst(G){const out=[];for(const m of[1,-1]){const q=puFree(puBase(G),m*.36,.08,m*.8,-1.7);q.m=m;q.s=.3;q.r=-m*.35;q.pose=puWig(puPz('jazz'),.12,G.t);out.push(q);}return out;}
 function puCellPos(cell){const P=PUDE;if(!P.C)return null;const tile=cell>>2,row=(cell>>1)&1,cx=cell&1,sp=tile===0?.47:.5,u=cx?(sp+1)/2:sp/2,v=row?.75:.25;
   const i=tile;const D=PU_FACES[i],Rv=P.Rv,C=P.C,st=1.045,p=[0,1,2].map(k=>D.O[k]+D.U[k]*u+D.V[k]*v),w=m3v(Rv,p);
