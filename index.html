@@ -260,6 +260,8 @@ ul.checks .wn{color:var(--accent);font-weight:600}
       <h2 id="h-mir">Mirror stack</h2>
       <div id="mirCtl" style="display:flex;flex-direction:column;gap:12px"></div>
       <p class="note warn" id="mirWarn" hidden></p>
+      <div id="wedgeCtl"></div>
+      <p class="note">A deliberate wedge: shim one side of the back film so the films are a fraction of a degree apart and the tunnel bends towards the narrow side. Each copy moves sideways about z² × angle / (2 × gap); 0.5 to 1° shows clearly, which is a 5 to 10 mm difference in gap across 60 cm.</p>
     </section>
 
     <section aria-labelledby="h-pat" data-tab="vis">
@@ -515,7 +517,7 @@ const FACES=['north','north-east','east','south-east','south','south-west','west
 /* ---------- state ---------- */
 const DEF={pat:31,pal:0,solid:0,speed:1,gain:1.4,trail:0,soft:0,ovl:0,ovlC:0,frW:2,frIn:0,frMode:1,frRate:2,fit:0,vContrast:1.15,vSat:1.1,vGamma:1,loop:'all',
   led:0,bal:0,bright:1,cgam:2.2,front:1,back:4,gap:9,dist:2,yaw:0,pitch:0,eyeH:1.65,amb:0,clock:21.5,face:6,prtM:0,prtB:1,prtS:0.6,prtF:0.12,prtD:30,prtW:0,
-  tab:'view',look:0,djP:0,djH:30,djR:0,djStat:180,djShow:1,
+  tab:'view',look:0,wedge:0,djP:0,djH:30,djR:0,djStat:180,djShow:1,
   bMix:1,bMixPos:3,bMixRow:0,bSet:1,bSetPos:3,bSetRow:0,bLap:1,bLapPos:1,bLapRow:1,bVj:1,bVjPos:5,bVjRow:0,fogM:0,fogOut:.7,fogLen:3,fogInt:30,fogAch:2,blbW:2,blbP:0,blbM:1,blbS:1,blbSens:0.6,blbF:0.08,blbC:[255,230,200,170,140,110,80,60,40,20]};
 const S=Object.assign({},DEF);
 const KEY='infinity-grid-v12';
@@ -532,6 +534,7 @@ const PGROUPS=[
  {sec:'Reacts to the sound',g:'Spectrum',items:[[0,'Spectrum bars'],[1,'Radial spectrum']]},
  {g:'Waveform',items:[[24,'Oscilloscope'],[25,'Mirrored wave'],[26,'Circle wave'],[27,'Lissajous'],[28,'Ribbon'],[29,'Sound bars']]},
  {g:'Pulses on the bass',items:[[2,'Tunnel rings'],[3,'Spiral arms'],[4,'Plasma'],[5,'Fire'],[13,'Ocean waves'],[6,'Matrix rain'],[19,'Suns'],[20,'Hearts']]},
+ {g:'Infinity tunnel',items:[[37,'Edge chase'],[38,'Beat rings out'],[39,'Beat rings in'],[40,'Hyperspace stars'],[41,'Counter-rotating polygons'],[42,'Log spiral + drop'],[43,'Feedback tunnel'],[44,'Copy-ratio rings'],[45,'Moiré patch'],[46,'Layered ambient']]},
  {sec:'Not on the sound',g:'Still',items:[[34,'Buddha'],[33,'Solid colour'],[9,'Media'],[10,'Test grid'],[30,'Colour check']]},
  {g:'Tunnel frame',items:[[31,'Tunnel square'],[32,'Tunnel circle']]},
  {g:'Flowing',items:[[11,'Color flow'],[12,'Lava lamp'],[8,'Aurora'],[14,'Breathing']]},
@@ -574,6 +577,16 @@ const PAT_NOTE={
  34:'A still, seated Buddha in meditation, drawn in LEDs with a brighter outline, inside a warm frame on the outermost LEDs. Rainbow palette gives warm white; other palettes colour it.',
  35:'A wireframe icosahedron whose twelve corners slowly swing through its centre, so it keeps folding into itself. Nested copies drift endlessly inwards.',
  36:'The real Buddhabrot: the orbits of millions of escaping points of z → z² + c, piled up live. The view turns slowly through the four-dimensional (z, c) space, so it never repeats. Red: orbits of 8 to 1000 steps, green up to 200, blue up to 40.',
+ 37:'A 1-LED outline on the outermost LEDs with two comets chasing round it, 0.5 to 2 laps a second on the bass, tails longer on the bass. The outline gives the biggest step between mirror copies, so the cleanest tunnel. Square or circle from the frame buttons.',
+ 38:'Every kick spawns a thin ring at the centre that grows exponentially to the edge, like the mirror copies themselves. Without beats a ring still flows out every 0.7 s.',
+ 39:'The same beat rings, but shrinking from the edge to the centre. Lab work on vection found inward flow at least as strong as outward.',
+ 40:'44 sparse stars in the outer part of the panel, centre left empty: the mirror turns each one into a trail of dots. They cruise slowly and warp into streaks on the kicks; the treble makes them sparkle.',
+ 41:'Six nested squares and hexagons, each 0.8 times the one outside it, turning in alternate directions at golden-ratio speeds (25 to 60 degrees a second on the bass) with a slow twist. They swell 10 % on the bass.',
+ 42:'A 3-arm logarithmic spiral. Every mirror copy of a log spiral is the same spiral turned, so the arms seem to twist inwards. It spins faster on the bass for 24 s, then stops for 6 s: after watching it turn, the still spiral seems to swirl backwards.',
+ 43:'A second, digital tunnel (Droste): on every beat and every 0.15 s in between, the last frame is zoomed 10 to 25 % (bass), turned 3 to 9 degrees (mids, alternating) and faded, so a breathing outline leaves a trail of nested, turned echoes on top of the mirror\'s own.',
+ 44:'Nested rings at the mirror copy ratio for your viewing distance, so drawn rings land on each other\'s reflections and fuse into one impossible tunnel; every 12 s it eases to rings 5 LEDs apart. They drift inwards and brighten on the bass.',
+ 45:'A fine ring grating (period 2 LEDs) in a patch under a quarter of the panel. It beats against its own mirror copies into moiré that changes as you move. It only drifts one way, at the speed of the mids; colour steps with the chase. Kept small and low-contrast for photosensitivity.',
+ 46:'For between songs, after Leo Villareal: a breathing edge outline (6 s), a few slow drifting lines and rare twinkles, colour cycling in 60 s. Loudness lifts the brightness, beats add twinkles.',
  33:'Every LED on one colour. Pick Single colour in the palette to choose which; other palettes drift slowly through their colours.',
  30:'Pure red, green, blue, yellow, cyan, magenta, white and orange at 100 % and 50 %, plus a 16 step grey ramp. Use it to compare the colour models.'};
 const PAL=[
@@ -745,6 +758,7 @@ function syncTab(){tabBtns.forEach(b=>b.setAttribute('aria-selected',String(b.da
 tabBtns.forEach(b=>b.addEventListener('click',()=>{S.tab=b.dataset.tabbtn;save();syncTab();const rl=document.getElementById('rail');rl.scrollTop=0;
   if(getComputedStyle(rl).overflowY==='visible'){const tb=rl.querySelector('nav.tabs'),want=tb.offsetTop+rl.getBoundingClientRect().top+scrollY-parseFloat(getComputedStyle(tb).top);if(scrollY>want)scrollTo(0,want);}}));
 if(!['view','av','vis','mirror','woofer','room','smoke','dj','booth'].includes(S.tab))S.tab='view';
+buildCtl('wedgeCtl',[{k:'wedge',l:'Wedge between the films',min:0,max:1.5,step:.05,f:v=>v<.01?'parallel':v.toFixed(2)+'° · '+(Math.tan(v*D2R)*600).toFixed(1)+' mm more gap on one side'}]);
 /* booth item controls: per item its type, a spot along the desk and a row */
 {const box=document.getElementById('bootBox');
  const groups=[['Mix','Mixer (52 × 53 cm)',['Off','On'],()=>BOOTH.mixer.src],['Set','DJ set',BOOTH.sets.map(s=>s.n),()=>BOOTH.sets[S.bSet].src||''],
@@ -822,6 +836,12 @@ uniform int uPal;
 uniform vec3 uSolid; // drive values that make the chosen single colour on this LED type
 uniform sampler2D uShape; // Buddha silhouette, mipmapped
 uniform sampler2D uBrot;  // live Buddhabrot density, one texel per LED
+/* infinity-tunnel patterns (research report "Trippy infinity mirror visuals"): all driven by the audio */
+uniform float uRing[8];   // age (s) of the last 8 beat-spawned rings, < 0 = none
+uniform vec4 uAcc;        // audio-driven phases: x chase laps, y star travel, z polygon rotation (rad), w spiral / drift phase
+uniform vec4 uFB;         // feedback: zoom per frame, rotation per frame (rad), decay, hold (spiral stopped = 1)
+uniform float uK1;        // scale of the first mirror copy at the current viewing distance
+float lnAA(float d,float w){return clamp(w*.5+.5-abs(d),0.,1.);}   /* anti-aliased line, d and w in LEDs */
 mat3 rotAx(vec3 a,float g){float c=cos(g),s=sin(g),k=1.-c;
   return mat3(c+a.x*a.x*k,a.y*a.x*k+a.z*s,a.z*a.x*k-a.y*s, a.x*a.y*k-a.z*s,c+a.y*a.y*k,a.z*a.y*k+a.x*s, a.x*a.z*k+a.y*s,a.y*a.z*k-a.x*s,c+a.z*a.z*k);}
 float segD(vec2 p,vec2 a,vec2 b){vec2 pa=p-a,ba=b-a;float h=clamp(dot(pa,ba)/max(dot(ba,ba),1e-8),0.,1.);return length(pa-ba*h);}
@@ -1198,6 +1218,60 @@ void main(){
       acc+=pal(n*.5+fi*.2+t*.01)*dens*fade*.75;
     }
     col=acc+stars(p,t)*.9;
+  }else if(uPat>=37&&uPat<=46){
+    /* ---- infinity-tunnel patterns: thin lines and sparse points on pure black, far from the centre ---- */
+    vec2 x=c-uN*.5;float rs=max(abs(x.x),abs(x.y)),rc=length(x),R=uN*.5-.5,th=atan(x.y,x.x);
+    float rr=uOvlC>.5?rc:rs;                    /* square or round, from the frame-shape buttons */
+    float bass=uLev.x,mid=uLev.y,tre=uLev.z,bt=uLev.w;
+    if(uPat==37){                                /* edge outline with comets chasing round it */
+      float s=fract(th/6.28318+.5),line=lnAA(rr-R,1.);
+      float tail=(10.+20.*bass)/(uN*4.),cm=0.;
+      for(int j=0;j<2;j++){float h=fract(uAcc.x+float(j)*.5),b=fract(h-s);cm+=exp(-b/tail)*step(b,.999);}
+      col=line*(pal(t*.02+s*.3)*(.28+.25*bass)+mix(pal(t*.02+.5),vec3(1.),.5)*min(cm,1.3));
+    }else if(uPat==38||uPat==39){                /* rings spawned on the kick, growing exponentially (out) or shrinking (in) */
+      float k=2.2;
+      for(int i=0;i<8;i++){float a=uRing[i];if(a<0.)continue;
+        float r=uPat==38?1.5*exp(k*a):R*exp(-k*a),life=log(R/1.5)/k,u=a/life;
+        if(u>1.)continue;
+        float fade=uPat==38?smoothstep(0.,.2,u):smoothstep(1.,.8,u)*smoothstep(0.,.05,u);
+        col+=pal(float(i)*.13+t*.02)*lnAA(rr-r,1.5)*fade*(.7+.3*bass);}
+      col+=pal(t*.02)*lnAA(rr-R,1.)*(.15+.2*bass);
+    }else if(uPat==40){                          /* sparse star field: the mirror turns every star into a trail */
+      for(int i=0;i<30;i++){float fi=float(i),ang=h11(fi*1.7)*6.28318,u=fract(h11(fi*3.1+.4)+uAcc.y*(.6+.8*h11(fi)));
+        float r=R*(.42+.66*u*u);vec2 dir=vec2(cos(ang),sin(ang));
+        float len=.5+uFB.w*3.5;                  /* streak length grows with the warp speed */
+        float d=segD(x,dir*r,dir*max(r-len,0.));
+        col+=mix(vec3(1.),pal(h11(fi*5.3)+t*.01),.45)*lnAA(d,1.1)*smoothstep(0.,.15,u)*(.6+.4*tre);}
+    }else if(uPat==41){                          /* nested polygons, counter-rotating at golden-ratio speeds, breathing on the bass */
+      float tw=.35*sin(6.28318*.07*t);
+      for(int k=0;k<6;k++){float fk=float(k),n=k%2==0?4.:6.;
+        float Rk=(R-.5)*pow(.8,fk)*(1.+.1*bass),ph=(k%2==0?1.:-1.)*uAcc.z*pow(.618,fk)+fk*tw;
+        float a=mod(th-ph,6.28318/n)-3.14159/n,d=rc*cos(a)-Rk*cos(3.14159/n);
+        col+=pal(fk*.12+t*.015)*lnAA(d,1.4)*(1.-fk*.1);}
+    }else if(uPat==42){                          /* log spiral: each mirror copy is the same spiral turned, so the arms twist inwards */
+      float n=3.,ib=1./.065,ph=n*th-ib*log(max(rc,1.)/R)-uAcc.w;
+      float d=abs(fract(ph/6.28318)-.5)*6.28318*rc/length(vec2(n,ib));
+      col=pal(t*.02+log(max(rc,1.))*.15)*lnAA(d,1.3)*smoothstep(2.,5.,rc)*(.7+.4*bass);
+    }else if(uPat==43){                          /* feedback seed: a thin outline that breathes, plus sparks on the beat */
+      float rS=uN*.16;                         /* fixed size, so it does not smear between the feedback steps */
+      col=pal(t*.05)*lnAA(rr-rS,1.)*(.6+.4*bass);
+      if(bt>.5&&h21(floor(c)+floor(uT*8.))>.996&&rc<uN*.3)col+=vec3(1.)*bt;
+    }else if(uPat==44){                          /* nested rings at the mirror's own copy ratio (fused tunnel) or 5 LEDs apart */
+      float mode=smoothstep(.4,.6,abs(fract(uT/24.)*2.-1.)),drift=fract(uAcc.w*.15);
+      for(int j=0;j<14;j++){float fj=float(j)+drift;
+        float r1=R*pow(uK1,fj*1.),r2=R-5.*fj,r=mix(r1,r2,mode);if(r<3.)continue;
+        col+=pal(fj*.07+t*.02)*lnAA(rr-r,1.)*(.55+.45*bass)*(.4+.6*r/R);}
+    }else if(uPat==45){                          /* moire patch: a fine grating that beats against its own mirror copies */
+      float Rp=uN*.28,v=.5+.5*cos(6.28318*(rc/2.-uAcc.w*.4));
+      col=pal(t*.03+floor(uAcc.x)*.1)*(.18+.22*v)*smoothstep(Rp,Rp-2.,rc);
+      col+=pal(t*.02+.5)*lnAA(rr-R,1.)*(.3+.3*bass);
+    }else{                                       /* layered ambient: breathing outline, slow lines, sparse twinkles */
+      float br=pow(.5+.5*sin(6.28318*t/6.),2.)*(.5+.5*bass);
+      col=pal(t/60.)*lnAA(rr-R,1.)*(.2+.6*br);
+      for(int i=0;i<3;i++){float fi=float(i),a=t*(.05+.03*fi)+fi*2.1;vec2 dir=vec2(cos(a),sin(a));
+        float d=abs(dot(x,vec2(-dir.y,dir.x))-R*.6*sin(t*.07+fi*1.7));col+=pal(t/60.+fi*.2)*lnAA(d,1.)*.25*smoothstep(R,R*.5,rc);}
+      if(h21(floor(c)+floor(uT*3.))>.997-.01*bt)col+=vec3(.8)*smoothstep(R*.3,R*.5,rc);
+    }
   }else{
     vec3 g=vec3(.05);
     if(mod(c.x,10.)<1.||mod(c.y,10.)<1.)g=vec3(.2,.26,.38);
@@ -1210,6 +1284,11 @@ void main(){
   }
   if(uOvl>.001){vec3 f=elec(c,p,t,uOvlC);float am=clamp(max(f.r,max(f.g,f.b))*1.3,0.,1.);col=mix(col,f,am*uOvl);}
   col=clamp(col,0.,1.);
+  if(uPat==43){   /* digital feedback: last frame zoomed and turned about the centre, then faded (Milkdrop-style, a second tunnel) */
+    vec2 m=vec2(uN*.5),d=gl_FragCoord.xy-m;float cr=cos(-uFB.y),sr=sin(-uFB.y);
+    vec2 pc=m+mat2(cr,sr,-sr,cr)*d/uFB.x;
+    vec3 pv=texelFetch(uPrev,ivec2(clamp(floor(pc),vec2(0.),vec2(uN-1.))),0).rgb*uFB.z-(uFB.z<1.?1.5/255.:0.);
+    o=vec4(clamp(max(col,pv),0.,1.),1.);return;}
   vec3 prev=texelFetch(uPrev,ivec2(gl_FragCoord.xy),0).rgb;
   vec3 tgt=max(col,prev*uDecay-.75/255.);
   vec3 d=tgt-prev;
@@ -1333,6 +1412,7 @@ uniform float uPrtD;     // depth of the LED ring inside the slot (m)
 uniform float uPrtF0;    // gloss of the slot lining (0 for raw wood and matte paint)
 uniform vec3 uBulb[10];  // bulbs: intensity of one bulb in each of the 10 rows (cd, linear RGB)
 uniform float uLook;     // how far you look up from the panel (rad)
+uniform float uWedge;    // angle between the two films (rad), a deliberate wedge that bends the tunnel
 /* DJ position: extra boxes (fold-down podium, its legs, the riser and the DJ gear) and the DJ dummy as capsules */
 uniform vec3 uXB0[16],uXB1[16];
 uniform int uXI[16];
@@ -1490,9 +1570,12 @@ vec3 tunnel(vec3 h,vec3 d,float dist){
   for(int k=0;k<128;k++){
     float fk=float(k);
     float rb=offF+(2.*fk+1.)*offC;
-    vec2 pb=h.xy+tau*rb;
+    /* wedge: with the films a small angle apart, every round trip turns the ray by twice that angle, so copy k
+       slides sideways by about z^2 a / (2 g) with z = (2k+1) g: the tunnel bends toward the narrow side */
+    vec2 wk=vec2((2.*fk+1.)*(2.*fk+1.)*uLay.y*uWedge*.5,0.);
+    vec2 pb=h.xy+tau*rb-wk;
     if(max(abs(pb.x),abs(pb.y))>uHalfWin)break;
-    vec2 g=(h.xy+tau*(rb+offB))/uPitch+uN*.5;
+    vec2 g=(h.xy+tau*(rb+offB)-wk)/uPitch+uN*.5;
     if(g.x>=0.&&g.y>=0.&&g.x<uN&&g.y<uN){
       float w=pixA*(dist+appF+(2.*fk+1.)*appC+appB)/cz*.5;
       float s2=uSig*uSig+w*w,sr=sqrt(s2)/uPitch;
@@ -2550,6 +2633,31 @@ function djUniforms(){const g=djGeom();djXB0.fill(0);djXB1.fill(0);
 const fogP=new Float32Array(64),fogB=new Float32Array(16);const slotDuty=[0,0,0],slotRGB=[0,0,0];
 const hudTR=$('hudTR'),TANH=0.441,TLC=cctRGB(4000),ADAPT_FALLBACK=[1,40,3000,0.5,20];
 function uni(P,name,fn,...a){if(P.u[name]!=null)gl[fn](P.u[name],...a);}
+/* audio state for the infinity-tunnel patterns. Recipes from the research report: rings grow e^(kt), chase 0.5-2 laps/s,
+   polygons 10-60 deg/s at golden-ratio speeds, feedback zoom 1.005-1.03 and decay ~0.96-0.98 per frame (frame-rate
+   independent), spiral spins ~24 s then holds 6 s so it seems to swirl backwards (motion aftereffect).
+   Kicks spawn small events instead of full-panel flashes, which keeps it inside the 3 flashes/s limit at any tempo. */
+const TUN={rings:new Float32Array(8).fill(-1),ri:0,lastBeat:-9,lastSpawn:-9,prevBeat:0,acc:[0,0,0,0],warp:0};
+function tunnelAudio(t,dts){const T=TUN,sp=S.speed;
+  if(beat>.5&&T.prevBeat<=.5&&t-T.lastBeat>.22){T.lastBeat=t;T.rings[T.ri]=0;T.ri=(T.ri+1)%8;T.lastSpawn=t;}
+  T.prevBeat=beat;
+  if(t-T.lastBeat>1.2&&t-T.lastSpawn>.7){T.rings[T.ri]=0;T.ri=(T.ri+1)%8;T.lastSpawn=t;}   /* quiet: keep a slow flow going */
+  for(let i=0;i<8;i++)if(T.rings[i]>=0){T.rings[i]+=dts*sp;if(T.rings[i]>4)T.rings[i]=-1;}
+  T.warp+=((beat>.6?1:Math.min(1,bass*1.3))-T.warp)*(1-Math.exp(-dts/(beat>.6?.08:.6)));
+  T.acc[0]+=dts*sp*(.5+1.5*Math.min(1,bass));                    /* chase laps */
+  T.acc[1]+=dts*sp*(.08+.35*T.warp);                             /* star travel: cruise, warp on kicks */
+  T.acc[2]+=dts*sp*(25+35*Math.min(1,bass))*Math.PI/180;         /* polygon rotation */
+  const hold=(t%30)>24;                                           /* spiral: 24 s spinning, 6 s still */
+  if(!hold)T.acc[3]+=dts*sp*(.8+2.2*Math.min(1,bass));
+  /* feedback in discrete Droste steps: on every beat, and every 0.15 s in between, the last frame is zoomed 10-25 %
+     (bass) and turned 3-9 degrees (mids) and faded to 70 %; between steps it holds. A continuous 1 %-per-frame zoom
+     smears into a solid band on a 90 x 90 grid, the "fill in disguise" the research warns about. */
+  T.fbT=(T.fbT||0)+dts*sp;const stepNow=T.fbT>.15||(beat>.5&&T.prevStep<=.5);T.prevStep=beat;
+  if(stepNow){T.fbT=0;T.fb=[1.14+.12*Math.min(1,bass),(.05+.1*mid)*(TUN.ri%2?1:-1),.62,T.warp];}
+  else T.fb=[1,0,1,T.warp];}
+function tunnelUniforms(){const T=TUN;   /* call while the pattern program is in use */
+  uni(P1,'uRing[0]','uniform1fv',T.rings);uni(P1,'uAcc','uniform4f',...T.acc);uni(P1,'uFB','uniform4f',...(T.fb||[1,0,0,0]));
+  const g=CFG.acr?CFG.g.mm/1490:CFG.g.mm/1000,D=Math.max(.1,S.dist);uni(P1,'uK1','uniform1f',(D+g)/(D+3*g));}
 const adY=new Float32Array(AD*AD);
 function readAdapt(){
   gl.readPixels(0,0,AD,AD,gl.RGBA,gl.FLOAT,adBuf);
@@ -2567,6 +2675,7 @@ function frame(ts){
   const decay=S.trail<0.01?0:Math.exp(-dts/(0.06*Math.pow(70,S.trail)));
   const soft=S.soft<0.01?1:1-Math.exp(-dts/(0.04*Math.pow(100,S.soft)));
   updateAudio(t);mediaTick();
+  tunnelAudio(t,dts);
 
   /* pass 1: pattern value per LED */
   gl.bindFramebuffer(gl.FRAMEBUFFER,fbos[cur]);gl.viewport(0,0,N,N);
@@ -2575,7 +2684,7 @@ function frame(ts){
   uni(P1,'uN','uniform1f',N);uni(P1,'uT','uniform1f',t);uni(P1,'uSpeed','uniform1f',S.speed);
   const patId=(S.pat===9&&!media)?4:S.pat;
   uni(P1,'uPat','uniform1i',patId);uni(P1,'uSpec','uniform1i',1);uni(P1,'uWave','uniform1i',4);uni(P1,'uMedia','uniform1i',2);
-  uni(P1,'uLev','uniform4f',bass,mid,treb,beat);
+  uni(P1,'uLev','uniform4f',bass,mid,treb,beat);tunnelUniforms();
   uni(P1,'uMed','uniform3f',mediaAspect,S.fit,0);uni(P1,'uVid','uniform3f',S.vContrast,S.vSat,S.vGamma);
   uni(P1,'uPrev','uniform1i',3);uni(P1,'uDecay','uniform1f',decay);uni(P1,'uSoft','uniform1f',soft);uni(P1,'uOvl','uniform1f',S.ovl);uni(P1,'uOvlC','uniform1f',S.ovlC);
   uni(P1,'uFrW','uniform1f',S.frW);uni(P1,'uFrIn','uniform1f',S.frIn);uni(P1,'uFrRate','uniform1f',S.frRate);uni(P1,'uFrMode','uniform1i',S.frMode);uni(P1,'uPal','uniform1i',S.pal);
@@ -2597,7 +2706,7 @@ function frame(ts){
   /* the hall, the trailer and the panel stay put: only your eyes move */
   const I3=[1,0,0,0,1,0,0,0,1],EYE=eyePos();
   gl.uniformMatrix3fv(P2.u.uRot,false,I3);gl.uniformMatrix3fv(P2.u.uRotI,false,I3);
-  uni(P2,'uEyeW','uniform3f',EYE[0],EYE[1],EYE[2]);uni(P2,'uLook','uniform1f',S.look*D2R);djUniforms();uni(P2,'uFloor','uniform1f',CART.floor);
+  uni(P2,'uEyeW','uniform3f',EYE[0],EYE[1],EYE[2]);uni(P2,'uLook','uniform1f',S.look*D2R);uni(P2,'uWedge','uniform1f',S.wedge*D2R);djUniforms();uni(P2,'uFloor','uniform1f',CART.floor);
   gl.uniformMatrix3fv(P2.u.uLedM,false,C.M);
   uni(P2,'uDuty','uniform1i',0);uni(P2,'uPort','uniform1i',8);uni(P2,'uPrtD','uniform1f',PORT.D0);uni(P2,'uPrtF0','uniform1f',WALLS[PORT.wall].F0);uni(P2,'uTanH','uniform1f',TANH);uni(P2,'uD','uniform1f',S.dist);
   uni(P2,'uN','uniform1f',N);uni(P2,'uPitch','uniform1f',C.pitch);uni(P2,'uSig','uniform1f',C.L.pkg/1000*0.3);
