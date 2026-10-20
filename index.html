@@ -1208,10 +1208,16 @@ function portMC(D0,wi){
 portMC(S.prtD/100,S.prtW);
 function cartGLSL(){
   const C=CART,L=(x,y,z)=>[(x-C.px)/100,(y-C.py)/100,(z-60)/100],d=C.dX,R0=123+d,RE=181+d,SR=60+C.sw;
-  const B=[ /* x0,y0,z0, x1,y1,z1, id: 0 cabinet, 1 sub, 2 top, 3 steel, 4 number plate, 5 rear light */
-    [0,C.bed,-60,58,C.subTop,60,1],[0,C.subTop,-60,58,C.top,60,2],[R0,C.bed,-60,RE,C.subTop,60,1],[R0,C.subTop,-60,RE,C.top,60,2],
-    [58,C.bed,-60,R0,C.slotBot,60,0],[58,C.slotBot,-60,60,C.slotTop,60,0],[SR,C.slotBot,-60,R0,C.slotTop,60,0],
-    [58,C.slotTop,-60,R0,C.slotTop+2,60,0],[60,C.slotBot,-60,SR,C.slotTop,48,0],
+  /* The subs run the full 120 cm; the tops (mid + horn) are 30 cm deep at the front. Behind them the whole trailer is a
+     flat DJ desk at sub height: the space between the subs is closed up to the same height. The mirror sits in a
+     30 cm deep block at the front, whatever its size. */
+  const DK=30;   /* depth of the tops and of the mirror block, cm */
+  const B=[ /* x0,y0,z0, x1,y1,z1, id: 0 cabinet, 1 sub, 2 top, 3 steel, 4 number plate, 5 rear light, 11 desk top */
+    [0,C.bed,-60,58,C.subTop,60,1],[0,C.subTop,60-DK,58,C.top,60,2],[R0,C.bed,-60,RE,C.subTop,60,1],[R0,C.subTop,60-DK,RE,C.top,60,2],
+    [58,C.bed,-60,R0,C.slotBot,60,0],[58,C.slotBot,-60,R0,C.subTop,60-DK,0],
+    [58,C.slotBot,60-DK,60,C.slotTop,60,0],[SR,C.slotBot,60-DK,R0,C.slotTop,60,0],
+    [58,C.slotTop,60-DK,R0,C.slotTop+2,60,0],[60,C.slotBot,60-DK,SR,C.slotTop,48,0],
+    [-1,C.subTop,-60,RE+1,C.subTop+2.5,60-DK,11],
     [-3,C.bed-C.chT,-56,183+d,C.bed,56,3],[181+d,29,-3,238+d,33,3,3],[236+d,30,-5,244+d,36,5,3],[222+d,6,-1.5,225+d,31,1.5,3],[218+d,0,-2,229+d,12,2,3],
     [-4.6,17,-26,-4,28,26,4],[-5,23,-56,-4,28.2,-38,5],[-5,23,38,-4,28.2,56,5],
     /* fog machine on a steel shelf against the outer side of the right sub, nozzle towards the dancefloor */
@@ -1452,6 +1458,7 @@ vec3 shadeCart(vec3 p,vec3 n,int id,int bi,vec3 rd,float dist){
   if(cab){float g=n3(p*350.);rho*=1.+.3*(g-.5)*max(peb,.3*fine);
     n=normalize(n+(vec3(n3(p*300.+3.1),n3(p*300.+7.7),n3(p*300.+11.3))-.5)*.18*peb*(1.-abs(n)));}
   if(id==3||id==8){rho=.05;spec=.03;}
+  else if(id==11){rho=.06;spec=.035;}   /* desk top: black high-pressure laminate */
   else if(id==9){rho=.03;spec=.05;   /* fog machine: black powder-coated steel, vent slots on the sides, a small status light */
     if(abs(n0.x)>.5&&fract((p.z+.6)*40.)<.45&&abs(p.y-FOGY)<.06)rho=.006;
     if(n0.z>.5&&length(p.xy-vec2(FOGX+.09,FOGY+.07))<.004)emit=uFogLed;}  else if(id==4){col=vec3(.95,.72,.05);rho=.6;}
@@ -1506,7 +1513,7 @@ vec3 shadeCart(vec3 p,vec3 n,int id,int bi,vec3 rd,float dist){
   }
   vec3 p0=p+n*2e-3,rr=reflect(rd,n);
   /* bare tolex is rough: its sheen is a wide lobe (the cosine-averaged surroundings), not a mirror image of the luminaires */
-  vec3 sp=cab&&spec<.0201?irr(p0,rr)/PI*mix(3.,10.,pow(1.-abs(dot(rd,n)),5.)):env(p0,rr);
+  vec3 sp=(cab||id==11)&&spec<.0401?irr(p0,rr)/PI*mix(3.,10.,pow(1.-abs(dot(rd,n)),5.)):env(p0,rr);
   return emit+col*rho*irr(p0,n)/PI+spec*sp;
 }
 /* ---------- fog ----------

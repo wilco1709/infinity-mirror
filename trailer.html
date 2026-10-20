@@ -56,7 +56,7 @@ input[type=range]{width:100%;accent-color:var(--accent);min-height:28px}
   <aside class="rail">
     <header>
       <h1>Speaker Trailer</h1>
-      <p class="sub">The sound trailer with the infinity mirror (60 cm to 1 m) right above the wheel case, the open gap for the DJ and the fog machine on the right. Same model as the Blender renders.</p>
+      <p class="sub">The sound trailer with the infinity mirror (60 cm to 1 m) right above the wheel case, the open gap for the DJ, a flat DJ desk at sub height behind the 30 cm deep tops, and the fog machine on the right. Same model as the Blender renders.</p>
     </header>
     <section aria-labelledby="h-light">
       <h2 id="h-light">Light</h2>
@@ -202,6 +202,7 @@ const MAT={
   driver_frame:new THREE.MeshStandardMaterial({color:0x101012,metalness:.6,roughness:.42}),
   horn_abs:new THREE.MeshPhysicalMaterial({color:0x08080a,roughness:.45,clearcoat:.2}),
   cavity:new THREE.MeshStandardMaterial({color:0x010101,roughness:1}),
+  desk_black_hpl:new THREE.MeshStandardMaterial({color:0x0b0b0c,roughness:.55}),
   perforated_grille:new THREE.MeshStandardMaterial({color:0x0b0b0c,metalness:.7,roughness:.45,alphaMap:holes,alphaTest:.5,side:THREE.DoubleSide})};
 /* port ring: the glTF UVs count LEDs (one UV cell per LED), so the dot texture repeats once per cell */
 const ringDot=ledDot.clone();ringDot.repeat.set(1,1);ringDot.needsUpdate=true;
