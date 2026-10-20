@@ -56,7 +56,7 @@ input[type=range]{width:100%;accent-color:var(--accent);min-height:28px}
   <aside class="rail">
     <header>
       <h1>Speaker Trailer</h1>
-      <p class="sub">The sound trailer with the 600 mm infinity mirror right above the wheel case, the open gap for the DJ, the fog machine on the right and an optional 1 × 1 m LED screen. Same model as the Blender renders.</p>
+      <p class="sub">The sound trailer with the infinity mirror (60 cm or 1 m) right above the wheel case, the open gap for the DJ and the fog machine on the right. Same model as the Blender renders.</p>
     </header>
     <section aria-labelledby="h-light">
       <h2 id="h-light">Light</h2>
@@ -83,12 +83,12 @@ input[type=range]{width:100%;accent-color:var(--accent);min-height:28px}
       <p class="note">A ring of WS2812B-2020 strip, 3 LEDs wide (3 × 179 per slot), lines the inside of each 46 × 10 cm slot like a bracelet turned inside out, LEDs facing the middle. The slot is raw birch plywood inside. It shows the panel's dominant colour: <span class="sw" id="domSw"></span><span id="domTxt"></span>. <span id="ringTxt"></span></p>
     </section>
     <section aria-labelledby="h-scr">
-      <h2 id="h-scr">LED screen</h2>
-      <div class="chips" role="radiogroup" aria-label="LED screen">
-        <button type="button" data-scr="0" aria-pressed="true">Not fitted</button>
-        <button type="button" data-scr="1" aria-pressed="false">1 × 1 m P10 screen</button>
+      <h2 id="h-scr">Panel size</h2>
+      <div class="chips" role="radiogroup" aria-label="Panel size">
+        <button type="button" data-size="600" aria-pressed="true">60 cm</button>
+        <button type="button" data-size="1000" aria-pressed="false">1 m</button>
       </div>
-      <p class="note">A Dahua PHGOA10-FC cabinet: 1000 × 1000 mm, 96 × 96 LEDs at 10.42 mm, 5,500 nits, 24 kg, on a road case for its power supplies at the number-plate end. The trailer gets 106 cm longer. The simulator also has the 960 mm P10-module and the self-built WS2812B versions.</p>
+      <p class="note">1 m uses a Dahua PHGOA10-FC P10 cabinet (1000 × 1000 mm, 96 × 96 LEDs at 10.42 mm, 5,500 nits, 24 kg) behind a 1040 mm mirror. The slot and the trailer get 44 cm wider, and above the mirror only about 11 cm is left to see the DJ. The simulator also has the 960 mm P10-module and self-built WS2812B versions.</p>
     </section>
     <section aria-labelledby="h-view">
       <h2 id="h-view">View</h2>
@@ -105,8 +105,8 @@ input[type=range]{width:100%;accent-color:var(--accent);min-height:28px}
       <h2 id="h-dim">Measurements</h2>
       <dl>
         <dt>Number plate to right sub</dt><dd id="dLen">185 cm</dd><dt>Front to back</dt><dd>120 cm</dd><dt>Height to the top</dt><dd>158 cm</dd>
-        <dt>Sub cabinet</dt><dd>58 × 67 cm</dd><dt>Top cabinet</dt><dd>58 × 58 cm</dd><dt>LED panel</dt><dd>60 × 60 cm</dd>
-        <dt>Slot for the panel</dt><dd>61 × 61 cm</dd><dt>Open view to the DJ</dt><dd>65 × 55 cm</dd><dt>Floor height</dt><dd>33 cm</dd>
+        <dt>Sub cabinet</dt><dd>58 × 67 cm</dd><dt>Top cabinet</dt><dd>58 × 58 cm</dd><dt>LED panel</dt><dd id="dPanel">60 × 60 cm</dd>
+        <dt>Slot for the panel</dt><dd id="dSlot">61 × 61 cm</dd><dt>Open view to the DJ</dt><dd id="dGap">65 × 55 cm</dd><dt>Floor height</dt><dd>33 cm</dd>
       </dl>
       <p class="note"><a href="./">Open the infinity mirror simulator</a></p>
     </section>
@@ -129,7 +129,11 @@ import {RectAreaLightUniformsLib} from 'three/addons/lights/RectAreaLightUniform
 RectAreaLightUniformsLib.init();
 
 /* glTF from Blender: x along the trailer, y up, z out of the speaker fronts. Panel window centre at (0.905, 0.7047, 0). */
-const PANEL=new THREE.Vector3(0.905,0.70466,0),N=90,PITCH=0.00625,HALF=0.28125;
+/* the 600 mm mirror (90 x 90 at 6.25 mm), or the 1 m one (Dahua P10 cabinet, 96 x 96 at 10.42 mm) in a 105 cm slot:
+   then the centre column and everything right of it move 44 cm */
+const SIZES={s600:{panel:[0.905,0.70466],N:90,pitch:0.00625,half:0.28125,dx:0,len:185,glb:'speaker_trailer.glb'},
+             s1000:{panel:[1.125,0.92466],N:96,pitch:1/96,half:0.5,dx:.44,len:229,glb:'speaker_trailer_1m.glb'}};
+let SZ=SIZES.s600,PANEL=new THREE.Vector3(...SZ.panel,0),N=SZ.N,PITCH=SZ.pitch,HALF=SZ.half;
 const view=document.getElementById('view');
 const renderer=new THREE.WebGLRenderer({antialias:true,powerPreference:'high-performance'});
 renderer.setPixelRatio(Math.min(devicePixelRatio||1,2));
@@ -247,14 +251,20 @@ function syncGlow(){glowMat.emissive.copy(portMat.emissive).multiply(WOODN);glow
 const RING_NITS_PER_Y=9600/.627;let LIGHT_SCALE=2e-4;
 
 /* ---------- the infinity mirror: each pixel follows its ray through the real stack ---------- */
-const ledData=new Uint8Array(N*N*4),ledTex=new THREE.DataTexture(ledData,N,N,THREE.RGBAFormat);
-ledTex.magFilter=ledTex.minFilter=THREE.NearestFilter;ledTex.colorSpace=THREE.SRGBColorSpace;ledTex.needsUpdate=true;
+let ledData,ledTex;
+function makeLedTex(){ledData=new Uint8Array(N*N*4);ledTex=new THREE.DataTexture(ledData,N,N,THREE.RGBAFormat);
+  ledTex.magFilter=ledTex.minFilter=THREE.NearestFilter;ledTex.colorSpace=THREE.SRGBColorSpace;ledTex.needsUpdate=true;}
+makeLedTex();
 const tunnelMat=new THREE.ShaderMaterial({
-  uniforms:{uLed:{value:ledTex},uCam:{value:new THREE.Vector3()},uGain:{value:6},uTf:{value:.15},uTb:{value:.28},uRf:{value:.63},uRb:{value:.46},uRo:{value:.62}},
+  uniforms:{uLed:{value:ledTex},uCam:{value:new THREE.Vector3()},uGain:{value:6},uTf:{value:.15},uTb:{value:.28},uRf:{value:.63},uRb:{value:.46},uRo:{value:.62},
+    uN:{value:N},uP:{value:PITCH},uH:{value:HALF}},
   vertexShader:`varying vec3 vL;void main(){vL=position;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}`,
   fragmentShader:`precision highp float;
-  uniform sampler2D uLed;uniform vec3 uCam;uniform float uGain,uTf,uTb,uRf,uRb,uRo;varying vec3 vL;
-  const float N=${N}.,P=${PITCH},H=${HALF},SIG=.0006;
+  uniform sampler2D uLed;uniform vec3 uCam;uniform float uGain,uTf,uTb,uRf,uRb,uRo,uN,uP,uH;varying vec3 vL;
+  const float SIG=.0006;
+  #define N uN
+  #define P uP
+  #define H uH
   float tanIn(float s,float n){float a=s/n;return a/sqrt(max(1e-6,1.-a*a));}
   void main(){
     vec3 d=normalize(vL-uCam);float s0=length(d.xy);vec2 tau=s0>1e-6?d.xy/s0:vec2(1.,0.);
@@ -276,16 +286,19 @@ const tunnelMat=new THREE.ShaderMaterial({
     }
     gl_FragColor=vec4(acc*uGain/(1.-uRo),1.);
   }`});
-const tunnel=new THREE.Mesh(new THREE.PlaneGeometry(2*HALF,2*HALF),tunnelMat);tunnel.position.copy(PANEL).setZ(.0004);scene.add(tunnel);
-tunnel.geometry.translate(0,0,0);
+const tunnel=new THREE.Mesh(new THREE.PlaneGeometry(2*HALF,2*HALF),tunnelMat);scene.add(tunnel);
 /* the front film in front of it: a 62 % mirror that reflects the surroundings */
 const film=new THREE.Mesh(new THREE.PlaneGeometry(2*HALF,2*HALF),new THREE.MeshPhysicalMaterial({color:0xffffff,metalness:1,roughness:.03,transparent:true,opacity:.62,depthWrite:false}));
-film.position.copy(PANEL).setZ(.0012);scene.add(film);
+scene.add(film);
 /* the tunnel shader works in panel coordinates: put the plane's local origin on the panel centre */
-tunnel.position.set(PANEL.x,PANEL.y,.0004);
+function placeMirror(){tunnel.geometry.dispose();tunnel.geometry=new THREE.PlaneGeometry(2*HALF,2*HALF);film.geometry.dispose();film.geometry=new THREE.PlaneGeometry(2*HALF,2*HALF);
+  tunnel.position.set(PANEL.x,PANEL.y,.0004);film.position.set(PANEL.x,PANEL.y,.0012);
+  Object.assign(tunnelMat.uniforms,{uN:{value:N},uP:{value:PITCH},uH:{value:HALF},uLed:{value:ledTex}});}
+placeMirror();
 
 /* ---------- panel content ---------- */
-const buddha=(()=>{const c=document.createElement('canvas');c.width=c.height=N;const x=c.getContext('2d');
+let buddha;
+function makeBuddha(){buddha=(()=>{const c=document.createElement('canvas');c.width=c.height=N;const x=c.getContext('2d');
   x.setTransform(N/1000,0,0,N/1000,0,N*.025);x.fillStyle='#fff';
   const E=(cx,cy,rx,ry,r)=>{x.beginPath();x.ellipse(cx,cy,rx,ry,r||0,0,Math.PI*2);x.fill();};
   const B=p=>{x.beginPath();x.moveTo(p[0],p[1]);for(let i=2;i<p.length;i+=6)x.bezierCurveTo(p[i],p[i+1],p[i+2],p[i+3],p[i+4],p[i+5]);x.closePath();x.fill();};
@@ -299,7 +312,8 @@ const buddha=(()=>{const c=document.createElement('canvas');c.width=c.height=N;c
   for(let j=0;j<N;j++)for(let i=0;i<N;i++){const v=m[j*N+i];if(v<.5)continue;let edge=false;
     for(const[a,b]of[[1,0],[-1,0],[0,1],[0,-1]]){const ii=i+a,jj=j+b;if(ii<0||jj<0||ii>=N||jj>=N||m[jj*N+ii]<.5)edge=true;}
     o[j*N+i]=edge?1:.3;}
-  return o;})();
+  return o;})();}
+makeBuddha();
 let PAT='buddha';
 function fillLeds(t){
   for(let j=0;j<N;j++)for(let i=0;i<N;i++){
@@ -357,23 +371,21 @@ async function setEnv(name){
     const sh=new THREE.Mesh(new THREE.CircleGeometry(30,64),new THREE.ShadowMaterial({opacity:.5}));sh.rotation.x=-Math.PI/2;sh.position.y=.001;sh.receiveShadow=true;lights.add(sh);
     bloom.strength=.3;portMat.emissiveIntensity=8;tunnelMat.uniforms.uGain.value=9;LIGHT_SCALE=1e-4;
   }
-  SCR_GAIN={studio:5,night:2.6,sunset:8}[name];syncScreen();
   syncGlow();
 }
 
-/* ---------- load the model ---------- */
-let model=null,SCR=false;const scrMats=[];
-function loadModel(withScreen){
- SCR=withScreen;const ld=document.getElementById('loading')||Object.assign(document.createElement('div'),{id:'loading'});ld.textContent='Loading the trailer…';view.appendChild(ld);
- new GLTFLoader().load(withScreen?'trailer/speaker_trailer_screen.glb':'trailer/speaker_trailer.glb',g=>{
+/* ---------- load the model (one file per panel size) ---------- */
+let model=null;
+function loadModel(sz){
+ SZ=sz;PANEL.set(...sz.panel,0);N=sz.N;PITCH=sz.pitch;HALF=sz.half;makeLedTex();makeBuddha();placeMirror();fillLeds(0);
+ const ld=document.getElementById('loading')||Object.assign(document.createElement('div'),{id:'loading'});ld.textContent='Loading the trailer…';view.appendChild(ld);
+ new GLTFLoader().load('trailer/'+sz.glb,g=>{
   if(model){scene.remove(model);mouthLights.forEach(l=>scene.remove(l));}
-  mouthLights.length=0;ringObjs.length=0;scrMats.length=0;
+  mouthLights.length=0;ringObjs.length=0;
   model=g.scene;
   model.traverse(o=>{
     if(!o.isMesh)return;
     const n=o.material&&o.material.name||'';
-    if(o.name.startsWith('S_screen_leds')){const mp=o.material.emissiveMap;if(mp)mp.colorSpace=THREE.SRGBColorSpace;
-      o.material=new THREE.MeshStandardMaterial({color:0x010101,roughness:.95,envMapIntensity:.05,emissive:0xffffff,emissiveMap:mp,emissiveIntensity:1});   /* black louvred mask */scrMats.push(o.material);syncScreen();return;}
     if(/^panel_(front_film|back_film|front_glass|back_glass|led_grid|cavity_wall)/.test(o.name)){o.visible=false;return;}
     if(n.startsWith('port_ring')){o.material=portMat;o.userData.z0=o.position.z;ringObjs.push(o);return;}
     if(/^port_(birch|mdf|black)/.test(n)){o.material=glowMat;o.receiveShadow=true;
@@ -389,23 +401,26 @@ function loadModel(withScreen){
   });
   scene.add(model);envStrength(ENVI);const l0=document.getElementById('loading');if(l0)l0.remove();
   /* the two slot mouths: 46 x 10 cm, centred 7 cm above the bed (33 cm), in front of each sub */
-  for(const x of [.29,1.52]){const l=new THREE.RectAreaLight(0xff8f33,1,2*PORT.W,PORT.H);l.position.set(x,.33+.02+PORT.H/2,.003);l.lookAt(x,.40,5);scene.add(l);mouthLights.push(l);}
+  for(const x of [.29,1.52+sz.dx]){const l=new THREE.RectAreaLight(0xff8f33,1,2*PORT.W,PORT.H);l.position.set(x,.33+.02+PORT.H/2,.003);l.lookAt(x,.40,5);scene.add(l);mouthLights.push(l);}
   setRing(+document.getElementById('ringD').value);
-  document.getElementById('dLen').textContent=withScreen?'291 cm':'185 cm';
+  const big=sz===SIZES.s1000;document.getElementById('dLen').textContent=sz.len+' cm';
+  document.getElementById('dPanel').textContent=big?'104 × 104 cm':'60 × 60 cm';document.getElementById('dSlot').textContent=big?'105 × 105 cm':'61 × 61 cm';
+  document.getElementById('dGap').textContent=big?'109 × 11 cm':'65 × 55 cm';
  },undefined,e=>{document.getElementById('loading').textContent='Could not load the model: '+e.message;});}
-/* the LED screen shows the Buddha picture; on this page it is scaled for the screen per light set-up, like the mirror */
-let SCR_GAIN=2.5;function syncScreen(){scrMats.forEach(m=>m.emissiveIntensity=SCR_GAIN);}
-loadModel(false);
+loadModel(SIZES.s600);
 
 /* ---------- controls ---------- */
 const VIEWS={three:[[-2.2,1.75,4.4],[.92,.78,-.5]],front:[[.905,1.0,4.8],[.905,.82,-.6]],panel:[[.62,1.0,1.2],[.905,.7,0]],side:[[4.8,1.2,2.4],[1.1,.7,-.5]],back:[[2.8,1.8,-5.2],[.9,.8,-.6]]};
-function setView(v){const[p,t]=VIEWS[v];camera.position.set(...p);controls.target.set(...t);controls.update();}
+let curView='three';
+function setView(v){curView=v;const[p,t]=VIEWS[v],dx=SZ.dx/2,dy=PANEL.y-.70466,k=v==='panel'?1.6:1.08,big=SZ.dx>0;
+  const T=new THREE.Vector3(t[0]+dx,t[1]+(v==='panel'?dy:0),t[2]),P=new THREE.Vector3(p[0]+dx,p[1]+(v==='panel'?dy:0),p[2]);
+  if(big)P.sub(T).multiplyScalar(k).add(T);camera.position.copy(P);controls.target.copy(T);controls.update();}
 document.querySelectorAll('[data-view]').forEach(b=>b.addEventListener('click',()=>setView(b.dataset.view)));
 const bSpin=document.getElementById('bSpin');bSpin.addEventListener('click',()=>{controls.autoRotate=!controls.autoRotate;bSpin.setAttribute('aria-pressed',String(controls.autoRotate));});
 function radio(sel,attr,fn){const bs=[...document.querySelectorAll(sel)];bs.forEach(b=>b.addEventListener('click',()=>{bs.forEach(x=>x.setAttribute('aria-pressed',String(x===b)));fn(b.dataset[attr]);}));}
 {const rd=document.getElementById('ringD');let tm=0;
  rd.addEventListener('input',()=>{document.getElementById('ringDo').textContent=rd.value==='0'?'at the mouth':rd.value+' cm in';clearTimeout(tm);tm=setTimeout(()=>setRing(+rd.value),60);});}
-radio('[data-env]','env',setEnv);radio('[data-scr]','scr',v=>{if((v==='1')!==SCR)loadModel(v==='1');});radio('[data-pat]','pat',p=>{PAT=p;});
+radio('[data-env]','env',setEnv);radio('[data-size]','size',v=>{const s=SIZES['s'+v];if(s!==SZ){loadModel(s);setView(curView);}});radio('[data-pat]','pat',p=>{PAT=p;});
 setView('three');setEnv('studio');
 
 function resize(){const w=view.clientWidth,h=view.clientHeight;renderer.setSize(w,h,false);composer.setSize(w,h);camera.aspect=w/Math.max(1,h);camera.updateProjectionMatrix();}

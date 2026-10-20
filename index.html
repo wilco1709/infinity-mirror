@@ -194,12 +194,16 @@ ul.checks .wn{color:var(--accent);font-weight:600}
       <button type="button" role="tab" data-tabbtn="mirror">Mirror</button>
       <button type="button" role="tab" data-tabbtn="woofer">Woofer LEDs</button>
       <button type="button" role="tab" data-tabbtn="room">Room</button>
-      <button type="button" role="tab" data-tabbtn="smoke">Smoke</button>
-      <button type="button" role="tab" data-tabbtn="screen">LED screen</button>
-    </nav>
+      <button type="button" role="tab" data-tabbtn="smoke">Smoke</button>    </nav>
 
     <section aria-labelledby="h-pre" data-tab="mirror">
-      <h2 id="h-pre">Six buildable stacks</h2>
+      <h2 id="h-pre">Panel size</h2>
+      <div class="seg" role="radiogroup" aria-label="Panel size">
+        <button type="button" data-size="600" role="radio">60 cm</button>
+        <button type="button" data-size="1000" role="radio">1 m</button>
+      </div>
+      <p class="note" id="sizeNote"></p>
+      <h2>Six buildable stacks</h2>
       <div class="chips" id="preChips" aria-label="Mirror configurations"></div>
       <div id="preCard" style="display:flex;flex-direction:column;gap:8px"></div>
       <p class="note">Figures from the Pilkington MirroView bulletin (ATS-191), the LLumar architectural specifications, the 3M Silver 35 and Silver 15 Plastic bulletins, and Kuraray's acrylic tables. Every dotted slider below steps through parts you can buy.</p>
@@ -324,25 +328,6 @@ ul.checks .wn{color:var(--accent);font-weight:600}
       <p class="note" id="srcNote">Demo beat drives the audio visuals without a microphone. Pick Video sound to drive them from the video that is playing.</p>
     </section>
 
-    <section aria-labelledby="h-scr" data-tab="screen">
-      <h2 id="h-scr">LED screen, 1 × 1 m</h2>
-      <div class="seg" role="radiogroup" aria-label="LED screen fitted">
-        <button type="button" data-scr="0" role="radio">Not fitted</button>
-        <button type="button" data-scr="1" role="radio">On the trailer</button>
-      </div>
-      <p class="note">An extra column at the number-plate end: a 25 cm road case for the power supplies and receiving cards, and the screen on top in a steel frame, its top level with the speaker tops at 158 cm. The trailer gets 106 cm longer: 291 cm from number plate to right sub.</p>
-      <div class="glabel">Which screen</div>
-      <div class="chips" role="radiogroup" aria-label="Screen type" id="scrT"></div>
-      <p class="note" id="scrNote"></p>
-      <div class="seg" role="radiogroup" aria-label="Screen content">
-        <button type="button" data-scrc="0" role="radio">Same as the mirror</button>
-        <button type="button" data-scrc="1" role="radio">Black</button>
-      </div>
-      <div id="scrCtl" style="display:flex;flex-direction:column;gap:10px"></div>
-      <p class="note" id="scrLive" style="font-family:var(--mono)"></p>
-      <p class="note">LED screens are built for daylight. At night operators run them at 5 to 20 %, otherwise they outshine everything around them, the mirror included.</p>
-    </section>
-
     <section aria-labelledby="h-fog" data-tab="smoke">
       <h2 id="h-fog">Smoke machine</h2>
       <p class="note">A 1200 W fog machine (Antari Z-1200 class, 2.5 L tank) on a steel shelf against the right sub, nozzle towards the dancefloor.</p>
@@ -407,7 +392,18 @@ const LEDS=[
   d:'3 × 3 modules of 192 mm = 576 mm, 96 × 96 pixels. Factory white is assumed to be D65. About 25 × dimmer than the WS2812B grid.'},
  {id:'p6out',n:'P6 outdoor panels',kind:'panel',pitch:6,N:96,mod:32,pkg:3.5,wl:[623,525,470],fw:[18,32,24],nits:5500,Pmax:30,Pidle:1.5,V:5,bits:8,glob:8,pwm:'1/8 scan',
   data:{hub75:true},src:'Vegoo P6 outdoor (SMD3535, 1/8 scan): 5500 nits, 30 W per module (vendor claims). Wavelengths and idle power are estimates.',
-  d:'Same 96 × 96 layout with daylight-grade LEDs. About 5 × the indoor panel.'}];
+  d:'Same 96 × 96 layout with daylight-grade LEDs. About 5 × the indoor panel.'},
+ /* 1 m panels, about 10 mm pitch: the trailer's centre column gets wider */
+ {id:'p10cab',n:'P10 cabinet, 1 m',kind:'panel',size:1000,outer:1040,pitch:10.42,N:96,mod:96,pkg:2.7,wl:[623,525,470],fw:[18,32,24],nits:5500,Pmax:750,Pidle:30,V:5,bits:8,glob:8,pwm:'3840 Hz refresh, 1/2 scan',
+  data:{hub75:true},src:'Dahua PHGOA10-FC: 1000 × 1000 × 98 mm, 96 × 96 SMD2727 at 10.42 mm, 5500 cd/m² white (6000 max), 260 W average, 750 W max, 24 kg, IP65. LEDSOLUTION S1000-P10.41 is the same format (6000 nits, 23 kg). Idle power and wavelengths are estimates.',
+  d:'One ready-made outdoor cabinet of exactly 1 × 1 m. Mirror 1040 mm with its frame.'},
+ {id:'p10mod',n:'P10 modules, 960 mm',kind:'panel',size:1000,outer:1000,pitch:10,N:96,mod:96,pkg:3.5,wl:[623,525,470],fw:[18,32,24],nits:4000,Pmax:540,Pidle:20,V:5,bits:8,glob:8,pwm:'1/4 scan',
+  data:{hub75:true},src:'18 standard P10 modules of 320 × 160 mm (32 × 16 SMD3535) in a 960 × 960 × 130 mm cabinet, 96 × 96 pixels. Brightness differs per supplier, 3600 to 5600 nits; 4000 taken here. Max about 586 W/m², 28–32 kg (WeiGu and Toolboom figures).',
+  d:'The usual way to build a P10 wall from loose modules. Mirror 1000 mm with its frame.'},
+ {id:'ws2812b5050',n:'WS2812B 16 × 16 matrices, 1 m',kind:'strip',size:1000,outer:1000,pitch:10,N:96,pkg:5.0,wl:[622.6,515.6,470.4],fw:[18,32,24],mcd:[620,1250,300],mA:[16,16,16],idle:0.6,V:5,bits:8,glob:0,pwm:'0.4–2 kHz, depends on the batch',
+  data:{bits:24,hz:800e3,reset:280e-6},src:'36 flexible WS2812B 16 × 16 matrices (160 × 160 mm, 10 mm pitch) on a 960 × 960 mm plate. WS2812B data sheet V2.0: 550–700 / 1100–1400 / 200–400 mcd at 16 mA per channel (middle values used).',
+  d:'Self-built: 9,216 LEDs, the brightest option, but up to about 2.2 kW at full white (440 A at 5 V, feed power into every matrix). Split the data over about 12 outputs for 40 fps.'}];
+LEDS.forEach(L=>{L.size=L.size||600;L.outer=L.outer||600;});
 /* T = visible transmission; R = reflectance of the side facing the cavity; Ro = reflectance seen by the viewer (front only). On glass. */
 const FILMS=[
  {n:'Silver 5',full:'TintFit Very Dark Silver 05',T:.05,R:.60,Ro:.60,src:'vendor figures, calculated on 3 mm glass'},
@@ -434,29 +430,19 @@ const BULBS=[{n:'25 W',lm:220,tau:.05},{n:'40 W',lm:415,tau:.07},{n:'60 W',lm:71
 /* linings for the inside of the sub ports: diffuse reflectance per channel (linear sRGB), and gloss (Schlick F0) */
 const WALLS=[{n:'Birch plywood, raw',rho:[.66,.46,.27],F0:0},{n:'MDF, raw',rho:[.38,.22,.12],F0:0},
              {n:'Black paint, matte',rho:[.04,.04,.04],F0:0},{n:'Black paint, gloss',rho:[.04,.04,.04],F0:.04}];
-/* LED screens of about 1 x 1 m at about 10 mm pitch that exist: size (mm, active area), pixels, white luminance (nits,
-   balanced), max and average power, weight. sig = LED package size as a fraction of the pitch, for the dot shape. */
-const SCREENS=[
- {n:'P10 cabinet, 1 × 1 m',full:'Dahua PHGOA10-FC outdoor cabinet',size:1000,N:96,pitch:10.42,nits:5500,Pmax:750,Pavg:260,kg:24,d:9.8,sig:.09,
-  d2:'1000 × 1000 × 98 mm, 96 × 96 SMD2727 at 10.42 mm, 5,500 nits calibrated white (6,000 max), 260 W average and 750 W max, 24 kg, IP65 front and back, 3,840 Hz refresh. LEDSOLUTION sells the same format (S1000-P10.41, 6,000 nits, 23 kg).'},
- {n:'P10 modules, 960 cabinet',full:'18 standard P10 modules 320 × 160 mm in a 960 × 960 mm cabinet',size:960,N:96,pitch:10,nits:4000,Pmax:540,Pavg:185,kg:30,d:13,sig:.12,
-  d2:'The common way to build a P10 wall: 3 × 6 modules of 320 × 160 mm (32 × 16 SMD3535 each) in a 960 × 960 × 130 mm cabinet, 96 × 96 pixels. Brightness differs per supplier, 3,600 to 5,600 nits; 4,000 is taken here. Max about 586 W/m², 28 to 32 kg.'},
- {n:'Self-built, 36 WS2812B 16 × 16',full:'36 flexible WS2812B 16 × 16 matrices (160 × 160 mm, 10 mm pitch) on a backing plate',size:960,N:96,pitch:10,nits:17500,Pmax:2210,Pavg:0,kg:12,d:4,sig:.17,
-  d2:'6 × 6 flexible 16 × 16 matrices of WS2812B-5050 at exactly 10 mm, 96 × 96 = 9,216 LEDs on a 960 × 960 mm aluminium composite plate. Worked out from the WS2812B data sheet (550–700 / 1100–1400 / 200–400 mcd at 16 mA): about 17,500 nits white-balanced, brighter than the cabinets, but up to about 2.2 kW at full white (440 A at 5 V: feed power into every matrix). Not weatherproof. With one data line a frame takes 0.28 s; split it over 12 outputs for about 40 fps. Weight is an estimate.'}];
 const BULB_PROGS=['Full on','On the sound','Chase','Bounce','Random','Breathe','Manual'];
 const FACES=['north','north-east','east','south-east','south','south-west','west','north-west'];
 
 /* ---------- state ---------- */
 const DEF={pat:31,pal:0,solid:0,speed:1,gain:1.4,trail:0,soft:0,ovl:0,ovlC:0,frW:2,frIn:0,frMode:1,frRate:2,fit:0,vContrast:1.15,vSat:1.1,vGamma:1,loop:'all',
   led:0,bal:0,bright:1,cgam:2.2,front:1,back:4,gap:9,dist:2,yaw:0,pitch:0,eyeH:1.65,amb:0,clock:21.5,face:6,prtM:0,prtB:1,prtS:0.6,prtF:0.12,prtD:30,prtW:0,
-  tab:'view',look:0,scr:0,scrT:0,scrB:.25,scrC:0,fogM:0,fogOut:.7,fogLen:3,fogInt:30,fogAch:2,blbW:2,blbP:0,blbM:1,blbS:1,blbSens:0.6,blbF:0.08,blbC:[255,230,200,170,140,110,80,60,40,20]};
+  tab:'view',look:0,fogM:0,fogOut:.7,fogLen:3,fogInt:30,fogAch:2,blbW:2,blbP:0,blbM:1,blbS:1,blbSens:0.6,blbF:0.08,blbC:[255,230,200,170,140,110,80,60,40,20]};
 const S=Object.assign({},DEF);
 const KEY='infinity-grid-v12';
 try{const j=JSON.parse(localStorage.getItem(KEY)||'null');if(j&&typeof j==='object'){for(const k in DEF)if(k in j&&typeof j[k]===typeof DEF[k])S[k]=j[k];}}catch(e){}
 {const LIM={led:LEDS.length-1,front:FILMS.length-1,back:FILMS.length-1,gap:GAPS.length-1,amb:AMBS.length-1,face:FACES.length-1};
  for(const k in LIM)S[k]=Math.max(0,Math.min(LIM[k],Math.round(S[k])||0));
  if(!Array.isArray(S.blbC)||S.blbC.length!==10)S.blbC=DEF.blbC.slice();S.blbC=S.blbC.map(v=>Math.max(0,Math.min(255,Math.round(+v)||0)));
- S.scrT=Math.max(0,Math.min(2,Math.round(S.scrT)||0));S.scr=S.scr?1:0;
  S.blbW=Math.max(0,Math.min(3,Math.round(S.blbW)||0));S.prtW=Math.max(0,Math.min(3,Math.round(S.prtW)||0));S.blbP=Math.max(0,Math.min(6,Math.round(S.blbP)||0));}
 let saveT=0;function save(){clearTimeout(saveT);saveT=setTimeout(()=>{try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}},250)}
 
@@ -670,19 +656,7 @@ function syncTab(){tabBtns.forEach(b=>b.setAttribute('aria-selected',String(b.da
   document.querySelectorAll('#rail [data-tab]').forEach(s=>s.hidden=s.dataset.tab!==S.tab);}
 tabBtns.forEach(b=>b.addEventListener('click',()=>{S.tab=b.dataset.tabbtn;save();syncTab();const rl=document.getElementById('rail');rl.scrollTop=0;
   if(getComputedStyle(rl).overflowY==='visible'){const tb=rl.querySelector('nav.tabs'),want=tb.offsetTop+rl.getBoundingClientRect().top+scrollY-parseFloat(getComputedStyle(tb).top);if(scrollY>want)scrollTo(0,want);}}));
-if(!['view','av','vis','mirror','woofer','room','smoke','screen'].includes(S.tab))S.tab='view';
-/* LED screen controls */
-buildCtl('scrCtl',[{k:'scrB',l:'Screen brightness',min:.01,max:1,step:.01,f:v=>Math.round(v*100)+' %'}]);
-{const box=document.getElementById('scrT');SCREENS.forEach((s,i)=>{const b=document.createElement('button');b.type='button';b.setAttribute('role','radio');b.textContent=s.n;b.dataset.i=i;
-  b.addEventListener('click',()=>{S.scrT=i;save();syncScr();if(S.scr)rebuildCart();});box.appendChild(b);});}
-function syncScr(){document.querySelectorAll('[data-scr]').forEach(b=>b.setAttribute('aria-checked',String(+b.dataset.scr===S.scr)));
-  document.querySelectorAll('[data-scrc]').forEach(b=>b.setAttribute('aria-checked',String(+b.dataset.scrc===S.scrC)));
-  document.querySelectorAll('#scrT button').forEach(b=>b.setAttribute('aria-checked',String(+b.dataset.i===S.scrT)));
-  const s=SCREENS[S.scrT];document.getElementById('scrNote').innerHTML='<b>'+s.full+'.</b> '+s.d2;
-  if(!S.scr)document.getElementById('scrLive').textContent='';}
-document.querySelectorAll('[data-scr]').forEach(b=>b.addEventListener('click',()=>{const v=+b.dataset.scr;if(v===S.scr)return;S.scr=v;save();syncScr();rebuildCart();}));
-document.querySelectorAll('[data-scrc]').forEach(b=>b.addEventListener('click',()=>{S.scrC=+b.dataset.scrc;save();syncScr();}));
-syncScr();
+if(!['view','av','vis','mirror','woofer','room','smoke'].includes(S.tab))S.tab='view';
 /* smoke machine controls */
 buildCtl('fogCtl',[{k:'fogOut',l:'Output',min:.1,max:1,step:.01,f:v=>Math.round(v*100)+' % · '+(v*100).toFixed(0)+' ml/min of fluid'},
   {k:'fogLen',l:'Burst length',min:.5,max:15,step:.5,f:v=>v+' s'},
@@ -1124,12 +1098,15 @@ void main(){
   o=vec4(clamp(prev+mv,0.,1.),1.);
 }`.replace('//PALDATA',palGLSL()+icoGLSL());
 
-/* The speaker trailer, fixed at its shortest: 185 cm from number plate to right sub, 120 cm deep.
-   Subs 58 x 67 cm, tops 58 x 58 cm, the 600 mm panel in a 61 cm slot right above the wheel case.
-   Same layout as Speaker Trailer.html at 185 cm; centimetres, ground at y = 0, cabinet fronts at z = 60. */
-const CART=(()=>{const s=58/181,bed=(550-447)*s,chT=15*s,wr=53*s,wy=(550-497)*s;
-  const slotBot=Math.max(bed+6,wy+wr+6),slotTop=slotBot+61,py=slotBot+.5+30,px=90.5,subTop=bed+67,top=subTop+58;
-  return{s,bed,chT,wr,wy,slotBot,slotTop,py,px,subTop,top,floor:-py/100};})();
+/* The speaker trailer at its shortest, 120 cm deep. Subs 58 x 67 cm, tops 58 x 58 cm, the panel in a slot 1 cm
+   wider than the panel, right above the wheel case: 61 cm for the 600 mm panel (185 cm from number plate to right sub),
+   101 or 105 cm for a 1 m panel (the centre column and so the trailer get 40 or 44 cm longer).
+   Centimetres, ground at y = 0, cabinet fronts at z = 60. */
+function makeCart(sw){const s=58/181,bed=(550-447)*s,chT=15*s,wr=53*s,wy=(550-497)*s;
+  const slotBot=Math.max(bed+6,wy+wr+6),slotTop=slotBot+sw,py=slotBot+sw/2,px=60+sw/2,subTop=bed+67,top=subTop+58,dX=sw-61;
+  return{s,bed,chT,wr,wy,sw,dX,slotBot,slotTop,py,px,subTop,top,floor:-py/100,len:185+dX,gap:top-slotTop-2};}
+const slotFor=L=>Math.round((L.outer||600)/10)+1;
+let CART=makeCart(slotFor(LEDS[S.led]||LEDS[0]));
 /* The hall: 10 m wide (the bulb rows run wall to wall), 18 m deep with the trailer near the back wall,
    ceiling 3 m above the top of the trailer. Floor 0.20, walls 0.50, ceiling 0.75 reflectance. */
 const HALL=(()=>{const W=10,D=18,H=(CART.top+300)/100,Af=W*D,Aw=2*(W+D)*H,A=2*Af+Aw;
@@ -1187,19 +1164,15 @@ function portMC(D0,wi){
   Object.assign(PORT,{D0,wall:wi,T,Mt,escC:e,backC:bk,absC:a,omSum,TI,esc:Y(e),back:Y(bk),abs:Y(a)});}
 portMC(S.prtD/100,S.prtW);
 function cartGLSL(){
-  const C=CART,L=(x,y,z)=>[(x-C.px)/100,(y-C.py)/100,(z-60)/100],SCR=SCREENS[S.scrT],SH=S.scr?106:0;
-  const sa=SCR.size/10,sx0=-54-sa/2,sy0=C.bed+75-sa/2;   /* active area, centred in the 100 x 100 cm opening */
+  const C=CART,L=(x,y,z)=>[(x-C.px)/100,(y-C.py)/100,(z-60)/100],d=C.dX,R0=123+d,RE=181+d,SR=60+C.sw;
   const B=[ /* x0,y0,z0, x1,y1,z1, id: 0 cabinet, 1 sub, 2 top, 3 steel, 4 number plate, 5 rear light */
-    [0,C.bed,-60,58,C.subTop,60,1],[0,C.subTop,-60,58,C.top,60,2],[123,C.bed,-60,181,C.subTop,60,1],[123,C.subTop,-60,181,C.top,60,2],
-    [58,C.bed,-60,123,C.slotBot,60,0],[58,C.slotBot,-60,60,C.slotTop,60,0],[121,C.slotBot,-60,123,C.slotTop,60,0],
-    [58,C.slotTop,-60,123,C.slotTop+2,60,0],[60,C.slotBot,-60,121,C.slotTop,48,0],
-    [-3-SH,C.bed-C.chT,-56,183,C.bed,56,3],[181,29,-3,238,33,3,3],[236,30,-5,244,36,5,3],[222,6,-1.5,225,31,1.5,3],[218,0,-2,229,12,2,3],
-    [-4.6-SH,17,-26,-4-SH,28,26,4],[-5-SH,23,-56,-4-SH,28.2,-38,5],[-5-SH,23,38,-4-SH,28.2,56,5],
-    /* LED screen column at the number-plate end: road case for power supplies and receiving cards, steel frame, the screen */
-    ...(SH?[[-105,C.bed,-60,-3,C.bed+25,60,0],[-105,C.bed+25,44,-104,C.bed+127,60,3],[-4,C.bed+25,44,-3,C.bed+127,60,3],
-            [-105,C.bed+125,44,-3,C.bed+127,60,3],[-104,C.bed+25,60-SCR.d,-4,C.bed+125,60,10]]:[]),
+    [0,C.bed,-60,58,C.subTop,60,1],[0,C.subTop,-60,58,C.top,60,2],[R0,C.bed,-60,RE,C.subTop,60,1],[R0,C.subTop,-60,RE,C.top,60,2],
+    [58,C.bed,-60,R0,C.slotBot,60,0],[58,C.slotBot,-60,60,C.slotTop,60,0],[SR,C.slotBot,-60,R0,C.slotTop,60,0],
+    [58,C.slotTop,-60,R0,C.slotTop+2,60,0],[60,C.slotBot,-60,SR,C.slotTop,48,0],
+    [-3,C.bed-C.chT,-56,183+d,C.bed,56,3],[181+d,29,-3,238+d,33,3,3],[236+d,30,-5,244+d,36,5,3],[222+d,6,-1.5,225+d,31,1.5,3],[218+d,0,-2,229+d,12,2,3],
+    [-4.6,17,-26,-4,28,26,4],[-5,23,-56,-4,28.2,-38,5],[-5,23,38,-4,28.2,56,5],
     /* fog machine on a steel shelf against the outer side of the right sub, nozzle towards the dancefloor */
-    [181,33,14,208,35,60,3],[182,35,15,207,55,59,9],[190.5,42,59,198.5,48,61.5,3]];
+    [RE,33,14,RE+27,35,60,3],[RE+1,35,15,RE+26,55,59,9],[RE+9.5,42,59,RE+17.5,48,61.5,3]];
   const v=a=>'vec3('+a.map(n=>n.toFixed(4)).join(',')+')';
   const top=C.top,s=C.s;
   return 'const int NCB='+B.length+';'
@@ -1212,9 +1185,7 @@ function cartGLSL(){
     +',PRTW='+(PORT.W).toFixed(4)+',PRTH='+(PORT.H).toFixed(4)+',PRTL='+(PORT.L).toFixed(4)+',PRTB='+(PORT.BW).toFixed(5)+',PRTA='+(PORT.P*PORT.BW).toFixed(5)
     +',HRY='+((top-40*s-C.py)/100).toFixed(4)+',HRW='+(95*s/100).toFixed(4)+',HRH='+(41*s/100).toFixed(4)
     +',TWY='+((top-115*s-C.py)/100).toFixed(4)+',TWR='+(50*s*.92/100).toFixed(4)
-    +',FOGX='+((194.5-C.px)/100).toFixed(4)+',FOGY='+((45-C.py)/100).toFixed(4)
-    +',SCX0='+((sx0-C.px)/100).toFixed(4)+',SCY0='+((sy0-C.py)/100).toFixed(4)+',SCA='+(sa/100).toFixed(4)+',SCN='+SCR.N.toFixed(1)+',SCSIG='+SCR.sig.toFixed(3)
-    +',SCON='+(SH?'1.':'0.')
+    +',FOGX='+((RE+13.5-C.px)/100).toFixed(4)+',FOGY='+((45-C.py)/100).toFixed(4)
     +',HALLW='+(HALL.W/2).toFixed(4)+',HALLH='+HALL.H.toFixed(4)+',BULBY='+(HALL.H-.12+C.floor).toFixed(4)
     +',PLZ0='+((-26-60)/100).toFixed(4)+',PLZ1='+((26-60)/100).toFixed(4)+',PLY0='+((17-C.py)/100).toFixed(4)+',PLY1='+((28-C.py)/100).toFixed(4)+';';
 }
@@ -1240,8 +1211,6 @@ uniform vec4 uPuffB[4];  // fog: peak extinction of each puff (1/m), four per ve
 uniform int uNPuff;
 uniform float uFogBg;    // fog: haze spread evenly through the hall (extinction, 1/m)
 uniform vec3 uFogLed;    // fog machine status light
-uniform vec3 uScrK;      // LED screen: luminance per channel for a pattern value of 1, divided by the panel's own LED duty for 1
-uniform vec3 uScrI;      // LED screen: its whole face as a Lambertian source, intensity straight ahead (cd)
 //CARTDATA
 uniform vec3 uLay,uIdx,uSelf,uSunDir,uSunL,uSunE,uSkyL,uGndE,uGlowC,uAur,uTL;
 uniform int uMode,uAmb;
@@ -1257,11 +1226,6 @@ vec3 selfLight(vec3 p,vec3 n,float rho){
   float r2=max(dot(p,p),.04);vec3 vd=p*inversesqrt(r2);
   return rho/PI*uSelf*max(dot(uRotI[2],vd),0.)*max(dot(n,-vd),0.)/r2;
 }
-/* light from the LED screen onto a surface: its face as four Lambertian quarters, facing out of the trailer front */
-vec3 scrLight(vec3 p,vec3 n){if(SCON<.5)return vec3(0.);float E=0.;
-  for(int s=0;s<4;s++){vec3 v=p-vec3(SCX0+SCA*(s%2==0?.25:.75),SCY0+SCA*(s<2?.25:.75),0.);float r2=max(dot(v,v),.02);vec3 vd=v*inversesqrt(r2);
-    E+=max(vd.z,0.)*max(dot(n,-vd),0.)/r2;}
-  return uScrI*(.25*E);}
 /* light leaving a port mouth in direction d, per sr, per unit flux of the ring (from the photon tracer) */
 vec3 portTex(vec2 b){return texture(uPort,clamp(b,vec2(.5),vec2(23.5))/vec2(56.,25.)).rgb;}
 vec3 portT(vec3 d){vec2 a=vec2(atan(d.x,d.z),atan(d.y,d.z))/(PI*.5),u=sign(a)*sqrt(abs(a));
@@ -1327,7 +1291,7 @@ vec3 envRoom(vec3 ro,vec3 rd){
   if(t==tf.y){n=vec3(0.,-sign(r.y),0.);face=r.y<0.?0:1;rho=r.y<0.?.2:.75;}
   else if(t==tf.x){n=vec3(-sign(r.x),0.,0.);face=2;rho=.5;}
   else{n=vec3(0.,0.,-sign(r.z));face=2;rho=.5;}
-  vec3 L=selfLight(p,n,rho)+(uIR+slotLight(p,n)+scrLight(p,n))*(rho/PI);
+  vec3 L=selfLight(p,n,rho)+(uIR+slotLight(p,n))*(rho/PI);
   if(uAmb==0)L+=vec3(.004);
   else if(uAmb==1){
     L+=uTL*(face==0?32.:face==1?22.:40.);
@@ -1339,7 +1303,7 @@ vec3 envRoom(vec3 ro,vec3 rd){
 vec3 envSky(vec3 ro,vec3 rd){
   vec3 hor=uSkyL*.33+uGlowC*.6;
   if(rd.y<-1e-4){float t=(uFloor-ro.y)/rd.y;vec3 p=ro+rd*t;
-    vec3 L=(uGndE+slotLight(p,vec3(0.,1.,0.))+scrLight(p,vec3(0.,1.,0.)))*(.12/PI)+selfLight(p,vec3(0.,1.,0.),.12);
+    vec3 L=(uGndE+slotLight(p,vec3(0.,1.,0.)))*(.12/PI)+selfLight(p,vec3(0.,1.,0.),.12);
     return mix(L,hor,1.-exp(-t/900.));}
   float g=max(rd.y,0.);
   vec3 L=uSkyL*((1.+2.*g)/3.)+vec3(.003);
@@ -1354,7 +1318,7 @@ vec3 env(vec3 ro,vec3 rd){return uAmb==2?envSky(ro,rd):envRoom(ro,rd);}
 /* illuminance (lux) on a surface at p facing n, for matte objects: diffuse luminance = reflectance x E / pi */
 vec3 irr(vec3 p,vec3 n){
   float r2=max(dot(p,p),.04);vec3 vd=p*inversesqrt(r2);
-  vec3 E=uSelf*(max(dot(uRotI[2],vd),0.)*max(dot(n,-vd),0.)/r2)+(uAmb==2?vec3(0.):uIR)+slotLight(p,n)+scrLight(p,n);
+  vec3 E=uSelf*(max(dot(uRotI[2],vd),0.)*max(dot(n,-vd),0.)/r2)+(uAmb==2?vec3(0.):uIR)+slotLight(p,n);
   if(uAmb==0)E+=vec3(.004*PI);
   else if(uAmb==1)E+=uTL*(400.*max(n.y,0.)+180.*(1.-abs(n.y))+90.*max(-n.y,0.));
   else if(uAmb==2){vec3 dir=uSunE*max(uSunDir.y,0.);E+=uSunE*max(dot(n,uSunDir),0.)+(uGndE-dir)*(.5+.5*n.y)+uGndE*.12*(.5-.5*n.y);}
@@ -1447,14 +1411,7 @@ vec3 shadeCart(vec3 p,vec3 n,int id,int bi,vec3 rd,float dist){
   if(id==3||id==8){rho=.05;spec=.03;}
   else if(id==9){rho=.03;spec=.05;   /* fog machine: black powder-coated steel, vent slots on the sides, a small status light */
     if(abs(n0.x)>.5&&fract((p.z+.6)*40.)<.45&&abs(p.y-FOGY)<.06)rho=.006;
-    if(n0.z>.5&&length(p.xy-vec2(FOGX+.09,FOGY+.07))<.004)emit=uFogLed;}
-  else if(id==10){rho=.025;spec=.02;   /* LED screen: black louvred mask, one RGB LED per pixel showing what the panel shows */
-    vec2 uv=(p.xy-vec2(SCX0,SCY0))/SCA;
-    if(n0.z>.5&&uv.x>0.&&uv.y>0.&&uv.x<1.&&uv.y<1.){vec2 c=uv*SCN,ic=floor(c),q=c-ic-.5;
-      vec3 du=max(texelFetch(uDuty,ivec2((ic+.5)/SCN*uN),0).rgb,0.);
-      float sg=SCSIG*.5,dotv=exp(-dot(q,q)/(2.*sg*sg))/(2.*PI*sg*sg);
-      emit=du*uScrK*mix(1.,dotv,fine);}}
-  else if(id==4){col=vec3(.95,.72,.05);rho=.6;}
+    if(n0.z>.5&&length(p.xy-vec2(FOGX+.09,FOGY+.07))<.004)emit=uFogLed;}  else if(id==4){col=vec3(.95,.72,.05);rho=.6;}
   else if(id==5){col=vec3(.6,.03,.03);rho=.3;spec=.05;}
   else if(id==6){float a=atan(p.y-WHY,p.x-WHX)*11.459;rho=mix(.035,.018,step(.5,fract(a)));spec=.01;}
   else if(id==7){float r=length(p.xy-vec2(WHX,WHY));rho=.03;spec=.01;
@@ -1522,8 +1479,6 @@ vec3 fogSrc(vec3 p,vec3 rd){vec3 S=uIR/PI;   /* hall bounce: from all directions
   {float r2=max(dot(p,p),.04);vec3 vd=p*inversesqrt(r2);S+=uSelf*(max(dot(uRotI[2],vd),0.)/r2*hgP(dot(vd,-rd)));}
   for(int s=0;s<4;s++){vec3 v=p-vec3((s<2?-COLX:COLX)+(s%2==0?-.5:.5)*PRTW,PRT0+PRTH*.5,0.);float r2=max(dot(v,v),.01);vec3 vd=v*inversesqrt(r2);
     if(vd.z>0.)S+=uSlotPhi*(.5*portT1(vd))*(hgP(dot(vd,-rd))/r2);}
-  if(SCON>.5)for(int s=0;s<4;s++){vec3 v=p-vec3(SCX0+SCA*(s%2==0?.25:.75),SCY0+SCA*(s<2?.25:.75),0.);float r2=max(dot(v,v),.02);vec3 vd=v*inversesqrt(r2);
-    if(vd.z>0.)S+=uScrI*(.25*vd.z*hgP(dot(vd,-rd))/r2);}
   if(uAmb==1)S+=uTL*35.;
   else if(uAmb==2)S+=uSunE*hgP(dot(uSunDir,rd))+uSkyL*.6;
   else if(uAmb==3){for(int i=0;i<6;i++){float r2;vec3 wd;float c=djCone(i,p,r2,wd);S+=uDjC[i]*(c/r2*hgP(dot(wd,-rd)));}}
@@ -1982,7 +1937,7 @@ function computeConfig(){
   const acr=!g.air,G=STACK.glassMm/1000;
   const st={tF:acr?0:G,nF:acr?1:STACK.nGlass,d:g.mm/1000,nC:acr?STACK.nAcr:1,tBg:acr?0:G,nB:acr?1:STACK.nGlass,tBa:STACK.ledAirMm/1000};
   const Tf=Ff.T,Rf=Ff.R,Tb=Fb.T,Rb=Fb.R,q=Rf*Rb;
-  const area=(STACK.outerMm/1000)**2;
+  const area=(L.outer/1000)**2;
   CFG={L,g,Ff,Fb,N,pitch,win,cell,prim,chrom,A,Yc,bal,M,lm,Wc,idleW,st,Tf,Rf,Tb,Rb,q,acr,
     ...escapeMaps(N,pitch,win,st,Tf,Rf,Tb,Rb),
     depthMm:STACK.drawnMm-6+g.mm+(acr?0:2*STACK.glassMm),
@@ -2177,6 +2132,8 @@ function ledNote(){const C=CFG;$('ledNote').textContent='This LED covers '+C.gam
   (C.L.kind==='strip'?(S.bal?'White is corrected to D65 in the controller.':'Raw white is the chip\'s own, slightly blue.'):'Panel white assumed calibrated to D65.');}
 function onConfig(){
   computeConfig();if(CFG.N!==gridN)makeGrid(CFG.N);
+  if(slotFor(CFG.L)!==CART.sw){CART=makeCart(slotFor(CFG.L));rebuildCart();}   /* a 1 m panel needs a wider centre column */
+  if(typeof syncSize==='function')syncSize();
   buildLUT();CFG.full=meter(full255(),CFG.N*CFG.N,null);buildSolids();updateSheet();runChecks();ledNote();
   const bad=CFG.acr&&(CFG.Ff.glass||CFG.Fb.glass),risky=CFG.acr&&!bad&&(!CFG.Ff.plastic||!CFG.Fb.plastic);$('mirWarn').hidden=!(bad||risky);
   if(bad)$('mirWarn').textContent='MirroView is coated glass, it cannot be laminated to an acrylic sheet. Choose an air gap, or a film.';
@@ -2208,13 +2165,23 @@ const PRESETS=[
  {n:'Budget build',led:0,bal:0,front:2,back:5,gap:8,
   why:'Off-the-shelf 3M Silver 20 and Silver 35 window film on ordinary 4 mm float glass, with the cheapest LED matrix. A slightly brighter, slightly shorter tunnel than the club stack, at the lowest price.',
   build:'Apply the film wet, on the cavity side of each sheet. 20 mm aluminium spacer, sealed. About 7 kg.'}];
+/* at 1 m the stacks keep their films and gap; the LEDs become the 1 m equivalent: panels -> P10 cabinet, strips -> WS2812B matrices */
+const big=()=>LEDS[S.led].size===1000,ledFor=p=>!big()?p.led:LEDS[p.led].kind==='panel'?LEDS.findIndex(l=>l.id==='p10cab'):LEDS.findIndex(l=>l.id==='ws2812b5050');
 {const box=$('preChips');PRESETS.forEach((p,i)=>{const b=document.createElement('button');b.type='button';b.textContent=p.n;b.dataset.i=i;
-  b.addEventListener('click',()=>{for(const k of ['led','bal','front','back','gap']){if(stops[k])stops[k].set(p[k]);else S[k]=p[k];}S.preset=i;syncBal();onConfig();save();syncPre();});box.appendChild(b);});}
-function syncPre(){const p=PRESETS.find(p=>['led','bal','front','back','gap'].every(k=>S[k]===p[k]));
+  b.addEventListener('click',()=>{const q={...p,led:ledFor(p)};for(const k of ['led','bal','front','back','gap']){if(stops[k])stops[k].set(q[k]);else S[k]=q[k];}syncBal();onConfig();save();syncPre();});box.appendChild(b);});}
+function syncSize(){const sz=LEDS[S.led].size;document.querySelectorAll('[data-size]').forEach(b=>b.setAttribute('aria-checked',String(+b.dataset.size===sz)));
+  $('sizeNote').textContent=sz===600?'600 mm mirror in a 61 cm slot: the trailer is 185 cm from number plate to right sub, with a '+Math.round(CART.gap)+' cm high view to the DJ above the mirror.':
+    'A '+(LEDS[S.led].outer/10)+' cm mirror in a '+CART.sw+' cm slot: the centre column and the trailer get '+CART.dX+' cm longer ('+CART.len+' cm). Above the mirror only '+Math.round(CART.gap)+' cm is left before the top of the speakers, so the view to the DJ almost disappears. Each glass sheet weighs about '+fmt(((LEDS[S.led].outer/1000)**2)*4*2.5,1)+' kg at 4 mm; acrylic sags with the 4th power of the span, so at 1 m use 10 mm or more.';}
+document.querySelectorAll('[data-size]').forEach(b=>b.addEventListener('click',()=>{const sz=+b.dataset.size;if(LEDS[S.led].size===sz)return;
+  const cur=LEDS[S.led];let i;
+  if(sz===1000)i=LEDS.findIndex(l=>l.id===(cur.kind==='panel'?'p10cab':'ws2812b5050'));
+  else i=LEDS.findIndex(l=>l.id===(cur.kind==='panel'?'p6out':'ws2812b'));
+  stops.led.set(i);syncBal();onConfig();save();syncPre();}));
+function syncPre(){const p=PRESETS.find(p=>['led','bal','front','back','gap'].every(k=>S[k]===(k==='led'?ledFor(p):p[k])));
   document.querySelectorAll('#preChips button').forEach(b=>b.setAttribute('aria-pressed',String(p===PRESETS[+b.dataset.i])));
   const c=$('preCard');if(!p){c.innerHTML='<p class="note">Your own stack. Pick one of the six above to compare.</p>';return;}
   const g=GAPS[p.gap];
-  c.innerHTML='<dl class="sheet"><dt>LEDs</dt><dd>'+LEDS[p.led].n+'</dd><dt>Front</dt><dd>'+FILMS[p.front].full+'</dd><dt>Back</dt><dd>'+FILMS[p.back].full+'</dd><dt>Between</dt><dd>'+(g.air?g.mm+' mm air, films on 4 mm float glass':g.mm+' mm cast acrylic, films laminated on it')+'</dd></dl>'+
+  c.innerHTML='<dl class="sheet"><dt>LEDs</dt><dd>'+LEDS[ledFor(p)].n+'</dd><dt>Front</dt><dd>'+FILMS[p.front].full+'</dd><dt>Back</dt><dd>'+FILMS[p.back].full+'</dd><dt>Between</dt><dd>'+(g.air?g.mm+' mm air, films on 4 mm float glass':g.mm+' mm cast acrylic, films laminated on it')+'</dd></dl>'+
     '<p class="note">'+p.why+'</p><p class="note"><b>Building it:</b> '+p.build+'</p>';}
 const faceIt=()=>{setCtl('yaw',0);setCtl('eyeH',1.65);save();onView();};
 $('viewReset').addEventListener('click',faceIt);
@@ -2283,7 +2250,7 @@ spark.addEventListener('pointerleave',()=>{sHover=-1;});
 
 /* ---------- render loop ---------- */
 let frameN=0,lastTs=0,fpsAvg=60,adapt=5,adaptT=5,irLux=0,SLOT=null,slotLm=0,slotOut=0,slotW=0,prtG=1,blbFlux=0;const blbV=new Float32Array(10),blbDmx=new Uint8Array(10),blbHist=[],blbU=new Float32Array(30);
-let fogHold=false,scrRGB=[0,0,0],scrW=0,scrLm=0;const FOG={puffs:[],bg:0,heat:1,ready:true,phase:0,clear:0,spawn:0,beatCD:0,burst:0,fluid:0};
+let fogHold=false;const FOG={puffs:[],bg:0,heat:1,ready:true,phase:0,clear:0,spawn:0,beatCD:0,burst:0,fluid:0};
 const fogP=new Float32Array(64),fogB=new Float32Array(16);const slotDuty=[0,0,0],slotRGB=[0,0,0];
 const hudTR=$('hudTR'),TANH=0.441,TLC=cctRGB(4000),ADAPT_FALLBACK=[1,40,3000,0.5,20];
 function uni(P,name,fn,...a){if(P.u[name]!=null)gl[fn](P.u[name],...a);}
@@ -2338,19 +2305,11 @@ function frame(ts){
   gl.uniformMatrix3fv(P2.u.uLedM,false,C.M);
   uni(P2,'uDuty','uniform1i',0);uni(P2,'uPort','uniform1i',8);uni(P2,'uPrtD','uniform1f',PORT.D0);uni(P2,'uPrtF0','uniform1f',WALLS[PORT.wall].F0);uni(P2,'uTanH','uniform1f',TANH);uni(P2,'uD','uniform1f',S.dist);
   uni(P2,'uN','uniform1f',N);uni(P2,'uPitch','uniform1f',C.pitch);uni(P2,'uSig','uniform1f',C.L.pkg/1000*0.3);
-  uni(P2,'uHalfOut','uniform1f',STACK.outerMm/2000);uni(P2,'uHalfWin','uniform1f',C.win/2);uni(P2,'uBox','uniform1f',C.depthMm/1000);
+  uni(P2,'uHalfOut','uniform1f',C.L.outer/2000);uni(P2,'uHalfWin','uniform1f',C.win/2);uni(P2,'uBox','uniform1f',C.depthMm/1000);
   uni(P2,'uLay','uniform3f',st.tF,st.d,st.tBa);uni(P2,'uIdx','uniform3f',st.nF,st.nC,st.nB);uni(P2,'uTbg','uniform1f',st.tBg);
   uni(P2,'uTrans','uniform1f',C.Tf*C.Tb);uni(P2,'uQ','uniform1f',C.q);uni(P2,'uRo','uniform1f',C.Ff.Ro);
   uni(P2,'uGlare','uniform1f',0.03);uni(P2,'uRoomZ','uniform1f',S.dist+5);uni(P2,'uAmb','uniform1i',S.amb);uni(P2,'uHaze','uniform1f',0.012);
   uni(P2,'uSelf','uniform3f',m.self[0],m.self[1],m.self[2]);
-  /* LED screen: the same picture as the panel, at its own (calibrated) white luminance and brightness setting */
-  {const SC=SCREENS[S.scrT],on=S.scr&&S.scrC===0,Lw=on?SC.nits*S.scrB:0,A=(SC.size/1000)**2;
-   const full=[0,1,2].map(c=>LUT[c*256+255]),rat=[0,1,2].map(c=>full[c]>0?m.duty[c]/full[c]:0);
-   const K=full.map(f=>f>0?Lw/f:0),I=rat.map(r=>r*Lw*A);
-   uni(P2,'uScrK','uniform3f',K[0],K[1],K[2]);uni(P2,'uScrI','uniform3f',I[0],I[1],I[2]);scrRGB=I;
-   const Yf=.2126*rat[0]+.7152*rat[1]+.0722*rat[2];
-   scrW=!S.scr?0:S.scrT===2?9216*5*(.016*S.scrB*(rat[0]*.6+rat[1]+rat[2]*.42)*(S.scrC===0?1:0)+.0006):30*A+(SC.Pmax-30*A)*Yf*S.scrB*(S.scrC===0?1:0);
-   scrLm=Math.PI*(.2126*I[0]+.7152*I[1]+.0722*I[2]);}
   uni(P2,'uTL','uniform3f',TLC[0],TLC[1],TLC[2]);
   {const il=S.amb===1?TLC:S.amb===2?cctRGB(5500):S.amb===4?cctRGB(2700):[1,1,1],k=S.amb===2?0.6:0.8;
    const wb=il.map(v=>1+(1/Math.max(v,0.05)-1)*k),Y=.2126*wb[0]+.7152*wb[1]+.0722*wb[2];uni(P2,'uWB','uniform3f',wb[0]/Y,wb[1]/Y,wb[2]/Y);}
@@ -2397,7 +2356,7 @@ function frame(ts){
      re-condenses in the nozzle or evaporates at once). Droplets of r ~ 0.5 µm, Q_ext ~ 2, density 1.05 g/cm3
      give a mass extinction of 3 Q / (4 rho r) = 2.9 m2 per gram. The heater stores heat for about 40 s of full
      output and recovers in about 90 s; below 20 % it stops pumping until it is back at 50 %. */
-  {const F=FOG,out=S.fogOut,nx=(194.5-CART.px)/100,ny=(45-CART.py)/100,nz=.03,KEXT=2.9,V=HALL.W*HALL.D*HALL.H,outdoor=S.amb===2;
+  {const F=FOG,out=S.fogOut,nx=(194.5+CART.dX-CART.px)/100,ny=(45-CART.py)/100,nz=.03,KEXT=2.9,V=HALL.W*HALL.D*HALL.H,outdoor=S.amb===2;
    let want=fogHold;
    if(S.fogM===1){F.phase=(F.phase+dts)%Math.max(S.fogInt,S.fogLen+1);want=want||F.phase<S.fogLen;}
    else if(S.fogM===2){F.beatCD-=dts;if(beat>.55&&F.beatCD<=0){F.burst=.8;F.beatCD=4;}want=want||F.burst>0;F.burst-=dts;}
@@ -2422,13 +2381,12 @@ function frame(ts){
    fogP.fill(0);fogB.fill(0);F.puffs.forEach((p,i)=>{fogP.set([p.x,p.y,p.z,p.s],i*4);fogB[i]=KEXT*p.m/(Math.pow(2*Math.PI,1.5)*p.s*p.s*p.s);});
    uni(P2,'uPuff[0]','uniform4fv',fogP);uni(P2,'uPuffB[0]','uniform4fv',fogB);uni(P2,'uNPuff','uniform1i',F.puffs.length);uni(P2,'uFogBg','uniform1f',bgB);
    uni(P2,'uFogLed','uniform3f',...(F.ready?(firing?[0,60,0]:[0,25,0]):[60,8,0]));
-   if(frameN%10===0&&S.scr)$('scrLive').textContent='screen '+fN(scrLm)+' lm · '+fN(scrW)+' W · '+fN(SCREENS[S.scrT].nits*S.scrB)+' nits for white';
    if(frameN%10===0)$('fogLive').textContent=(firing?'fogging':F.ready?'ready':'heating up')+' · heater '+Math.round(F.heat*100)+' % · haze: '+(bgB>1e-4?'visibility '+fN(3.9/bgB)+' m':'clear air')+' · fluid used '+fN(F.fluid)+' ml of 2500';}
   /* every further bounce in the hall at once: E = flux × mean reflectance / (area × (1 − mean reflectance)).
      Hall 10 × 18 m, ceiling 3 m above the trailer: floor 0.20, walls 0.50, ceiling 0.75. Outdoors there is no hall to bounce in. */
   {const k=S.amb===2?0:HALL.rho/(HALL.A*(1-HALL.rho)),cone=2*Math.PI*(1-Math.cos(7*D2R));
    const fl=[0,1,2].map(c=>{let f=Math.PI*m.self[c]+slotRGB[c];for(let i=0;i<6;i++)f+=djC[i*3+c]*cone;
-     if(S.amb===4)for(let j=0;j<10;j++)f+=10*4*Math.PI*blbU[j*3+c];f+=Math.PI*scrRGB[c];return f*k;});
+     if(S.amb===4)for(let j=0;j<10;j++)f+=10*4*Math.PI*blbU[j*3+c];return f*k;});
    irLux=.2126*fl[0]+.7152*fl[1]+.0722*fl[2];uni(P2,'uIR','uniform3f',fl[0],fl[1],fl[2]);}
   uni(P2,'uDjP[0]','uniform3fv',djP);uni(P2,'uDjA[0]','uniform3fv',djA);uni(P2,'uDjC[0]','uniform3fv',djC);
   if(adFbo&&frameN%3===0){
