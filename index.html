@@ -59,6 +59,7 @@ h2{margin:0;font:500 11px/1 var(--mono);text-transform:uppercase;letter-spacing:
 .stop .ticks button[aria-current=true]::before{background:var(--accent);width:8px;height:8px}
 .opt{font-size:12.5px;color:var(--mute);margin:4px 0 0}
 .opt b{color:var(--fg);font-weight:500}
+.opt .src{display:block;margin-top:4px;font-size:11.5px;opacity:.85}
 .chips{display:flex;flex-wrap:wrap;gap:6px}
 button,.btn{font:500 13px var(--ui);color:var(--fg);background:var(--panel-2);border:1px solid var(--line);border-radius:6px;padding:7px 10px;cursor:pointer;min-height:34px}
 button:hover,.btn:hover{border-color:#3a404c}
@@ -184,7 +185,7 @@ ul.checks .wn{color:var(--accent);font-weight:600}
   <aside class="rail" id="rail">
     <header>
       <h1>Infinity Mirror Pixel Grid</h1>
-      <p class="sub">The 600 mm panel: a real LED matrix or P6 panel behind two half-silvered films, traced copy by copy through the actual layers.</p>
+      <p class="sub">The infinity panel, 60 cm to 1 m: real LED matrices or LED modules behind two half-silvered films, traced copy by copy through the actual layers.</p>
     </header>
 
     <nav class="tabs" role="tablist" aria-label="Settings">
@@ -200,6 +201,9 @@ ul.checks .wn{color:var(--accent);font-weight:600}
       <h2 id="h-pre">Panel size</h2>
       <div class="seg" role="radiogroup" aria-label="Panel size">
         <button type="button" data-size="600" role="radio">60 cm</button>
+        <button type="button" data-size="700" role="radio">70 cm</button>
+        <button type="button" data-size="800" role="radio">80 cm</button>
+        <button type="button" data-size="900" role="radio">90 cm</button>
         <button type="button" data-size="1000" role="radio">1 m</button>
       </div>
       <p class="note" id="sizeNote"></p>
@@ -403,6 +407,38 @@ const LEDS=[
  {id:'ws2812b5050',n:'WS2812B 16 × 16 matrices, 1 m',kind:'strip',size:1000,outer:1000,pitch:10,N:96,pkg:5.0,wl:[622.6,515.6,470.4],fw:[18,32,24],mcd:[620,1250,300],mA:[16,16,16],idle:0.6,V:5,bits:8,glob:0,pwm:'0.4–2 kHz, depends on the batch',
   data:{bits:24,hz:800e3,reset:280e-6},src:'36 flexible WS2812B 16 × 16 matrices (160 × 160 mm, 10 mm pitch) on a 960 × 960 mm plate. WS2812B data sheet V2.0: 550–700 / 1100–1400 / 200–400 mcd at 16 mA per channel (middle values used).',
   d:'Self-built: 9,216 LEDs, the brightest option, but up to about 2.2 kW at full white (440 A at 5 V, feed power into every matrix). Split the data over about 12 outputs for 40 fps.'}];
+/* 70, 80 and 90 cm: grids of stock HUB75 modules, or self-built from stock WS2812B matrices and strip.
+   Module sizes: P5 320 x 160 (64 x 32), P6 192 x 192 (32 x 32), P4 256 x 128 (64 x 32). No stock module grid lands
+   near 90 cm (they jump from 768 to 960 mm), so 90 cm is self-built. The mirror is the LED area plus 40 mm. */
+const W5050={wl:[622.6,515.6,470.4],fw:[18,32,24],mcd:[620,1250,300],mA:[16,16,16],idle:0.6,V:5,bits:8,glob:0,pwm:'0.4–2 kHz, depends on the batch',data:{bits:24,hz:800e3,reset:280e-6}};
+LEDS.push(
+ {id:'p5in70',n:'P5 indoor modules, 64 cm',kind:'panel',size:700,outer:680,pitch:5,N:128,mod:64,ppm:2048,pkg:2.1,wl:[623,525,470],fw:[18,32,24],nits:1000,Pmax:23,Pidle:1.5,V:5,bits:8,glob:8,pwm:'1/16 scan',data:{hub75:true},
+  src:'8 modules of 320 × 160 mm, 64 × 32 pixels (2 across, 4 high) = 640 × 640 mm, 128 × 128. Toolboom P5 indoor (IP20): 1000 nt, 23 W per module. Idle power and wavelengths are estimates.',
+  d:'Stock indoor modules, 5 mm pitch. Mirror 680 mm.'},
+ {id:'p5out70',n:'P5 outdoor modules, 64 cm',kind:'panel',size:700,outer:680,pitch:5,N:128,mod:64,ppm:2048,pkg:2.7,wl:[623,525,470],fw:[18,32,24],nits:5500,Pmax:40,Pidle:2,V:5,bits:8,glob:8,pwm:'1/8 scan',data:{hub75:true},
+  src:'Same 2 × 4 layout with outdoor P5 modules: manufacturer sheet 5500 cd/m² white balance, 40 W max, 1/8 scan, IP65 (sellers list 5000–7200 nt and 38–45 W).',
+  d:'Daylight-grade P5. Mirror 680 mm.'},
+ {id:'ws60_70',n:'WS2812B strip 60/m, 70 cm',kind:'strip',size:700,outer:740,pitch:16.67,N:42,pkg:5.0,...W5050,
+  src:'42 rows of WS2812B-5050 strip with 60 LEDs per metre (16.7 mm apart), cut to 42 LEDs and glued 16.7 mm apart on a plate: 700 × 700 mm. LED values from the WS2812B data sheet V2.0 (550–700 / 1100–1400 / 200–400 mcd at 16 mA).',
+  d:'The cheapest self-build, any size you like, but coarse: 16.7 mm between dots. Mirror 740 mm.'},
+ {id:'p6in80',n:'P6 indoor modules, 77 cm',kind:'panel',size:800,outer:808,pitch:6,N:128,mod:32,pkg:3.2,wl:[623,525,470],fw:[18,32,24],nits:1100,Pmax:20,Pidle:1,V:5,bits:8,glob:8,pwm:'1/16 scan, 1920 Hz with a pro card',data:{hub75:true},
+  src:'16 modules of 192 × 192 mm, 32 × 32 (4 × 4) = 768 × 768 mm, 128 × 128. WeiGu P6 indoor 1100 cd/m²; Hubtronics and Acme list 15–20 W per module.',
+  d:'The same P6 modules as the 60 cm panel, one row and column more. Mirror 808 mm.'},
+ {id:'p6out80',n:'P6 outdoor modules, 77 cm',kind:'panel',size:800,outer:808,pitch:6,N:128,mod:32,pkg:3.5,wl:[623,525,470],fw:[18,32,24],nits:5500,Pmax:30,Pidle:1.5,V:5,bits:8,glob:8,pwm:'1/8 scan',data:{hub75:true},
+  src:'4 × 4 outdoor P6 modules of 192 × 192 mm: Vegoo 5500 nits and 30 W per module; Toolboom lists 6500 nt, 30 W, IP65.',
+  d:'Daylight-grade P6. Mirror 808 mm.'},
+ {id:'p4in80',n:'P4 indoor modules, 77 cm',kind:'panel',size:800,outer:808,pitch:4,N:192,mod:64,ppm:2048,pkg:2.1,wl:[623,525,470],fw:[18,32,24],nits:1000,Pmax:20,Pidle:1,V:5,bits:8,glob:8,pwm:'1/16 scan',data:{hub75:true},
+  src:'18 modules of 256 × 128 mm, 64 × 32 (3 across, 6 high) = 768 × 768 mm, 192 × 192. Toolboom 1000 nt (Hubtronics lists only 200 cd/m² for its version), Waveshare up to 20 W per module.',
+  d:'Finer 4 mm pitch, 36,864 pixels. Mirror 808 mm.'},
+ {id:'ws16_80',n:'WS2812B 16 × 16 matrices, 80 cm',kind:'strip',size:800,outer:840,pitch:10,N:80,pkg:5.0,...W5050,
+  src:'25 flexible WS2812B 16 × 16 matrices of 160 × 160 mm (10 mm pitch, Tinytronics, Probots) in a 5 × 5 grid = 800 × 800 mm.',
+  d:'Self-built, 6,400 LEDs at 10 mm. Up to about 1.5 kW at full white. Mirror 840 mm.'},
+ {id:'ws16_90',n:'WS2812B 16 × 16 + 8 × 8 matrices, 88 cm',kind:'strip',size:900,outer:920,pitch:10,N:88,pkg:5.0,...W5050,
+  src:'25 flexible 16 × 16 matrices (160 mm) in a 5 × 5 grid plus 21 flexible 8 × 8 matrices (80 × 80 mm, DFRobot) along two edges = 880 × 880 mm, all at 10 mm pitch.',
+  d:'Self-built, 7,744 LEDs at 10 mm: the only way to get close to 90 cm with stock 10 mm parts. Mirror 920 mm.'},
+ {id:'ws60_90',n:'WS2812B strip 60/m, 90 cm',kind:'strip',size:900,outer:940,pitch:16.67,N:54,pkg:5.0,...W5050,
+  src:'54 rows of WS2812B-5050 strip with 60 LEDs per metre, cut to 54 LEDs and glued 16.7 mm apart: 900 × 900 mm.',
+  d:'Cheapest self-build, coarse 16.7 mm dots. Mirror 940 mm.'});
 LEDS.forEach(L=>{L.size=L.size||600;L.outer=L.outer||600;});
 /* T = visible transmission; R = reflectance of the side facing the cavity; Ro = reflectance seen by the viewer (front only). On glass. */
 const FILMS=[
@@ -621,7 +657,14 @@ const pc=v=>Math.round(v*100)+' %';
 const gapName=g=>g.mm+' mm '+(g.air?'air':'acrylic');
 const gapDesc=g=>g.air?'<b>Two 4 mm float glass plates</b> on '+g.mm+' mm spacers, films on the inside faces, air between them.':'<b>One '+g.mm+' mm cast acrylic sheet</b> (n = 1.49) with a film on each face.';
 const filmDesc=f=>'<b>'+f.full+'</b>: lets through '+pc(f.T)+', reflects '+pc(f.R)+', absorbs '+pc(1-f.T-f.R)+'. '+f.src+'.';
-buildStops('ledCtl','led','LED type',LEDS,l=>l.n,l=>'<b>'+l.N+' × '+l.N+' at '+l.pitch+' mm.</b> '+l.d,()=>{syncBal();onConfig();});
+/* LED type: the slider only steps through the LEDs that exist for the chosen panel size */
+function buildLedStops(){const host=document.getElementById('ledCtl');host.innerHTML='';
+  const sz=LEDS[S.led].size,ids=LEDS.map((l,i)=>i).filter(i=>LEDS[i].size===sz),sub=ids.map(i=>LEDS[i]),keep=S.led;
+  S.ledSub=ids.indexOf(keep);
+  buildStops('ledCtl','ledSub','LED type',sub,l=>l.n,l=>'<b>'+l.N+' × '+l.N+' at '+l.pitch+' mm.</b> '+l.d+(l.src?' <span class="src">'+l.src+'</span>':''),()=>{S.led=ids[S.ledSub];syncBal();onConfig();});
+  S.led=keep;
+  stops.led={set:g=>{const j=ids.indexOf(g);if(j<0){S.led=g;buildLedStops();return;}stops.ledSub.set(j);S.led=g;}};}
+buildLedStops();
 buildStops('mirCtl','front','Front film, your side',FILMS,f=>f.n,filmDesc,onConfig);
 buildStops('mirCtl','back','Back film, LED side',FILMS,f=>f.n,filmDesc,onConfig);
 buildStops('mirCtl','gap','Between the films',GAPS,gapName,gapDesc,onConfig);
@@ -1933,7 +1976,7 @@ function computeConfig(){
   const lm=Yc.map(y=>Math.PI*y*cell);
   let Wc,idleW;
   if(L.kind==='strip'){Wc=L.mA.map(a=>a*L.V/1000);idleW=L.idle*L.V/1000;}
-  else{const ppm=L.mod*L.mod;Wc=[0,0,0].map(()=>(L.Pmax-L.Pidle)/ppm/3);idleW=L.Pidle/ppm;}
+  else{const ppm=L.ppm||L.mod*L.mod;Wc=[0,0,0].map(()=>(L.Pmax-L.Pidle)/ppm/3);idleW=L.Pidle/ppm;}
   const acr=!g.air,G=STACK.glassMm/1000;
   const st={tF:acr?0:G,nF:acr?1:STACK.nGlass,d:g.mm/1000,nC:acr?STACK.nAcr:1,tBg:acr?0:G,nB:acr?1:STACK.nGlass,tBa:STACK.ledAirMm/1000};
   const Tf=Ff.T,Rf=Ff.R,Tb=Fb.T,Rb=Fb.R,q=Rf*Rb;
@@ -2165,18 +2208,21 @@ const PRESETS=[
  {n:'Budget build',led:0,bal:0,front:2,back:5,gap:8,
   why:'Off-the-shelf 3M Silver 20 and Silver 35 window film on ordinary 4 mm float glass, with the cheapest LED matrix. A slightly brighter, slightly shorter tunnel than the club stack, at the lowest price.',
   build:'Apply the film wet, on the cavity side of each sheet. 20 mm aluminium spacer, sealed. About 7 kg.'}];
-/* at 1 m the stacks keep their films and gap; the LEDs become the 1 m equivalent: panels -> P10 cabinet, strips -> WS2812B matrices */
-const big=()=>LEDS[S.led].size===1000,ledFor=p=>!big()?p.led:LEDS[p.led].kind==='panel'?LEDS.findIndex(l=>l.id==='p10cab'):LEDS.findIndex(l=>l.id==='ws2812b5050');
+/* at another panel size the stacks keep their films and gap; the LEDs become the same kind at that size
+   (panels -> modules, outdoor -> outdoor where it exists; strips -> self-built strips or matrices) */
+function sameKind(cur,sz){const c=LEDS.map((l,i)=>i).filter(i=>LEDS[i].size===sz);
+  const m=c.filter(i=>LEDS[i].kind===cur.kind),o=m.filter(i=>/out|cab/.test(LEDS[i].id)===/out|cab/.test(cur.id));
+  return(o.length?o:m.length?m:c)[0];}
+const ledFor=p=>{const sz=LEDS[S.led].size;return sz===600?p.led:sameKind(LEDS[p.led],sz);};
 {const box=$('preChips');PRESETS.forEach((p,i)=>{const b=document.createElement('button');b.type='button';b.textContent=p.n;b.dataset.i=i;
   b.addEventListener('click',()=>{const q={...p,led:ledFor(p)};for(const k of ['led','bal','front','back','gap']){if(stops[k])stops[k].set(q[k]);else S[k]=q[k];}syncBal();onConfig();save();syncPre();});box.appendChild(b);});}
 function syncSize(){const sz=LEDS[S.led].size;document.querySelectorAll('[data-size]').forEach(b=>b.setAttribute('aria-checked',String(+b.dataset.size===sz)));
   $('sizeNote').textContent=sz===600?'600 mm mirror in a 61 cm slot: the trailer is 185 cm from number plate to right sub, with a '+Math.round(CART.gap)+' cm high view to the DJ above the mirror.':
-    'A '+(LEDS[S.led].outer/10)+' cm mirror in a '+CART.sw+' cm slot: the centre column and the trailer get '+CART.dX+' cm longer ('+CART.len+' cm). Above the mirror only '+Math.round(CART.gap)+' cm is left before the top of the speakers, so the view to the DJ almost disappears. Each glass sheet weighs about '+fmt(((LEDS[S.led].outer/1000)**2)*4*2.5,1)+' kg at 4 mm; acrylic sags with the 4th power of the span, so at 1 m use 10 mm or more.';}
+    'A '+(LEDS[S.led].outer/10)+' cm mirror in a '+CART.sw+' cm slot: the centre column and the trailer get '+CART.dX+' cm longer ('+CART.len+' cm). '+
+    (CART.gap<25?'Above the mirror only '+Math.round(CART.gap)+' cm is left before the top of the speakers, so the view to the DJ almost disappears. ':'Above the mirror '+Math.round(CART.gap)+' cm stays open to see the DJ. ')+
+    'Each glass sheet weighs about '+fmt(((LEDS[S.led].outer/1000)**2)*4*2.5,1)+' kg at 4 mm; acrylic sags with the 4th power of the span'+(LEDS[S.led].outer>=900?', so use 10 mm or more.':' ('+fmt(.2*Math.pow(LEDS[S.led].outer/600,4),1)+' mm for 8 mm flat).');}
 document.querySelectorAll('[data-size]').forEach(b=>b.addEventListener('click',()=>{const sz=+b.dataset.size;if(LEDS[S.led].size===sz)return;
-  const cur=LEDS[S.led];let i;
-  if(sz===1000)i=LEDS.findIndex(l=>l.id===(cur.kind==='panel'?'p10cab':'ws2812b5050'));
-  else i=LEDS.findIndex(l=>l.id===(cur.kind==='panel'?'p6out':'ws2812b'));
-  stops.led.set(i);syncBal();onConfig();save();syncPre();}));
+  S.led=sameKind(LEDS[S.led],sz);buildLedStops();syncBal();onConfig();save();syncPre();}));
 function syncPre(){const p=PRESETS.find(p=>['led','bal','front','back','gap'].every(k=>S[k]===(k==='led'?ledFor(p):p[k])));
   document.querySelectorAll('#preChips button').forEach(b=>b.setAttribute('aria-pressed',String(p===PRESETS[+b.dataset.i])));
   const c=$('preCard');if(!p){c.innerHTML='<p class="note">Your own stack. Pick one of the six above to compare.</p>';return;}

@@ -56,7 +56,7 @@ input[type=range]{width:100%;accent-color:var(--accent);min-height:28px}
   <aside class="rail">
     <header>
       <h1>Speaker Trailer</h1>
-      <p class="sub">The sound trailer with the infinity mirror (60 cm or 1 m) right above the wheel case, the open gap for the DJ and the fog machine on the right. Same model as the Blender renders.</p>
+      <p class="sub">The sound trailer with the infinity mirror (60 cm to 1 m) right above the wheel case, the open gap for the DJ and the fog machine on the right. Same model as the Blender renders.</p>
     </header>
     <section aria-labelledby="h-light">
       <h2 id="h-light">Light</h2>
@@ -86,9 +86,12 @@ input[type=range]{width:100%;accent-color:var(--accent);min-height:28px}
       <h2 id="h-scr">Panel size</h2>
       <div class="chips" role="radiogroup" aria-label="Panel size">
         <button type="button" data-size="600" aria-pressed="true">60 cm</button>
+        <button type="button" data-size="700" aria-pressed="false">70 cm</button>
+        <button type="button" data-size="800" aria-pressed="false">80 cm</button>
+        <button type="button" data-size="900" aria-pressed="false">90 cm</button>
         <button type="button" data-size="1000" aria-pressed="false">1 m</button>
       </div>
-      <p class="note">1 m uses a Dahua PHGOA10-FC P10 cabinet (1000 × 1000 mm, 96 × 96 LEDs at 10.42 mm, 5,500 nits, 24 kg) behind a 1040 mm mirror. The slot and the trailer get 44 cm wider, and above the mirror only about 11 cm is left to see the DJ. The simulator also has the 960 mm P10-module and self-built WS2812B versions.</p>
+      <p class="note">Built from parts you can order: 70 cm = 8 P5 modules of 320 × 160 mm (640 mm, 128 × 128); 80 cm = 16 P6 modules of 192 × 192 mm (768 mm, 128 × 128); 90 cm = 25 WS2812B 16 × 16 plus 21 8 × 8 flexible matrices at 10 mm (880 mm, 88 × 88); 1 m = a Dahua PHGOA10-FC P10 cabinet (1000 mm, 96 × 96). The mirror is the LED area plus 4 cm, the slot 1 cm more, and the trailer grows by the extra slot width. The simulator has more LED choices per size.</p>
     </section>
     <section aria-labelledby="h-view">
       <h2 id="h-view">View</h2>
@@ -131,8 +134,12 @@ RectAreaLightUniformsLib.init();
 /* glTF from Blender: x along the trailer, y up, z out of the speaker fronts. Panel window centre at (0.905, 0.7047, 0). */
 /* the 600 mm mirror (90 x 90 at 6.25 mm), or the 1 m one (Dahua P10 cabinet, 96 x 96 at 10.42 mm) in a 105 cm slot:
    then the centre column and everything right of it move 44 cm */
-const SIZES={s600:{panel:[0.905,0.70466],N:90,pitch:0.00625,half:0.28125,dx:0,len:185,glb:'speaker_trailer.glb'},
-             s1000:{panel:[1.125,0.92466],N:96,pitch:1/96,half:0.5,dx:.44,len:229,glb:'speaker_trailer_1m.glb'}};
+const SIZES={
+  s600:{panel:[0.905,0.70466],N:90,pitch:0.00625,half:0.28125,dx:0,len:185,glb:'speaker_trailer.glb',pt:'60 × 60 cm',st:'61 × 61 cm',gt:'65 × 55 cm'},
+  s700:{panel:[0.945,0.74466],N:128,pitch:0.005,half:0.32,dx:.08,len:193,glb:'speaker_trailer_70.glb',pt:'68 × 68 cm',st:'69 × 69 cm',gt:'73 × 47 cm'},
+  s800:{panel:[1.01,0.80966],N:128,pitch:0.006,half:0.384,dx:.21,len:206,glb:'speaker_trailer_80.glb',pt:'81 × 81 cm',st:'82 × 82 cm',gt:'86 × 34 cm'},
+  s900:{panel:[1.065,0.86466],N:88,pitch:0.01,half:0.44,dx:.32,len:217,glb:'speaker_trailer_90.glb',pt:'92 × 92 cm',st:'93 × 93 cm',gt:'97 × 23 cm'},
+  s1000:{panel:[1.125,0.92466],N:96,pitch:1/96,half:0.5,dx:.44,len:229,glb:'speaker_trailer_1m.glb',pt:'104 × 104 cm',st:'105 × 105 cm',gt:'109 × 11 cm'}};
 let SZ=SIZES.s600,PANEL=new THREE.Vector3(...SZ.panel,0),N=SZ.N,PITCH=SZ.pitch,HALF=SZ.half;
 const view=document.getElementById('view');
 const renderer=new THREE.WebGLRenderer({antialias:true,powerPreference:'high-performance'});
@@ -403,9 +410,8 @@ function loadModel(sz){
   /* the two slot mouths: 46 x 10 cm, centred 7 cm above the bed (33 cm), in front of each sub */
   for(const x of [.29,1.52+sz.dx]){const l=new THREE.RectAreaLight(0xff8f33,1,2*PORT.W,PORT.H);l.position.set(x,.33+.02+PORT.H/2,.003);l.lookAt(x,.40,5);scene.add(l);mouthLights.push(l);}
   setRing(+document.getElementById('ringD').value);
-  const big=sz===SIZES.s1000;document.getElementById('dLen').textContent=sz.len+' cm';
-  document.getElementById('dPanel').textContent=big?'104 × 104 cm':'60 × 60 cm';document.getElementById('dSlot').textContent=big?'105 × 105 cm':'61 × 61 cm';
-  document.getElementById('dGap').textContent=big?'109 × 11 cm':'65 × 55 cm';
+  document.getElementById('dLen').textContent=sz.len+' cm';
+  document.getElementById('dPanel').textContent=sz.pt;document.getElementById('dSlot').textContent=sz.st;document.getElementById('dGap').textContent=sz.gt;
  },undefined,e=>{document.getElementById('loading').textContent='Could not load the model: '+e.message;});}
 loadModel(SIZES.s600);
 
