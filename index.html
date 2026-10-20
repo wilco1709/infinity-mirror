@@ -195,7 +195,8 @@ ul.checks .wn{color:var(--accent);font-weight:600}
       <button type="button" role="tab" data-tabbtn="mirror">Mirror</button>
       <button type="button" role="tab" data-tabbtn="woofer">Woofer LEDs</button>
       <button type="button" role="tab" data-tabbtn="room">Room</button>
-      <button type="button" role="tab" data-tabbtn="smoke">Smoke</button>    </nav>
+      <button type="button" role="tab" data-tabbtn="smoke">Smoke</button>
+      <button type="button" role="tab" data-tabbtn="dj">DJ position</button>    </nav>
 
     <section aria-labelledby="h-pre" data-tab="mirror">
       <h2 id="h-pre">Panel size</h2>
@@ -330,6 +331,22 @@ ul.checks .wn{color:var(--accent);font-weight:600}
       </div>
       <audio id="player" controls hidden></audio>
       <p class="note" id="srcNote">Demo beat drives the audio visuals without a microphone. Pick Video sound to drive them from the video that is playing.</p>
+    </section>
+
+    <section aria-labelledby="h-dj" data-tab="dj">
+      <h2 id="h-dj">DJ position</h2>
+      <div class="seg" role="radiogroup" aria-label="Where the DJ stands">
+        <button type="button" data-djp="0" role="radio">On the ground</button>
+        <button type="button" data-djp="1" role="radio">On the fold-down podium</button>
+      </div>
+      <div id="djCtl" style="display:flex;flex-direction:column;gap:10px"></div>
+      <div class="chips"><button type="button" id="djAuto">Raise the decks to a good height</button><button type="button" id="djView">Look from behind</button></div>
+      <div class="seg" role="radiogroup" aria-label="Show the DJ">
+        <button type="button" data-djs="1" role="radio">Show the DJ</button>
+        <button type="button" data-djs="0" role="radio">Hide the DJ</button>
+      </div>
+      <p class="note" id="djLive"></p>
+      <p class="note">The podium is a 60 cm deep plank on hinges along the back of the trailer, with two fold-out legs. Its lowest setting is wheel-centre height; up to the top of the mudguard the wheel sticks up through it, so it needs a half-round notch to fold up, smaller the higher it sits. The decks are two Pioneer CDJ-3000 (11.8 cm high) and a DJM-900NXS2. Good height: Digital DJ Tips gives 102 cm for men and 91 cm for women, DJ tables run 83 to 106 cm, and DJs put the controls halfway between hip and elbow, about 0.575 × body height above their feet.</p>
     </section>
 
     <section aria-labelledby="h-fog" data-tab="smoke">
@@ -472,7 +489,7 @@ const FACES=['north','north-east','east','south-east','south','south-west','west
 /* ---------- state ---------- */
 const DEF={pat:31,pal:0,solid:0,speed:1,gain:1.4,trail:0,soft:0,ovl:0,ovlC:0,frW:2,frIn:0,frMode:1,frRate:2,fit:0,vContrast:1.15,vSat:1.1,vGamma:1,loop:'all',
   led:0,bal:0,bright:1,cgam:2.2,front:1,back:4,gap:9,dist:2,yaw:0,pitch:0,eyeH:1.65,amb:0,clock:21.5,face:6,prtM:0,prtB:1,prtS:0.6,prtF:0.12,prtD:30,prtW:0,
-  tab:'view',look:0,fogM:0,fogOut:.7,fogLen:3,fogInt:30,fogAch:2,blbW:2,blbP:0,blbM:1,blbS:1,blbSens:0.6,blbF:0.08,blbC:[255,230,200,170,140,110,80,60,40,20]};
+  tab:'view',look:0,djP:0,djH:30,djR:0,djStat:180,djShow:1,fogM:0,fogOut:.7,fogLen:3,fogInt:30,fogAch:2,blbW:2,blbP:0,blbM:1,blbS:1,blbSens:0.6,blbF:0.08,blbC:[255,230,200,170,140,110,80,60,40,20]};
 const S=Object.assign({},DEF);
 const KEY='infinity-grid-v12';
 try{const j=JSON.parse(localStorage.getItem(KEY)||'null');if(j&&typeof j==='object'){for(const k in DEF)if(k in j&&typeof j[k]===typeof DEF[k])S[k]=j[k];}}catch(e){}
@@ -699,7 +716,20 @@ function syncTab(){tabBtns.forEach(b=>b.setAttribute('aria-selected',String(b.da
   document.querySelectorAll('#rail [data-tab]').forEach(s=>s.hidden=s.dataset.tab!==S.tab);}
 tabBtns.forEach(b=>b.addEventListener('click',()=>{S.tab=b.dataset.tabbtn;save();syncTab();const rl=document.getElementById('rail');rl.scrollTop=0;
   if(getComputedStyle(rl).overflowY==='visible'){const tb=rl.querySelector('nav.tabs'),want=tb.offsetTop+rl.getBoundingClientRect().top+scrollY-parseFloat(getComputedStyle(tb).top);if(scrollY>want)scrollTo(0,want);}}));
-if(!['view','av','vis','mirror','woofer','room','smoke'].includes(S.tab))S.tab='view';
+if(!['view','av','vis','mirror','woofer','room','smoke','dj'].includes(S.tab))S.tab='view';
+/* DJ position controls */
+{const wc=17,mg=39;   /* wheel centre and mudguard top, cm (wheel 17 cm radius, mudguard 5 cm above the tyre) */
+ buildCtl('djCtl',[{k:'djH',l:'Podium height (top)',min:wc,max:mg+6,step:1,f:v=>v+' cm'+(v<=wc+1?', wheel centre':v-3>=mg?', above the mudguard':'')},
+   {k:'djStat',l:'Height of the DJ',min:150,max:205,step:1,f:v=>v+' cm'},
+   {k:'djR',l:'Raise the decks (riser)',min:0,max:60,step:1,f:v=>v===0?'on the desk':v+' cm riser'}]);}
+function syncDJ(){document.querySelectorAll('[data-djp]').forEach(b=>b.setAttribute('aria-checked',String(+b.dataset.djp===S.djP)));
+  document.querySelectorAll('[data-djs]').forEach(b=>b.setAttribute('aria-checked',String(+b.dataset.djs===S.djShow)));
+  outs.djH.inp.parentElement.hidden=!S.djP;}
+document.querySelectorAll('[data-djp]').forEach(b=>b.addEventListener('click',()=>{S.djP=+b.dataset.djp;save();syncDJ();}));
+document.querySelectorAll('[data-djs]').forEach(b=>b.addEventListener('click',()=>{S.djShow=+b.dataset.djs;save();syncDJ();}));
+document.getElementById('djAuto').addEventListener('click',()=>{const g=djGeom(),need=Math.round(g.idealSurf-(g.gearTop-S.djR-g.stand));setCtl('djR',Math.max(0,Math.min(60,need)));save();});
+document.getElementById('djView').addEventListener('click',()=>{setCtl('yaw',150);setCtl('eyeH',2.1);setCtl('dist',4.4);setCtl('look',0);save();onView();});
+syncDJ();
 /* smoke machine controls */
 buildCtl('fogCtl',[{k:'fogOut',l:'Output',min:.1,max:1,step:.01,f:v=>Math.round(v*100)+' % · '+(v*100).toFixed(0)+' ml/min of fluid'},
   {k:'fogLen',l:'Burst length',min:.5,max:15,step:.5,f:v=>v+' s'},
@@ -1256,6 +1286,13 @@ uniform float uPrtD;     // depth of the LED ring inside the slot (m)
 uniform float uPrtF0;    // gloss of the slot lining (0 for raw wood and matte paint)
 uniform vec3 uBulb[10];  // bulbs: intensity of one bulb in each of the 10 rows (cd, linear RGB)
 uniform float uLook;     // how far you look up from the panel (rad)
+/* DJ position: extra boxes (fold-down podium, its legs, the riser and the DJ gear) and the DJ dummy as capsules */
+uniform vec3 uXB0[8],uXB1[8];
+uniform int uXI[8];
+uniform int uNX;
+uniform vec4 uNotch;     // podium notch round the back wheel: centre x, back face z, radius (m); w > 0 when there is one
+uniform vec4 uCapA[12],uCapB[12];   // capsule end a (xyz, radius) and end b (xyz, material: 0 clothes, 1 skin)
+uniform int uNCap;
 uniform vec4 uPuff[16];  // fog: puffs from the machine, centre (m) and size sigma (m)
 uniform vec4 uPuffB[4];  // fog: peak extinction of each puff (1/m), four per vec4
 uniform int uNPuff;
@@ -1433,6 +1470,25 @@ bool cartHit(vec3 ro,vec3 rd,out float tb,out vec3 nb,out int idb,out int bib){
     float a=max(max(tn.x,tn.y),tn.z),b=min(min(tf.x,tf.y),tf.z);
     if(a<b&&a>0.&&a<tb){tb=a;idb=CBI[i];bib=i;hit=true;nb=a==tn.x?vec3(-sign(rd.x),0.,0.):a==tn.y?vec3(0.,-sign(rd.y),0.):vec3(0.,0.,-sign(rd.z));}
   }
+  /* fold-down podium, legs, riser and DJ gear; the podium has a notch round the wheel so it can fold up past it */
+  for(int i=0;i<8;i++){if(i>=uNX)break;
+    vec3 t0=(uXB0[i]-ro)*inv,t1=(uXB1[i]-ro)*inv,tn=min(t0,t1),tf=max(t0,t1);
+    float a=max(max(tn.x,tn.y),tn.z),b=min(min(tf.x,tf.y),tf.z);
+    if(a<b&&a>0.&&a<tb){
+      if(uXI[i]==13&&uNotch.w>0.){vec3 q=ro+rd*a;float dx=q.x-uNotch.x,dz=uNotch.y-q.z;if(dz<uNotch.z&&dx*dx+dz*dz<uNotch.z*uNotch.z)continue;}
+      tb=a;idb=uXI[i];bib=-1;hit=true;nb=a==tn.x?vec3(-sign(rd.x),0.,0.):a==tn.y?vec3(0.,-sign(rd.y),0.):vec3(0.,0.,-sign(rd.z));}
+  }
+  /* the DJ: capsules (Inigo Quilez's ray-capsule intersection) */
+  for(int i=0;i<12;i++){if(i>=uNCap)break;
+    vec3 pa=uCapA[i].xyz,pb=uCapB[i].xyz;float ra=uCapA[i].w;
+    vec3 ba=pb-pa,oa=ro-pa;float baba=dot(ba,ba),bard=dot(ba,rd),baoa=dot(ba,oa),rdoa=dot(rd,oa),oaoa=dot(oa,oa);
+    float A=baba-bard*bard,B=baba*rdoa-baoa*bard,Cc=baba*oaoa-baoa*baoa-ra*ra*baba,h=B*B-A*Cc,t=-1.;
+    if(h>=0.){
+      if(A>1e-9){float ts=(-B-sqrt(h))/A,y=baoa+ts*bard;if(y>0.&&y<baba)t=ts;}
+      if(t<0.){float y=baoa+((-B-sqrt(max(h,0.)))/max(A,1e-9))*bard;vec3 oc=(y<=0.)?oa:ro-pb;float b2=dot(rd,oc),c2=dot(oc,oc)-ra*ra,h2=b2*b2-c2;if(h2>0.)t=-b2-sqrt(h2);}
+    }
+    if(t>0.&&t<tb){tb=t;vec3 p=ro+rd*t,pp=p-pa;float k=clamp(dot(pp,ba)/max(baba,1e-9),0.,1.);nb=(pp-k*ba)/ra;idb=uCapB[i].w>.5?15:14;bib=-1;hit=true;}
+  }
   for(int s=0;s<2;s++){
     vec3 c=vec3(WHX,WHY,s==0?WHZA:WHZB);
     vec2 oc=ro.xy-c.xy;float A=dot(rd.xy,rd.xy),B=dot(oc,rd.xy),Cc=dot(oc,oc)-WHR*WHR,disc=B*B-A*Cc;
@@ -1460,6 +1516,15 @@ vec3 shadeCart(vec3 p,vec3 n,int id,int bi,vec3 rd,float dist){
     n=normalize(n+(vec3(n3(p*300.+3.1),n3(p*300.+7.7),n3(p*300.+11.3))-.5)*.18*peb*(1.-abs(n)));}
   if(id==3||id==8){rho=.05;spec=.03;}
   else if(id==11){rho=.06;spec=.035;}   /* desk top: black high-pressure laminate */
+  else if(id==12){rho=.035;spec=.06;     /* DJ gear: two players and a mixer, with lit screens on top */
+    if(n0.y>.5){vec2 q=p.xz;
+      for(int s=-1;s<=1;s+=2){vec2 jc=vec2(float(s)*.37,uNotch.y+.25);float r=length(q-jc);if(r<.1){rho=.07;spec=.12;}if(r<.1&&r>.093){rho=.18;}
+        if(abs(q.x-float(s)*.37)<.055&&abs(q.y-(uNotch.y+.385))<.035)emit=vec3(1.4,2.,3.)*2.;}
+      if(abs(q.x)<.19&&abs(q.y-(uNotch.y+.17))<.11&&fract(q.x*28.)<.25)rho=.25;}}
+  else if(id==13){rho=.33;spec=.02;col=vec3(.95,.78,.55);   /* podium: birch plywood with anti-slip film (dark) on top */
+    if(n0.y>.5){col=vec3(.25,.2,.15);rho=.12;}}
+  else if(id==14){rho=.05;spec=.01;}    /* DJ: dark clothes */
+  else if(id==15){rho=.3;spec=.02;col=vec3(.85,.62,.48);}   /* skin */
   else if(id==9){rho=.03;spec=.05;   /* fog machine: black powder-coated steel, vent slots on the sides, a small status light */
     if(abs(n0.x)>.5&&fract((p.z+.6)*40.)<.45&&abs(p.y-FOGY)<.06)rho=.006;
     if(n0.z>.5&&length(p.xy-vec2(FOGX+.09,FOGY+.07))<.004)emit=uFogLed;}  else if(id==4){col=vec3(.95,.72,.05);rho=.6;}
@@ -1514,7 +1579,7 @@ vec3 shadeCart(vec3 p,vec3 n,int id,int bi,vec3 rd,float dist){
   }
   vec3 p0=p+n*2e-3,rr=reflect(rd,n);
   /* bare tolex is rough: its sheen is a wide lobe (the cosine-averaged surroundings), not a mirror image of the luminaires */
-  vec3 sp=(cab||id==11)&&spec<.0401?irr(p0,rr)/PI*mix(3.,10.,pow(1.-abs(dot(rd,n)),5.)):env(p0,rr);
+  vec3 sp=(cab||id==11||id>=13)&&spec<.0401?irr(p0,rr)/PI*mix(3.,10.,pow(1.-abs(dot(rd,n)),5.)):env(p0,rr);
   return emit+col*rho*irr(p0,n)/PI+spec*sp;
 }
 /* ---------- fog ----------
@@ -2304,7 +2369,61 @@ spark.addEventListener('pointerleave',()=>{sHover=-1;});
 
 /* ---------- render loop ---------- */
 let frameN=0,lastTs=0,fpsAvg=60,adapt=5,adaptT=5,irLux=0,SLOT=null,slotLm=0,slotOut=0,slotW=0,prtG=1,blbFlux=0;const blbV=new Float32Array(10),blbDmx=new Uint8Array(10),blbHist=[],blbU=new Float32Array(30);
-let fogHold=false;const FOG={puffs:[],bg:0,heat:1,ready:true,phase:0,clear:0,spawn:0,beatCD:0,burst:0,fluid:0};
+let fogHold=false;
+/* ---------- DJ position ----------
+   A fold-down podium hinged to the back of the trailer (60 cm deep, 3 cm thick, full length), from wheel-centre height up
+   to just above the mudguard. Where the wheel and mudguard stand above the podium's underside, the podium needs a
+   half-round notch so it can still fold up past the wheel. The DJ gear (2 players and a mixer, Pioneer CDJ-3000 and
+   DJM-900NXS2 sizes) stands on the desk, on an optional riser. Ergonomics: Digital DJ Tips gives 102 cm for men (~1.78 m)
+   and 91 cm for women; DJs put the controls halfway between hip and elbow: about 0.575 x body height above the feet. */
+const DJ={depth:60,thick:3,prot:19,gearH:11.8,ideal:.575};
+function djGeom(){
+  const C=CART,L=(x,y,z)=>[(x-C.px)/100,(y-C.py)/100,(z-60)/100],back=60-C.D,RE=181+C.dX;
+  const R=C.wr+5,mgTop=C.wy+R;                         /* mudguard radius and its top (cm above the ground) */
+  const out={boxes:[],ids:[],notch:[0,0,0,0],caps:[],stand:0,notchR:0};
+  if(S.djP){const h=S.djH,hb=h-DJ.thick;
+    out.boxes.push([L(0,hb,back-DJ.depth),L(RE,h,back)]);out.ids.push(13);
+    for(const x of [4,RE-7])out.boxes.push([L(x,0,back-DJ.depth+3),L(x+3,hb,back-DJ.depth+6)]),out.ids.push(3);
+    if(hb<mgTop){const hc=hb<=C.wy?R:Math.sqrt(Math.max(0,R*R-(hb-C.wy)**2));out.notchR=Math.hypot(hc+2,DJ.prot+2);
+      out.notch=[(C.px-C.px)/100,(back-60)/100,out.notchR/100,1];}
+    out.stand=h;}
+  else out.notch=[0,(back-60)/100,0,0];
+  /* gear on its riser */
+  const dt=C.subTop+2.5,r=S.djR,g0=back+3;
+  if(r>0){out.boxes.push([L(C.px-56,dt,g0-1),L(C.px+56,dt+r,g0+47)]);out.ids.push(0);}
+  const gb=dt+r;
+  out.boxes.push([L(C.px-53.6,gb,g0),L(C.px-20.6,gb+11.8,g0+45.3)],[L(C.px-20.6,gb,g0+2),L(C.px+20.6,gb+10.8,g0+42.8)],[L(C.px+20.6,gb,g0),L(C.px+53.6,gb+11.8,g0+45.3)]);
+  out.ids.push(12,12,12);
+  out.gearTop=gb+DJ.gearH;
+  /* the DJ: stands behind the wheel when it sticks up above the standing surface, else right at the trailer */
+  const H=S.djStat,y0=out.stand,wheelUp=y0<mgTop,zf=back-(wheelUp?Math.max(out.notchR,DJ.prot)+16:16);
+  const P=(x,y,z)=>L(C.px+x,y0+y,z);
+  const cap=(a,b,r,m)=>out.caps.push([...a,r/100],[...b,m]);
+  const hip=.53*H,sh=.81*H,legR=6.5;
+  for(const s of [-1,1]){cap(P(s*9,legR,zf),P(s*9,hip,zf),legR,0);}
+  cap(P(-7,hip,zf),P(-7,sh-6,zf),12,0);cap(P(7,hip,zf),P(7,sh-6,zf),12,0);
+  cap(P(0,.935*H,zf+1),P(0,.935*H+1,zf+1),11,1);
+  /* arms: two-bone IK from the shoulder to a hand on the near half of the gear */
+  for(const s of [-1,1]){const Sh=[s*19,sh,zf],T=[s*24,out.gearTop+2-y0,g0+14],L1=.186*H,L2=.146*H+5;
+    let d=[T[0]-Sh[0],T[1]-Sh[1],T[2]-Sh[2]],n=Math.hypot(...d);const u=d.map(v=>v/n);if(n>L1+L2-.5){n=L1+L2-.5;}
+    const Hd=Sh.map((v,i)=>v+u[i]*n),a=(L1*L1-L2*L2+n*n)/(2*n),hh=Math.sqrt(Math.max(0,L1*L1-a*a));
+    let pv=[s*.4,-1,-.3];const k=pv[0]*u[0]+pv[1]*u[1]+pv[2]*u[2];pv=pv.map((v,i)=>v-k*u[i]);const pn=Math.hypot(...pv);pv=pv.map(v=>v/pn);
+    const E=Sh.map((v,i)=>v+u[i]*a+pv[i]*hh);
+    cap(P(...Sh),P(...E),4.8,0);cap(P(...E),P(...Hd),4,1);
+    out.reach=n;}
+  out.surf=out.gearTop-y0;out.idealSurf=DJ.ideal*H;
+  return out;}
+const djXB0=new Float32Array(24),djXB1=new Float32Array(24),djXI=new Int32Array(8),djCA=new Float32Array(48),djCB=new Float32Array(48);
+function djUniforms(){const g=djGeom();djXB0.fill(0);djXB1.fill(0);
+  g.boxes.forEach((b,i)=>{djXB0.set(b[0],i*3);djXB1.set(b[1],i*3);djXI[i]=g.ids[i];});
+  uni(P2,'uXB0[0]','uniform3fv',djXB0);uni(P2,'uXB1[0]','uniform3fv',djXB1);uni(P2,'uXI[0]','uniform1iv',djXI);uni(P2,'uNX','uniform1i',g.boxes.length);
+  uni(P2,'uNotch','uniform4f',...g.notch);
+  const nc=g.caps.length/2;g.caps.forEach((c,i)=>{(i%2?djCB:djCA).set(c,(i>>1)*4);});
+  uni(P2,'uCapA[0]','uniform4fv',djCA);uni(P2,'uCapB[0]','uniform4fv',djCB);uni(P2,'uNCap','uniform1i',S.djShow?nc:0);
+  if(frameN%10===0){const d=Math.round(g.surf-g.idealSurf);
+    $('djLive').innerHTML='Standing on '+(S.djP?'the podium at <b>'+S.djH+' cm</b>':'<b>the ground</b>')+'. Top of the decks <b>'+Math.round(g.gearTop)+' cm</b> above the ground, <b>'+Math.round(g.surf)+' cm</b> above the feet; '+
+      'good for a DJ of '+S.djStat+' cm is about <b>'+Math.round(g.idealSurf)+' cm</b>: '+(Math.abs(d)<=3?'just right.':d>0?'<b>'+d+' cm too high</b>, shoulders up and arms lifted.':'<b>'+(-d)+' cm too low</b>, bending over the decks.')+
+      (S.djP?(g.notchR?' The podium needs a half-round notch of <b>'+Math.round(g.notchR)+' cm</b> radius round the wheel to fold up.':' Above the mudguard: no notch needed.'):'');}}const FOG={puffs:[],bg:0,heat:1,ready:true,phase:0,clear:0,spawn:0,beatCD:0,burst:0,fluid:0};
 const fogP=new Float32Array(64),fogB=new Float32Array(16);const slotDuty=[0,0,0],slotRGB=[0,0,0];
 const hudTR=$('hudTR'),TANH=0.441,TLC=cctRGB(4000),ADAPT_FALLBACK=[1,40,3000,0.5,20];
 function uni(P,name,fn,...a){if(P.u[name]!=null)gl[fn](P.u[name],...a);}
@@ -2355,7 +2474,7 @@ function frame(ts){
   /* the hall, the trailer and the panel stay put: only your eyes move */
   const I3=[1,0,0,0,1,0,0,0,1],EYE=eyePos();
   gl.uniformMatrix3fv(P2.u.uRot,false,I3);gl.uniformMatrix3fv(P2.u.uRotI,false,I3);
-  uni(P2,'uEyeW','uniform3f',EYE[0],EYE[1],EYE[2]);uni(P2,'uLook','uniform1f',S.look*D2R);uni(P2,'uFloor','uniform1f',CART.floor);
+  uni(P2,'uEyeW','uniform3f',EYE[0],EYE[1],EYE[2]);uni(P2,'uLook','uniform1f',S.look*D2R);djUniforms();uni(P2,'uFloor','uniform1f',CART.floor);
   gl.uniformMatrix3fv(P2.u.uLedM,false,C.M);
   uni(P2,'uDuty','uniform1i',0);uni(P2,'uPort','uniform1i',8);uni(P2,'uPrtD','uniform1f',PORT.D0);uni(P2,'uPrtF0','uniform1f',WALLS[PORT.wall].F0);uni(P2,'uTanH','uniform1f',TANH);uni(P2,'uD','uniform1f',S.dist);
   uni(P2,'uN','uniform1f',N);uni(P2,'uPitch','uniform1f',C.pitch);uni(P2,'uSig','uniform1f',C.L.pkg/1000*0.3);
