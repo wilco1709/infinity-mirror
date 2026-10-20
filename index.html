@@ -307,6 +307,19 @@ ul.checks .wn{color:var(--accent);font-weight:600}
       <p class="note">Flash safety: never more than 3 white flashes in any second and no red flashes, the photosensitive-epilepsy limit (WCAG 2.3.1, Ofcom). Kicks faster than that cut to cyan instead. Put a warning sign up anyway when the strobes are on.</p>
     </section>
 
+    <section aria-labelledby="h-pude" data-tab="adv">
+      <h2 id="h-pude">PUDE logo show</h2>
+      <p class="note">The PUDE cube with the hand out of the hole, and almost never the logo itself: the cube tumbles, explodes, melts, unfolds, slides its letters round like a Rubik's cube and drops letters out, while the hand never stops: it waves, pumps, fist-bumps the crowd, points at you, lures you closer, counts down to the drop and much more. Same ears as the live show above: kick, snare, hats and melody, the beat clock, bars and phrases, breakdowns, builds and drops.</p>
+      <div class="chips"><button type="button" id="puGo" aria-pressed="false">Play PUDE on the mirror</button><button type="button" id="puCount">Count down to a drop</button><button type="button" id="puDrop">Drop now</button></div>
+      <div class="glabel">The hand</div>
+      <div class="chips" role="radiogroup" aria-label="Hand gesture" id="puG"></div>
+      <div class="glabel">The cube</div>
+      <div class="chips" role="radiogroup" aria-label="Cube" id="puC"></div>
+      <div id="puCtl" style="display:flex;flex-direction:column;gap:12px"></div>
+      <p class="note" id="puLive" style="font-family:var(--mono)"></p>
+      <p class="note">How it follows the music. Every move is locked to the beat clock: waves reach their turn on the beat, pumps and stomps land on it, the fist bump hits the crowd on the first beat of the bar. Kicks squash the cube and send rings out down the tunnel, snares slide the letter rows, lift the top half, fire the finger guns and snap the fingers, hats make the fingers tremble and the letters pop, the melody makes the hand talk and spins the star in the hole, a filter sweep spins the hand. In Auto the hand changes every few bars on the downbeat and the cube on the phrase, picking what fits: four-on-the-floor gets fist pumps and rave hands, busy hats get finger drums, a melody gets the talking hand, a breakdown gets "come here", hiding and peeking and a melting or ghost cube. In a build the hand counts the last 5 beats down to the phrase where the drop should land; on the drop it bursts into jazz hands and the cube explodes. Black stays black, so the tunnel copies stay clean; the hand is drawn in the logo's own pink most of the time.</p>
+    </section>
+
     <section aria-labelledby="h-vid" data-tab="av">
       <h2 id="h-vid">Video on the grid</h2>
       <div class="drop" id="drop">
@@ -540,7 +553,7 @@ const FACES=['north','north-east','east','south-east','south','south-west','west
 /* ---------- state ---------- */
 const DEF={pat:31,pal:0,solid:0,speed:1,gain:1.4,trail:0,soft:0,ovl:0,ovlC:0,frW:2,frIn:0,frMode:1,frRate:2,fit:0,vContrast:1.15,vSat:1.1,vGamma:1,loop:'all',
   led:0,bal:0,bright:1,cgam:2.2,front:1,back:4,gap:9,dist:2,yaw:0,pitch:0,eyeH:1.65,amb:0,clock:21.5,face:6,prtM:0,prtB:1,prtS:0.6,prtF:0.12,prtD:30,prtW:0,
-  tab:'view',look:0,wedge:0,pitchAmt:.7,tempo:0,glitch:.5,advSc:0,advStrobe:.8,advBars:2,advTxt:'INFINITY',djP:0,djH:30,djR:0,djStat:180,djShow:1,
+  tab:'view',look:0,wedge:0,pitchAmt:.7,tempo:0,glitch:.5,advSc:0,advStrobe:.8,advBars:2,advTxt:'INFINITY',puG:0,puC:0,puFaith:.15,puEvery:1,puBars:1,puMid:1,djP:0,djH:30,djR:0,djStat:180,djShow:1,
   bMix:1,bMixPos:3,bMixRow:0,bSet:1,bSetPos:3,bSetRow:0,bLap:1,bLapPos:1,bLapRow:1,bVj:1,bVjPos:5,bVjRow:0,fogM:0,fogOut:.7,fogLen:3,fogInt:30,fogAch:2,blbW:2,blbP:0,blbM:1,blbS:1,blbSens:0.6,blbF:0.08,blbC:[255,230,200,170,140,110,80,60,40,20]};
 const S=Object.assign({},DEF);
 const KEY='infinity-grid-v12';
@@ -550,7 +563,8 @@ try{const j=JSON.parse(localStorage.getItem(KEY)||'null');if(j&&typeof j==='obje
  if(!Array.isArray(S.blbC)||S.blbC.length!==10)S.blbC=DEF.blbC.slice();S.blbC=S.blbC.map(v=>Math.max(0,Math.min(255,Math.round(+v)||0)));
  S.blbW=Math.max(0,Math.min(3,Math.round(S.blbW)||0));
  for(const[k,mx]of [['bMix',1],['bSet',5],['bLap',1],['bVj',3],['bMixPos',6],['bSetPos',6],['bLapPos',6],['bVjPos',6],['bMixRow',1],['bSetRow',1],['bLapRow',1],['bVjRow',1]])S[k]=Math.max(0,Math.min(mx,Math.round(S[k])||0));S.prtW=Math.max(0,Math.min(3,Math.round(S.prtW)||0));
- S.advSc=Math.max(0,Math.min(4,Math.round(S.advSc)||0));S.advBars=Math.max(0,Math.min(3,Math.round(S.advBars)||0));S.advTxt=String(S.advTxt).slice(0,24);S.blbP=Math.max(0,Math.min(6,Math.round(S.blbP)||0));}
+ S.advSc=Math.max(0,Math.min(4,Math.round(S.advSc)||0));S.advBars=Math.max(0,Math.min(3,Math.round(S.advBars)||0));S.advTxt=String(S.advTxt).slice(0,24);
+ S.puG=Math.max(0,Math.min(30,Math.round(S.puG)||0));S.puC=Math.max(0,Math.min(16,Math.round(S.puC)||0));S.puEvery=Math.max(0,Math.min(2,Math.round(S.puEvery)||0));S.puBars=Math.max(0,Math.min(3,Math.round(S.puBars)||0));S.puMid=S.puMid?1:0;S.blbP=Math.max(0,Math.min(6,Math.round(S.blbP)||0));}
 let saveT=0;function save(){clearTimeout(saveT);saveT=setTimeout(()=>{try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}},250)}
 
 /* two families: the ones the audio drives, and the ones that run by themselves and ignore the sound */
@@ -567,6 +581,7 @@ const PGROUPS=[
  {g:'Geometry',items:[[35,'Folding icosahedron'],[36,'Buddhabrot']]}];
 const PAT_NOTE={
  49:'The live show from the Advanced visuals tab: four scenes with their own listening, tempo and drops. It ignores Audio gain, Follow the melody, Speed and the palette.',
+ 51:'The PUDE logo show from the Advanced visuals tab: the cube and the hand, never quite the logo, on the live show\'s ears. It ignores Audio gain, Follow the melody, Speed and the palette.',
  0:'Classic stereo-style VU columns with peak hold. 3 LEDs per bar, segmented rows.',
  1:'Spectrum wrapped around the centre, mirrored left and right.',
  2:'Concentric rings pulled outward and punched by the bass. Made for a tunnel.',
@@ -802,8 +817,26 @@ var advDropNow=false;
 buildCtl('advCtl',[{k:'advStrobe',l:'White strobes',min:0,max:1,step:.05,f:v=>v<.01?'off, cuts to cyan':Math.round(v*100)+' %, at most 3 per second'},
   {k:'advBars',l:'Auto: change scene every',min:0,max:3,step:1,f:v=>ADV_BARS[v]+' bars, or on a drop'}]);
 function syncAdv(){document.querySelectorAll('#advScene button').forEach(b=>b.setAttribute('aria-checked',String(+b.dataset.i===S.advSc)));
-  const g=document.getElementById('advGo');g.setAttribute('aria-pressed',String(S.pat===49));g.textContent=S.pat===49?'■ Stop the show':'▶ Play the show on the mirror';}
+  const g=document.getElementById('advGo');g.setAttribute('aria-pressed',String(S.pat===49));g.textContent=S.pat===49?'■ Stop the show':'▶ Play the show on the mirror';syncPude();}
 syncAdv();
+/* PUDE logo show (pattern 51): pick a hand gesture and a cube look, or leave both on Auto */
+const PU_GN=['Logo hand','Wave','Rave hand','Fist pump','Fist bump','Middle finger','Point at the crowd','Come here','OK sign','Countdown','Peace','Horns','Thumbs up','Finger guns','Shaka','Jazz hands','Snap','Finger drums','Stomp','Talking hand','Grab a letter','Spider walk','Hide and peek','Spin','Clap','Crowd','Raise the roof','Rock paper scissors','Conductor','Pinch the cube'];
+const PU_CN=['Logo','Tumble','Explode','Lid','Unfold','Tunnel','Letter belt','Glitch','Wireframe','Melt','Stomp','Split','Letters pop','Ghost','Mirror','Jelly'],PU_EVERY=[1,2,4];
+{const mk=(id,names,k)=>{const box=document.getElementById(id);['Auto'].concat(names).forEach((n,i)=>{const b=document.createElement('button');b.type='button';b.setAttribute('role','radio');b.textContent=n;b.dataset.i=i;
+   b.addEventListener('click',()=>{S[k]=i;if(S.pat!==51){S.pat=51;syncPat();}save();syncPude();});box.appendChild(b);});};
+ mk('puG',PU_GN,'puG');mk('puC',PU_CN,'puC');
+ const go=document.getElementById('puGo');let before=DEF.pat;go.addEventListener('click',()=>{if(S.pat===51)S.pat=before;else{before=S.pat;S.pat=51;}save();syncPat();});
+ document.getElementById('puCount').addEventListener('click',()=>{if(S.pat!==51){S.pat=51;syncPat();}PUDE.force=1;});
+ document.getElementById('puDrop').addEventListener('click',()=>{if(S.pat!==51){S.pat=51;syncPat();}advDropNow=true;});}
+buildCtl('puCtl',[{k:'puFaith',l:'Faithful to the logo',min:0,max:1,step:.05,f:v=>v<.01?'never':Math.round(v*100)+' %'},
+  {k:'puEvery',l:'Auto: new gesture every',min:0,max:2,step:1,f:v=>PU_EVERY[v]+(v?' bars':' bar')+', on the downbeat'},
+  {k:'puBars',l:'Auto: new cube look every',min:0,max:3,step:1,f:v=>ADV_BARS[v]+' bars, or on a drop'},
+  {k:'puMid',l:'Middle finger',min:0,max:1,step:1,f:v=>v?'allowed':'never'}]);
+function syncPude(){const gb=document.getElementById('puGo');if(!gb)return;
+  document.querySelectorAll('#puG button').forEach(b=>b.setAttribute('aria-checked',String(+b.dataset.i===S.puG)));
+  document.querySelectorAll('#puC button').forEach(b=>b.setAttribute('aria-checked',String(+b.dataset.i===S.puC)));
+  gb.setAttribute('aria-pressed',String(S.pat===51));gb.textContent=S.pat===51?'■ Stop PUDE':'▶ Play PUDE on the mirror';}
+syncPude();
 if(!['view','av','vis','adv','mirror','woofer','room','smoke','dj','booth'].includes(S.tab))S.tab='view';
 buildCtl('pitchCtl',[{k:'pitchAmt',l:'Follow the melody',min:0,max:1,step:.05,f:v=>v<.01?'off':Math.round(v*100)+' %'}]);
 buildCtl('wedgeCtl',[{k:'wedge',l:'Wedge between the films',min:0,max:1.5,step:.05,f:v=>v<.01?'parallel':v.toFixed(2)+'° · '+(Math.tan(v*D2R)*600).toFixed(1)+' mm more gap on one side'}]);
@@ -1032,6 +1065,140 @@ vec3 advShow(vec2 c,vec2 q){
   }
   col*=1.-uAdv[0].z;                      /* the cut between scenes */
   return mix(min(col,1.),vec3(1.),uAdv[0].w);   /* white strobe, rate-limited on the JS side */
+}
+/* ---- PUDE logo show (Advanced visuals): the cube with its letters and the hand out of the hole, almost never the logo itself ---- */
+uniform vec4 uPu[12];    // (faces, capsules, hands, lines) (colour mode, colour phase, fill level, outline boost) (mask mode, a, b, phase)
+                         // (belt shift upper row, lower row, wobble, melt) (upper row offset x, y, tear, block size) (hole open, star turn, hole glow, star size)
+                         // (echo copies, echo ratio, echo phase, echo level) (outline LEDs, letter glow, mirror mode, spare) (top face origin x, y, hole clip, spare)
+                         // (top face matrix) (white strobe, colour cut, dip, edge glow) (cut hue, edge hue, time, spare)
+uniform vec4 uPuF[18];   // per face: (origin x, y, tile, alpha) (screen to face uv matrix) (shade, belt index or -1, mirror u, spare)
+uniform vec4 uPuS[24];   // hand capsules in hand space: a.xy, b.xy
+uniform vec4 uPuSR[24];  // radius at a, radius at b, part (0 palm, 1-5 thumb..pinky, 7 crease, 8 eye), layer (0 grown on, 1 in front of the palm, 2 behind it)
+uniform vec4 uPuI[15];   // per hand: (x, y, size, turn) (mirror, alpha, cut at the hole, style) (arm end x, y, arm radius, hue)
+uniform float uPuL[8];   // letter cells P U D E, upper and lower row: size, 0 gone .. 1 there
+uniform vec4 uPuE[24];   // light lines: a.xy, b.xy
+uniform vec4 uPuEc[24];  // their colour and width in LEDs
+uniform vec4 uPuR[6];    // shock rings: centre, radius (< 0: none), hue
+uniform sampler2D uPuTx; // the three faces, rectified: r outline, g letters, b face fill
+vec3 puPal(float h){h=fract(h)*6.;int i=int(h);float f=smoothstep(0.,1.,fract(h));
+  vec3 P[6]=vec3[6](vec3(.93,0.,.32),vec3(0.,.82,1.),vec3(.55,.8,1.),vec3(.78,.95,.4),vec3(.55,.2,1.),vec3(.15,.4,1.));
+  return mix(P[i],P[(i+1)%6],f);}
+vec3 puFill(int t){return t==0?vec3(.45,.73,.906):t==1?vec3(.212,.404,.529):vec3(.62,.816,.945);}
+vec3 puLet(int t){return t==0?vec3(.73,.867,.953):vec3(.608,.702,.765);}
+vec3 puTex(float tile,vec2 uv,float lod){vec2 q=(uv+.06)/1.12;
+  if(q.x<0.||q.x>1.||q.y<0.||q.y>1.)return vec3(0.);
+  return textureLod(uPuTx,vec2((tile+q.x)/3.,q.y),lod).rgb;}
+vec4 puFace(int i,vec2 p,float sc,float full){
+  vec4 F0=uPuF[i*3],F1=uPuF[i*3+1],F2=uPuF[i*3+2];
+  if(F0.w<.003)return vec4(0.);
+  vec2 d=p-F0.xy,uv=vec2(F1.x*d.x+F1.y*d.y,F1.z*d.x+F1.w*d.y);
+  float tile=F0.z,bi=F2.y,t=uPu[11].z;bool side=bi>-.5;
+  vec2 off=uPu[4].xy;   /* split: the upper row (and the top) lifted off the lower one */
+  if(dot(off,off)>1e-6){vec2 d2=d-off,u2=vec2(F1.x*d2.x+F1.y*d2.y,F1.z*d2.x+F1.w*d2.y);
+    if(!side)uv=u2;else if(u2.y<.5&&u2.y>-.07)uv=u2;else if(uv.y<.5&&uv.y>-.07)return vec4(0.);}
+  float wb=uPu[3].z;if(wb>0.)uv+=wb*vec2(sin(uv.y*9.+t*6.)*.05,sin(uv.x*7.-t*5.)*.035);
+  if(side&&uPu[3].w>0.)uv.y-=uPu[3].w*(.25+.75*vn(vec2(uv.x*7.,t*.3)))*clamp(uv.y*1.3,0.,1.3);   /* melt: drips run down */
+  if(F2.z>.5)uv.x=1.-uv.x;
+  int row=uv.y<.5?0:1;
+  if(side&&uv.x>-.07&&uv.x<1.07){float b=mod(bi+uv.x+(row==0?uPu[3].x:uPu[3].y),4.),fb=floor(b);uv.x=b-fb;if(tile<1.5)tile=mod(tile+fb-bi,2.);}   /* letters ride round the cube */
+  int ti=int(tile+.5);
+  float lod=log2(max(1.,457.*max(length(F1.xy),length(F1.zw))/(uN*.5*sc)))-.4;
+  int cell=-1;
+  if(ti<2&&uv.x>=0.&&uv.x<=1.&&uv.y>=0.&&uv.y<=1.){float sp=ti==0?.47:.5;int cx=uv.x<sp?0:1;cell=ti*4+row*2+cx;
+    float v=uPuL[cell];
+    if(v<.999){if(v<.01)return vec4(0.);
+      vec2 lo=vec2(cx==0?0.:sp,float(row)*.5),hi=vec2(cx==0?sp:1.,float(row)*.5+.5),cm=(lo+hi)*.5;
+      uv=cm+(uv-cm)/v;lod+=log2(max(v,.05));if(any(lessThan(uv,lo))||any(greaterThan(uv,hi)))return vec4(0.);}}
+  vec3 cv=puTex(tile,uv,max(lod,0.));
+  float o=cv.r,l=cv.g,f=cv.b,m=uPu[1].x,ph=uPu[1].y,lv=uPu[1].z,oc=min(1.,o*uPu[1].w),sh=F2.x;
+  if(full<.5)return vec4(puPal(ph+tile*.17+.33)*oc*F0.w,0.);   /* echo copies: lines only, added */
+  vec3 fc,lc,ln=vec3(0.);float cf=float(max(cell,0));
+  if(m<.5){fc=puFill(ti)*sh*lv;lc=puLet(ti)*sh*lv;}                                                      /* the logo's own colours, dimmed */
+  else if(m<1.5){vec3 h=puPal(ph+tile*.17);fc=h*.05;lc=h*.16;ln=h;}                                    /* neon outlines */
+  else if(m<2.5){vec3 h=puPal(ph+cf*.11);fc=vec3(0.);lc=h*(.7+.3*uPu[7].y);ln=h*.1;}                  /* only the letters */
+  else if(m<3.5){bool s=fract(ph*2.)<.5;vec3 A=vec3(.93,0.,.32),B=vec3(0.,.82,1.);fc=((ti==1)==s?A:B)*.3*lv;lc=((ti==1)==s?B:A)*.9;ln=vec3(0.);}   /* two-tone */
+  else if(m<4.5){fc=puFill(ti)*.06;lc=vec3(0.);ln=vec3(.7,.88,1.);}                                     /* negative */
+  else{vec3 h=puPal(ph+(max(bi,0.)+uv.x)*.25+uv.y*.2);fc=h*.18;lc=h;ln=vec3(0.);}                        /* rainbow belt */
+  lc*=1.+.5*uPu[7].y;
+  vec3 col=mix(fc*f,lc,l);col=mix(col,ln,oc);
+  float a=max(f,max(l,oc));
+  if(ti==2&&uPu[5].x>.01){   /* the hole with the star inside: drawn here so it can open, close, glow and spin */
+    vec2 hq=uv-vec2(.487,.5);float pxu=exp2(lod+.4)/457.,dh=max(abs(hq.x),abs(hq.y))-.33*uPu[5].x,inH=clamp(.5-dh/pxu,0.,1.);
+    if(inH>0.){vec3 hc=(uv.x+uv.y<.985)?vec3(0.):vec3(.2,.3,.54)*(m<.5?lv:.45);
+      vec2 sq=uv-vec2(.45,.57);float an=atan(sq.y,sq.x)+uPu[5].y,tri=abs(fract(an*8./6.28318)-.5)*2.;
+      float st=length(sq)-mix(.1,.27,tri*tri)*uPu[5].w;
+      hc=mix(hc,vec3(.82,.93,.55)*(m<.5?lv*1.3:1.),clamp(.5-st/pxu,0.,1.));
+      hc+=puPal(ph+.5)*uPu[5].z*exp(-abs(dh)/.06);
+      col=mix(col,hc,inH);a=max(a,inH);}
+    if(m>.5&&m<1.5)col+=puPal(ph+.5)*lnAA(dh/pxu,1.2);}
+  return vec4(col,a*F0.w);
+}
+vec4 puCube(vec2 p,float sc,float full){vec4 acc=vec4(0.);int nf=int(uPu[0].x+.5);
+  for(int i=0;i<6;i++){if(i>=nf)break;vec4 c=puFace(i,p,sc,full);
+    if(full<.5)acc.rgb+=c.rgb;else{acc.rgb=mix(acc.rgb,c.rgb,c.a);acc.a=max(acc.a,c.a);}}
+  return acc;}
+float puCap(vec2 p,vec4 s,vec2 r){vec2 pa=p-s.xy,ba=s.zw-s.xy;float h=clamp(dot(pa,ba)/max(dot(ba,ba),1e-8),0.,1.);return length(pa-ba*h)-mix(r.x,r.y,h);}
+float puSmin(float a,float b,float k){float h=clamp(.5+.5*(b-a)/k,0.,1.);return mix(b,a,h)-k*h*(1.-h);}
+void puPaint(inout vec4 acc,float d,float sup,vec3 fc,vec3 lc,float pxl,float w){
+  float a=clamp(.5-d/pxl,0.,1.);acc.rgb=mix(acc.rgb,fc,a);acc.a=max(acc.a,a);
+  float o=lnAA(d/pxl,w/pxl)*sup;acc.rgb=mix(acc.rgb,lc,o);acc.a=max(acc.a,o);}
+vec4 puHand(int hi,vec2 p,float px,float olw){
+  vec4 I0=uPuI[hi*3],I1=uPuI[hi*3+1],I2=uPuI[hi*3+2];
+  if(I1.y<.003)return vec4(0.);
+  float sz=I0.z,cr=cos(I0.w),sr=sin(I0.w);
+  vec2 d=p-I0.xy,l=vec2(cr*d.x+sr*d.y,-sr*d.x+cr*d.y)/sz;l.x*=I1.x;
+  float pxl=px/sz,w=olw*px/sz;
+  float dP=1e3;
+  if(I2.z>0.){vec2 ae=I2.xy-I0.xy;ae=vec2(cr*ae.x+sr*ae.y,-sr*ae.x+cr*ae.y)/sz;ae.x*=I1.x;dP=puCap(l,vec4(0.,.12,ae),vec2(I2.z*.92,I2.z));}
+  float dF[5];int lay[5];for(int f=0;f<5;f++){dF[f]=1e3;lay[f]=0;}
+  float dCr=1e3,dEye=1e3;vec2 pup=vec2(0.);float pupR=0.;
+  int nc=int(uPu[0].y+.5);
+  for(int i=0;i<24;i++){if(i>=nc)break;vec4 s=uPuS[i],r=uPuSR[i];int part=int(r.z+.5);
+    if(part==8){dEye=length(l-s.xy)-r.x;pup=s.zw;pupR=r.y;continue;}
+    float dd=puCap(l,s,r.xy);
+    if(part==0)dP=puSmin(dP,dd,.09);else if(part==7)dCr=min(dCr,dd);else{dF[part-1]=min(dF[part-1],dd);lay[part-1]=int(r.w+.5);}}
+  int sty=int(I1.w+.5);float hu=I2.w;
+  vec3 fc=vec3(.93,.004,.32),lc=vec3(0.);
+  if(sty==1){fc=vec3(.93,.004,.32)*.1;lc=puPal(hu);}else if(sty==3){fc=puPal(hu)*.04;lc=puPal(hu)*.85;}
+  vec4 acc=vec4(0.);
+  for(int f=0;f<5;f++)if(lay[f]==2)puPaint(acc,dF[f],1.,sty==2?puPal(hu+float(f)*.17):fc,lc,pxl,w);
+  puPaint(acc,dP,1.,fc,lc,pxl,w);
+  if(dCr<1e2)acc.rgb=mix(acc.rgb,lc,lnAA(dCr/pxl,w*.6/pxl)*step(dP,-w));
+  for(int f=0;f<5;f++)if(lay[f]==0)puPaint(acc,dF[f],smoothstep(-w*1.3,-w*.3,dP),sty==2?puPal(hu+float(f)*.17):fc,lc,pxl,w);
+  for(int f=0;f<5;f++)if(lay[f]==1)puPaint(acc,dF[f],1.,sty==2?puPal(hu+float(f)*.17):fc,lc,pxl,w);
+  if(dEye<1e2){puPaint(acc,dEye,1.,vec3(.95),lc,pxl,w);acc.rgb=mix(acc.rgb,vec3(0.),clamp(.5-(length(l-pup)-pupR)/pxl,0.,1.));}
+  acc.a*=I1.y;
+  if(I1.z>.5){vec2 q=p-uPu[8].xy;vec2 tu=vec2(uPu[9].x*q.x+uPu[9].y*q.y,uPu[9].z*q.x+uPu[9].w*q.y);   /* out of the hole: what is in front of its middle stays inside the cube */
+    acc.a*=smoothstep(.01,-.01,dot(tu-vec2(.487,.5),uPu[8].zw));}
+  return acc;
+}
+float puMask(vec2 p,vec2 c){int mm=int(uPu[2].x+.5);float a=uPu[2].y,b=uPu[2].z,ph=uPu[2].w;
+  if(mm==0)return 1.;
+  if(mm==1){float y=mix(1.3,-1.3,fract(ph));return smoothstep(a+.05,a-.05,abs(p.y-y));}                 /* a band scans down */
+  if(mm==2)return smoothstep(a+.06,a-.06,length(p-uPuI[0].xy));                                          /* a spotlight on the hand */
+  if(mm==3)return step(.5,mod(floor((atan(p.y,p.x)/6.28318+.5)*8.+ph),2.));                             /* turning pie slices */
+  if(mm==4)return step(b,h21(floor(c/max(2.,a))+floor(ph)*7.1));                                         /* blocks blink out */
+  if(mm==5)return step(h21(floor(c))*.999,a);                                                            /* dissolve */
+  if(mm==6)return step(0.,sin((p.x+p.y)*a+ph*6.28318));                                                  /* sliding stripes */
+  return smoothstep(-.05,.05,(p.x+p.y)*.7071-mix(-1.5,1.5,a));}                                          /* wipe */
+vec3 pudeShow(vec2 c){
+  float R=uN*.5,px=1./R,t=uPu[11].z;vec2 p=(c-R)/R;
+  vec3 col=vec3(0.);
+  for(int i=0;i<6;i++){vec4 r=uPuR[i];if(r.z<0.)continue;col+=puPal(r.w)*lnAA((length(p-r.xy)-r.z)*R,1.5)*smoothstep(1.7,1.,r.z)*.85;}   /* rings out to the edges and down the tunnel */
+  float ed=min(min(c.x,uN-c.x),min(c.y,uN-c.y));col+=puPal(uPu[11].y)*uPu[10].w*smoothstep(2.6,0.,ed);
+  vec2 cc=c;float blk=uPu[4].w;if(blk>1.5)cc=(floor(c/blk)+.5)*blk;
+  vec2 pc=(cc-R)/R;float g=uPu[4].z;
+  if(g>0.){float sl=floor(c.y/3.),tf=floor(t*18.);pc.x+=step(1.-g*.7,h11(sl*7.3+tf))*(h11(sl+tf*1.7)-.5)*g*.8;}
+  int km=int(uPu[7].z+.5);if(km==1)pc.x=abs(pc.x);else if(km==2)pc=vec2(abs(pc.x),-abs(pc.y));
+  float msk=puMask(pc,cc),en=uPu[6].x;
+  for(int k=4;k>=1;k--){if(float(k)>en+.5)continue;float e=float(k)-1.+uPu[6].z,s=pow(uPu[6].y,e);   /* copies grow out of the cube, one step per beat */
+    col+=puCube(pc/s,s,0.).rgb*uPu[6].w*clamp(1.-e/(en+.5),0.,1.)*smoothstep(0.,.3,e);}
+  vec4 cb=puCube(pc,1.,1.);col=mix(col,cb.rgb,cb.a*msk);
+  int nl=int(uPu[0].w+.5);for(int i=0;i<24;i++){if(i>=nl)break;vec4 s=uPuE[i],q=uPuEc[i];col+=q.rgb*lnAA(segD(p,s.xy,s.zw)*R,q.w);}
+  int nh=int(uPu[0].z+.5);for(int i=0;i<5;i++){if(i>=nh)break;vec4 h=puHand(i,p,px,uPu[7].x);col=mix(col,h.rgb,h.a);}
+  col*=1.-uPu[10].z;
+  col=mix(col,puPal(uPu[11].x),uPu[10].y*.8);
+  return mix(min(col,1.),vec3(1.),uPu[10].x);
 }
 void main(){
   vec2 c=gl_FragCoord.xy;
@@ -1356,6 +1523,8 @@ void main(){
     col=acc+stars(p,t)*.9;
   }else if(uPat==49){
     col=advShow(c,q);
+  }else if(uPat==51){
+    col=pudeShow(c);
   }else if(uPat==48){
     /* AI creature: two glowing eyes that listen, and now and then show off a trick */
     float s=uN/90.,inten=uCre[0].w,blend=uCre[1].x,kind=uCre[1].y,happy=uCre[1].z,tilt=uCre[1].w,bounce=uCre[2].x,st=uCre[2].y;
@@ -3140,13 +3309,14 @@ function advPick(){const A=ADV,kd=Math.min(1,A.rate[0]/2.2),hd=Math.min(1,A.rate
   const now=performance.now()/1000,used=A.used||(A.used=[-99,-99,-99,-99]);used[A.scene]=now;
   for(let s=0;s<4;s++)sc[s]-=.6*Math.exp(-(now-used[s])/45);sc[(A.scene+1)%4]+=.2;sc[A.scene]-=.6;
   return sc.indexOf(Math.max(...sc));}
-function advBeat(){const A=ADV;
+function advBeat(){const A=ADV;if(S.pat!==49)return;
   if(!S.advSc&&A.beatN>A.phrase0&&(A.beatN-A.phrase0)%(4*ADV_BARS[S.advBars])===0)advCut(advPick());}
 function advBurst(n,vmin,vmax,white){const A=ADV;for(let i=0;i<n&&A.P.length<128;i++){const v=vmin+(vmax-vmin)*Math.random();
   A.P.push({a:Math.random()*6.2832,r:.02+.06*Math.random(),v,c:Math.random()<white?3:Math.floor(Math.random()*3),w:.8+.9*Math.random(),b:.7+.3*Math.random()});}}
 function advSpray(n,a0,spread,v,c){const A=ADV;for(let i=0;i<n&&A.P.length<128;i++)
   A.P.push({a:a0+(Math.random()-.5)*spread,r:.05+.05*Math.random(),v:v*(.7+.6*Math.random()),c,w:.7+.4*Math.random(),b:.8});}
 function advDrop(t){const A=ADV;A.drop=1;A.armT=0;A.subOn=0;A.dropT=t;A.build=0;A.ph=0;A.beatN=(Math.floor(A.beatN/4)+1)*4;A.phrase0=A.beatN;advFlash(t,1);
+  if(S.pat===51){pudeDrop(t);return;}
   if(!S.advSc)advCut(2);
   advBurst(100,1.2,3.4,.35);A.shat=1;if(A.nodes)for(const nd of A.nodes){const l=Math.hypot(...nd.r)||1;for(let m=0;m<3;m++)nd.v[m]+=nd.r[m]/l*(3+4*Math.random())+(Math.random()-.5)*3;}}
 function advPlexus(){const A=ADV,n=36,nodes=[];
@@ -3199,6 +3369,7 @@ function advAudio(t,dts){const A=ADV;
   if(A.subS<.5*A.subL&&A.subOn>8)A.armT+=dts;else if(A.subS>.85*A.subL)A.armT=0;
   const bt=A.armT>1?Math.min(1,(A.armT-1)/8)*(.4+.3*Math.min(1,A.rate[2]/6)+.3*A.N[3]):0;A.build+=(bt-A.build)*(1-Math.exp(-dts/.5));
   const lt=A.eS<.4*A.eL?1:0;A.lull+=(lt-A.lull)*(1-Math.exp(-dts/(lt?.5:.08)));if(ons[0])A.lull=0;
+  if(S.pat===51){pudeStep(t,dts,ons,beatTick);return;}   /* the PUDE show has its own director on these ears */
   /* the director */
   if(S.advSc&&A.scene!==S.advSc-1)advCut(S.advSc-1);
   A.strobe*=Math.exp(-dts/.045);A.cut*=Math.exp(-dts/.09);A.dip*=Math.exp(-dts/.12);A.drop*=Math.exp(-dts/1.5);A.shat*=Math.exp(-dts/.7);
@@ -3276,6 +3447,332 @@ function advUniforms(t){const A=ADV,U=A.U;   /* call while the pattern program i
     A.env[0],A.drop,A.build,A.ph, A.scan,0,0,0]);
   uni(P1,'uAdv[0]','uniform4fv',U);uni(P1,'uAdvN','uniform4f',...A.n);uni(P1,'uAR[0]','uniform1fv',A.ar);
   uni(P1,'uAdvD','uniform1i',9);uni(P1,'uAdvTx','uniform1i',10);}
+/* ---------- PUDE logo show (pattern 51) ----------
+   The cube is a real 3D cube: every face carries its own artwork from PUDE_logo.svg, rectified into a square tile of an atlas
+   (outline, letters and face fill in separate channels), so faces can turn, fly apart, open, unfold and slide their letter rows.
+   The hand is built from capsules, digit by digit (palm, three segments per digit; each digit spreads, curls towards or away from
+   the viewer and bends sideways), so it can make any gesture. It listens with the live show's ears (ADV): kick, snare, hats and
+   melody onsets, the beat clock, bars, phrases, breakdowns, builds and drops. Every move is a function of the beat phase, so it
+   lands on the beat instead of trailing it. */
+const PU_SVG=[[[1,0,0,1,458.687598,511.333433],0,1,"M2358,1260L2044.013,1375L1727,1260L2041,1145L2358,1260Z"],[[1,0,0,1,357.937494,-539.520863],1,1,"M2141.841,2856.362L1828.841,2741.362L1827.841,2308.362L2141.841,2424.362L2141.841,2856.362Z"],[[1,0,0,1,358.406254,-539.520863],2,1,"M2023.516,2606.926C2026.284,2608.527 2027.957,2609.261 2027.957,2609.261C2028.141,2609.343 2028.33,2609.416 2028.521,2609.48L2029.689,2609.871L2028.616,2743.001C2028.331,2745.755 2027.362,2760.456 2037.039,2775.276C2043.883,2785.76 2056.117,2796.504 2078.286,2802.587C2078.813,2802.732 2079.358,2802.807 2079.905,2802.81C2079.905,2802.81 2101.439,2802.686 2099.608,2782.564L2100.661,2634.984L2134.087,2647.257L2134.625,2750.196L2134.625,2847.912L2039.538,2815.745L2033.152,2813.398C2025.539,2809.329 1986.702,2785.679 1986.682,2726.595L1987.731,2594.467L2023.516,2606.926ZM1972.864,2425.505L1972.667,2450.049L1972.269,2460.995C1969.875,2507.115 1930.607,2500.479 1930.607,2500.479L1875.36,2483.854L1874.481,2533.213C1860.895,2528.056 1849.015,2523.746 1842.721,2521.486L1834.603,2518.099L1833.265,2372.317L1833.146,2320.844C1834.176,2321.194 1837.396,2322.291 1842.117,2323.929L1904.571,2347.001C1913.394,2350.547 1921.527,2354.017 1927.89,2357.091C1963.554,2374.317 1971.294,2408.279 1972.864,2425.505ZM1878.077,2443.127C1878.077,2443.127 1880.872,2444.649 1882.605,2445.409C1897.045,2451.747 1923.362,2457.878 1923.362,2457.878C1923.362,2457.878 1939.529,2460.683 1939.664,2436.058C1939.787,2413.684 1935.163,2402.578 1911.588,2396.574L1879.888,2387.223C1879.888,2387.223 1872.213,2384.118 1869.925,2390.08L1870.831,2432.941C1870.831,2432.941 1870.772,2439.677 1878.077,2443.127ZM2100.073,2419.225L2134.077,2431.787L2134.625,2535.313L2134.625,2631.755L2028.848,2595.546C2017.087,2588.441 1984.701,2564.01 1984.682,2510.402L1985.744,2378.238L2028.385,2392.902L2027.292,2526.802C2027.002,2529.571 2026.024,2544.283 2035.826,2559.112C2042.749,2569.584 2055.121,2580.322 2077.541,2586.399C2078.063,2586.54 2078.601,2586.613 2079.142,2586.616C2079.142,2586.616 2100.857,2586.446 2099.011,2566.368L2100.073,2419.225ZM1928.89,2569.468C1977.908,2594.139 1974.175,2651.756 1974.175,2651.756L1973.269,2677.742C1970.875,2725.802 1931.607,2718.886 1931.607,2718.886L1876.36,2701.562L1875.454,2754.572L1840.214,2742.51L1834.115,2740.27L1833.747,2580.965L1833.792,2531.572C1833.792,2531.572 1915.659,2562.808 1928.89,2569.468ZM1924.362,2674.494C1924.362,2674.494 1940.529,2677.417 1940.664,2651.756C1940.787,2628.441 1936.163,2616.868 1912.588,2610.612L1880.888,2600.867C1880.888,2600.867 1873.213,2597.631 1870.925,2603.845L1871.831,2648.508C1871.831,2648.508 1871.82,2657.326 1878.749,2658.919C1879.47,2658.44 1924.362,2674.494 1924.362,2674.494Z"],[[1,0,0,1,458.833417,510.841251],3,0,"M2358,1260L2041,1376L2041,1808L2360,1692L2358,1260"],[[1,0,0,1,458.809972,510.263132],4,0,"M2046.229,1618.374L2046.229,1598.558L2157.386,1556.087L2193.896,1593.575L2193.337,1699.054L2143.312,1763.441L2047.141,1797.989L2046.229,1618.374ZM2078.523,1636.158L2078.523,1742.764C2078.523,1742.764 2076.266,1760.364 2103.831,1744.738L2135.214,1731.906C2135.214,1731.906 2153.338,1719.616 2161.534,1696.37L2160.522,1622.326C2160.522,1622.326 2154.393,1594.408 2119.016,1607.519L2086.622,1621.351C2086.622,1621.351 2079.254,1623.348 2078.523,1636.158ZM2193.886,1379.217L2193.826,1391.068L2192.935,1482.918L2142.659,1548.066L2047.134,1582.614L2046.229,1403.135L2046.229,1383.183L2128.486,1351.542L2157.015,1341.102L2193.886,1379.217ZM2078.306,1420.783L2078.306,1527.389C2078.306,1527.389 2076.064,1544.989 2103.444,1529.363L2134.615,1516.531C2134.615,1516.531 2152.617,1504.241 2160.758,1480.995L2159.753,1406.951C2159.753,1406.951 2153.665,1379.033 2118.526,1392.144L2086.35,1405.976C2086.35,1405.976 2079.032,1407.973 2078.306,1420.783ZM2239.276,1597.927C2243.27,1609.261 2254.641,1610.775 2254.641,1610.775L2351.883,1576.217L2351.957,1612.011L2262.08,1639.657C2235.723,1648.391 2240.031,1669.648 2240.031,1669.648C2244.74,1687.076 2257.897,1683.617 2257.897,1683.617L2352.003,1652.021L2352.003,1689.16L2333.733,1695.804L2205.617,1740.739L2206.656,1544.559C2207.767,1544.467 2208.873,1544.225 2209.945,1543.829L2340.784,1495.541L2350.957,1491.921L2350.957,1531.51C2350.957,1531.51 2284.642,1558.397 2261.034,1564.094C2237.427,1569.79 2238.031,1586.709 2238.031,1586.709C2237.706,1591.241 2238.234,1594.929 2239.276,1597.927ZM2239.135,1381.389C2242.99,1395.734 2254.641,1395.348 2254.641,1395.348L2351.183,1359.247L2351.293,1383L2350.957,1396.649L2262.08,1425.74C2235.723,1434.93 2240.031,1457.297 2240.031,1457.297C2244.74,1475.636 2257.897,1471.996 2257.897,1471.996L2351.552,1438.909L2351.733,1478.176L2336.525,1483.789L2205.626,1530.366L2206.326,1391.16L2206.44,1379.394C2206.444,1378.982 2206.428,1378.571 2206.391,1378.163L2206.662,1324.31L2350.771,1270.354L2350.957,1310.512L2350.957,1311.942C2350.957,1311.942 2284.642,1340.234 2261.034,1346.228C2237.427,1352.222 2238.031,1370.025 2238.031,1370.025C2237.72,1374.574 2238.3,1378.282 2239.135,1381.389Z"],[[1,0,0,1,1881.239542,-163.23958],5,1,"M401.06,2298.212C401.06,2298.212 356.167,2282.159 355.447,2282.638C348.518,2281.045 348.529,2272.227 348.529,2272.227L347.623,2227.564C349.91,2221.35 357.586,2224.586 357.586,2224.586L389.285,2234.331C412.861,2240.587 417.485,2252.16 417.362,2275.475C417.227,2301.135 401.06,2298.212 401.06,2298.212ZM361.011,2271.197C362.009,2271.91 363.687,2273.022 365.502,2273.852C377.21,2279.206 397.198,2284.369 402.618,2285.723C402.799,2285.542 403.199,2285.1 403.475,2284.466C404.402,2282.333 404.841,2279.388 404.862,2275.409C404.915,2265.436 404.79,2258.231 400.218,2253.296C397.252,2250.094 392.622,2248.149 386.079,2246.412C385.923,2246.371 385.767,2246.326 385.613,2246.279L360.348,2238.512L361.011,2271.197ZM656.117,2310.239C656.848,2297.429 664.216,2295.432 664.216,2295.432L696.61,2281.6C731.987,2268.488 738.116,2296.406 738.116,2296.406L739.128,2370.451C730.932,2393.697 712.807,2405.986 712.807,2405.986L681.425,2418.819C653.86,2434.445 656.117,2416.844 656.117,2416.844L656.117,2310.239ZM668.617,2411.058C670.622,2410.275 676.202,2407.45 676.694,2407.249L706.668,2394.992C709.807,2392.573 720.63,2383.437 726.597,2368.284L725.639,2298.258C725.102,2296.824 723.659,2293.861 720.448,2292.083C716.392,2289.838 710.324,2289.893 701.227,2293.22L669.539,2306.751C669.312,2307.357 668.763,2308.963 668.618,2310.66L668.617,2310.666L668.617,2411.058ZM655.899,2094.864C656.626,2082.054 663.944,2080.057 663.944,2080.057L696.12,2066.225C731.259,2053.113 737.347,2081.031 737.347,2081.031L738.352,2155.076C730.211,2178.322 712.209,2190.611 712.209,2190.611L681.038,2203.444C653.658,2219.07 655.899,2201.469 655.899,2201.469L655.899,2094.864ZM668.399,2195.64C670.353,2194.866 672.64,2193.844 674.841,2192.587C675.305,2192.323 675.785,2192.088 676.279,2191.885L706.036,2179.634C709.162,2177.208 719.901,2168.07 725.822,2152.923L724.87,2082.866C724.34,2081.43 722.912,2078.467 719.726,2076.691C715.724,2074.46 709.739,2074.53 700.764,2077.835L669.318,2091.353C669.09,2091.967 668.544,2093.578 668.4,2095.282L668.399,2095.288L668.399,2195.64ZM297.463,1996.108L296.99,1944.558C296.981,1943.521 297.1,1942.501 297.337,1941.515L297.323,1935.369L297.323,1935.346C297.326,1933.291 298.336,1931.388 299.995,1930.23C300.436,1929.922 300.916,1929.672 301.424,1929.486L615.424,1814.486C616.805,1813.98 618.321,1813.977 619.705,1814.479L936.705,1929.479L936.736,1929.491C937.803,1929.884 938.698,1930.539 939.377,1931.356C940.068,1932.187 940.534,1933.187 940.726,1934.255C940.796,1934.645 940.829,1935.044 940.824,1935.447L940.855,1942.158C940.984,1942.88 942.823,2367.325 942.823,2367.325C942.835,2369.964 941.189,2372.326 938.709,2373.228C938.709,2373.228 934.533,2374.992 933.734,2375.272L915.532,2381.656L619.709,2489.228C619.367,2489.352 619.019,2489.445 618.667,2489.508C617.612,2489.697 616.495,2489.617 615.418,2489.221L512.076,2451.252L506.558,2449.385C506.365,2449.32 506.176,2449.245 505.99,2449.162C505.99,2449.162 505.556,2448.969 504.764,2448.565L312.732,2378.01L306.253,2375.793C305.531,2375.546 304.842,2375.237 304.192,2374.873L302.418,2374.221C299.963,2373.319 298.329,2370.984 298.323,2368.369L298.321,2367.537C297.981,2366.395 297.8,2365.191 297.801,2363.955L297.945,2204.693L297.463,1996.108ZM770.857,2177.034L740.989,2219.328C742.825,2219.949 770.584,2249.837 770.584,2249.837C770.584,2249.837 770.699,2208.517 770.711,2206.12L770.857,2177.034ZM405.588,2193.186C392.357,2186.527 310.49,2155.291 310.49,2155.291L310.445,2204.683L310.813,2363.988L316.912,2366.229L352.152,2378.291L353.058,2325.281L408.305,2342.605C408.305,2342.605 447.573,2349.521 449.967,2301.461L450.873,2275.475C450.873,2275.475 454.606,2217.858 405.588,2193.186ZM500.214,2230.645L464.429,2218.186L463.38,2350.314C463.4,2409.398 502.236,2433.048 509.85,2437.117L516.236,2439.463L611.323,2471.631L611.323,2373.915L610.785,2270.976L577.359,2258.702L576.306,2406.283C578.137,2426.404 556.603,2426.529 556.603,2426.529C556.056,2426.526 555.511,2426.451 554.983,2426.306C532.815,2420.223 520.581,2409.478 513.737,2398.995C504.06,2384.175 505.029,2369.474 505.314,2366.72L506.387,2233.589L505.219,2233.199C505.028,2233.135 504.839,2233.062 504.655,2232.98C504.655,2232.98 502.982,2232.246 500.214,2230.645ZM816.729,2055.47C815.894,2052.363 815.314,2048.655 815.625,2044.105C815.625,2044.105 815.021,2026.303 838.628,2020.309C862.236,2014.315 928.551,1986.023 928.551,1986.023L928.551,1984.593L928.365,1944.435L784.256,1998.391L783.985,2052.244C784.022,2052.652 784.038,2053.063 784.034,2053.475L783.92,2065.24L783.219,2204.447L914.118,2157.87L929.327,2152.257L929.145,2112.99L835.491,2146.077C835.491,2146.077 822.334,2149.717 817.625,2131.378C817.625,2131.378 813.317,2109.01 839.674,2099.82L928.551,2070.729L928.887,2057.08L928.777,2033.328L832.235,2069.429C832.235,2069.429 820.583,2069.815 816.729,2055.47ZM449.989,1996.107L439.616,1992.275C443.74,1997.163 447.124,2002.274 449.898,2007.405L449.989,1996.107ZM929.087,2100.341L929.01,2083.732L843.649,2111.673C829.691,2116.61 829.791,2127.251 829.885,2128.827C830.839,2132.075 832.341,2133.455 832.756,2133.786L925.433,2101.044C926.624,2100.623 927.855,2100.391 929.087,2100.341ZM930.074,2312.611L930.005,2298.73L843.471,2325.649C830.04,2330.161 829.815,2339.575 829.866,2341.055C830.055,2346.604 834.399,2345.137 834.821,2345.409L925.618,2314.252C927.072,2313.764 930.074,2312.611 930.074,2312.611ZM741.229,2431.738L772.085,2420.518C771.184,2418.759 770.7,2416.787 770.711,2414.754L770.823,2393.648L741.229,2431.738ZM733.381,2002.321L916.316,1935.38L617.583,1827.007L321.677,1935.38L323.264,1935.966C337.093,1940.776 363.159,1950.019 385.271,1958.873L570.575,2027.329C571.297,2027.328 572.023,2027.451 572.72,2027.704L618.572,2044.333L701.687,2013.919L729.745,2003.126C730.93,2002.67 732.155,2002.405 733.381,2002.321ZM449.562,2049.224C447.992,2031.998 440.252,1998.035 404.588,1980.809C398.225,1977.736 390.092,1974.266 381.268,1970.72L318.815,1947.648C314.094,1946.009 310.874,1944.913 309.844,1944.563L309.963,1996.036L311.301,2141.818L319.419,2145.205C325.713,2147.464 337.593,2151.775 351.179,2156.932L352.058,2107.573L407.305,2124.197C407.305,2124.197 446.573,2130.834 448.967,2084.714L449.365,2073.767L449.562,2049.224ZM564.304,2038.338L517.547,2021.065L516.487,2150.958C516.485,2151.229 516.465,2151.498 516.428,2151.766C516.428,2151.766 514.905,2163.765 522.952,2175.938C528.561,2184.424 538.735,2192.789 556.663,2197.819C558.653,2197.696 563.849,2196.822 563.241,2191.026C563.217,2190.794 563.205,2190.562 563.207,2190.329L564.304,2038.338ZM363.572,2383.373L475.855,2424.627C462.99,2409.07 450.88,2385.16 450.88,2350.269L450.881,2350.219L450.979,2337.798C448.056,2341.59 444.805,2344.557 441.5,2346.901C425.394,2358.326 406.137,2354.915 406.137,2354.915C405.605,2354.822 405.08,2354.694 404.565,2354.532L365.27,2342.211L364.65,2378.504C364.621,2380.206 364.246,2381.859 363.572,2383.373ZM771.74,2001.595L747.454,2010.482L771.57,2035.412L771.74,2001.595ZM576.771,2042.944L575.709,2190.086C577.555,2210.165 555.84,2210.335 555.84,2210.335C555.299,2210.332 554.761,2210.259 554.238,2210.117C531.818,2204.041 519.447,2193.303 512.524,2182.831C502.722,2168.002 503.7,2153.289 503.99,2150.521L505.083,2016.62L462.442,2001.957L461.38,2134.121C461.399,2187.728 493.785,2212.16 505.545,2219.265L611.323,2255.474L611.323,2159.032L610.775,2055.506L576.771,2042.944ZM518.854,2237.755L517.811,2367.151C517.809,2367.418 517.789,2367.685 517.753,2367.949C517.753,2367.949 516.243,2379.969 524.203,2392.161C529.733,2400.631 539.759,2408.983 557.42,2414.007C559.373,2413.871 564.434,2412.966 563.837,2407.212C563.814,2406.983 564.898,2253.14 564.898,2253.14L518.854,2237.755ZM451.889,2223.206L451.999,2209.367C452.015,2207.352 453.001,2205.468 454.648,2204.308C456.295,2203.147 458.4,2202.851 460.303,2203.514L474.035,2208.295C461.059,2192.732 448.88,2168.859 448.88,2134.076L448.881,2134.025L448.984,2121.114C446.272,2124.284 443.311,2126.821 440.302,2128.869C424.322,2139.747 405.222,2136.523 405.222,2136.523C404.709,2136.436 404.202,2136.317 403.703,2136.167L364.262,2124.299L363.65,2158.665C363.632,2159.657 363.497,2160.632 363.254,2161.571C380.743,2168.377 399.119,2175.936 411.208,2182.021C431.81,2192.39 444.314,2207.819 451.889,2223.206ZM771.48,2053.297L734.609,2015.183L706.079,2025.622L623.823,2057.264L623.823,2077.216L624.728,2256.695L720.253,2222.147L770.529,2156.999L771.42,2065.148L771.48,2053.297ZM623.823,2292.455L624.735,2472.07L720.906,2437.522L770.931,2373.134L771.49,2267.656L734.98,2230.168L623.823,2272.639L623.823,2292.455ZM841.704,2032.424C830.083,2035.375 827.679,2046.856 827.904,2049.315C828.532,2056.166 833.269,2054.766 833.962,2055.186L925.099,2021.358C926.275,2020.917 927.495,2020.663 928.718,2020.589L928.62,1999.56C912.715,2006.236 861.892,2027.298 841.704,2032.424ZM828.119,2260.427C826.882,2264.742 828.243,2267.472 829.287,2269.242C830.012,2270.469 831.998,2272.243 835.864,2270.722L925.291,2238.52L929.723,2236.801L929.634,2218.626C915.309,2224.353 862.284,2245.325 841.56,2250.326C830.209,2253.065 828.119,2260.427 828.119,2260.427ZM816.87,2272.008C815.828,2269.009 815.299,2265.322 815.625,2260.79C815.625,2260.79 815.021,2243.871 838.628,2238.174C862.236,2232.478 928.551,2205.591 928.551,2205.591L928.551,2166.002L918.378,2169.622L787.539,2217.91C786.467,2218.305 785.361,2218.547 784.249,2218.64L783.211,2414.82L911.327,2369.884L929.597,2363.241L929.597,2326.102L835.491,2357.698C835.491,2357.698 822.334,2361.157 817.625,2343.729C817.625,2343.729 813.317,2322.472 839.674,2313.738L929.551,2286.092L929.477,2250.298L832.235,2284.856C832.235,2284.856 820.864,2283.342 816.87,2272.008ZM354.775,2066.845C354.775,2066.845 356.595,2067.705 354.775,2066.845C347.469,2063.396 347.529,2056.66 347.529,2056.66L346.623,2013.799C348.91,2007.836 356.586,2010.942 356.586,2010.942L388.285,2020.293C411.861,2026.297 416.485,2037.403 416.362,2059.777C416.227,2084.401 400.06,2081.597 400.06,2081.597C400.06,2081.597 373.743,2075.466 359.303,2069.128C357.57,2068.367 354.775,2066.845 354.775,2066.845ZM360.002,2055.262C361.007,2055.936 362.605,2056.926 364.327,2057.682C376.151,2062.871 396.405,2067.874 401.634,2069.125C401.836,2068.981 402.288,2068.614 402.552,2068.029C403.439,2066.071 403.842,2063.362 403.862,2059.708C403.907,2051.532 403.7,2045.303 400.713,2040.682C398.017,2036.511 392.975,2034.386 385.201,2032.406C385.049,2032.368 384.899,2032.326 384.749,2032.282L359.358,2024.792L360.002,2055.262Z"]];   /* from PUDE_logo.svg: [group matrix, layer (0 top, 1 left fill, 2 left letters, 3 right fill, 4 right letters, 5 outline), even-odd, path] */
+const PU_TILES=[{O:[2185.78,1768.84],U:[314,116],V:[1,433],cls:{1:'b',2:'g',5:'r'}},   /* left face PU, right face DE, top; in the SVG's inner coordinates */
+  {O:[2499.83,1886.84],U:[317,-116],V:[0,432],cls:{3:'b',4:'g',5:'r'}},
+  {O:[2185.69,1771.33],U:[314,-115],V:[317.01,115],cls:{0:'b',5:'r'}}];
+const PU_FACES=[{O:[-1,1,-1],U:[0,0,2],V:[0,-2,0],tile:0,belt:0},{O:[-1,1,1],U:[2,0,0],V:[0,-2,0],tile:1,belt:1},
+  {O:[1,1,1],U:[0,0,-2],V:[0,-2,0],tile:0,belt:2},{O:[1,1,-1],U:[-2,0,0],V:[0,-2,0],tile:1,belt:3},
+  {O:[-1,1,-1],U:[2,0,0],V:[0,0,2],tile:2,belt:-1},{O:[-1,-1,1],U:[2,0,0],V:[0,0,-2],tile:2,belt:-1}];
+const PU_FLAT={0:[-.86,.02,.86,0,0,-.86],1:[0,.02,.86,0,0,-.86],4:[-.43,.9,.86,0,0,-.86]};   /* unfolded: the two sides next to each other, the top above */
+const PU_PJ=[[.93,0,.32],[0,.82,1],[.55,.8,1],[.78,.95,.4],[.55,.2,1],[.15,.4,1]];
+function puPalJ(h){h=(((h%1)+1)%1)*6;const i=Math.floor(h),f=h-i,e=f*f*(3-2*f),a=PU_PJ[i],b=PU_PJ[(i+1)%6];return[a[0]+(b[0]-a[0])*e,a[1]+(b[1]-a[1])*e,a[2]+(b[2]-a[2])*e];}
+const m3=(a,b)=>{const r=new Array(9);for(let i=0;i<3;i++)for(let j=0;j<3;j++)r[i*3+j]=a[i*3]*b[j]+a[i*3+1]*b[3+j]+a[i*3+2]*b[6+j];return r;};
+const m3v=(m,v)=>[m[0]*v[0]+m[1]*v[1]+m[2]*v[2],m[3]*v[0]+m[4]*v[1]+m[5]*v[2],m[6]*v[0]+m[7]*v[1]+m[8]*v[2]];
+function m3ax(ax,a){const c=Math.cos(a),s=Math.sin(a),k=1-c,[x,y,z]=ax;return[c+x*x*k,x*y*k-z*s,x*z*k+y*s, y*x*k+z*s,c+y*y*k,y*z*k-x*s, z*x*k-y*s,z*y*k+x*s,c+z*z*k];}
+const puEase=x=>x<=0?0:x>=1?1:x*x*(3-2*x),puBack=x=>{x=Math.min(1,Math.max(0,x));const c=1.7;return 1+(c+1)*Math.pow(x-1,3)+c*Math.pow(x-1,2);};
+/* the hand, in hand units (palm about 1 high), wrist at 0,0, fingers up, thumb on the left */
+const PU_D=[{b:[-.36,.3],a:-.75,L:[.42,.34,.3],r:[.19,.17,.155,.145]},   /* fat cartoon digits, like the logo's */
+  {b:[-.27,.86],a:-.14,L:[.46,.3,.25],r:[.145,.138,.13,.122]},{b:[-.09,.92],a:-.03,L:[.5,.33,.27],r:[.15,.142,.134,.125]},
+  {b:[.09,.9],a:.07,L:[.47,.31,.25],r:[.145,.138,.13,.122]},{b:[.26,.82],a:.2,L:[.36,.25,.21],r:[.13,.122,.115,.108]}];
+const PU_PALM=[[-.19,.26,-.23,.78,.17,.17],[.17,.26,.2,.74,.17,.17],[0,.2,0,.8,.24,.22],[0,.04,0,.26,.25,.27]],
+  PU_CREASE=[[-.3,.56,-.06,.63,0,0],[.04,.36,.24,.6,0,0]],PU_CU=[1.5,1.75,1.2],PU_TC=[.95,.85,.7];
+/* poses: per digit (thumb, index, middle, ring, pinky) spread, curl (0 straight .. 1 folded), sideways bend per joint, tip size (> 1: pointing at you) */
+const PU_CC=[0,1,0,1];
+const PU_P={logo:[[-.59,0,.06,1],[-.16,.05,.1,1],[.02,.05,.08,1],[.09,.05,.06,1],[.48,.05,.02,1]],
+  open:[[-.15,0,.05,1],[-.12,0,0,1],[-.02,0,0,1],[.08,0,0,1],[.2,0,0,1]],
+  jazz:[[-.5,0,-.05,1],[-.38,0,0,1],[-.1,0,0,1],[.17,0,0,1],[.5,0,0,1]],
+  flat:[[.4,.12,0,1],[.06,0,0,1],[.02,0,0,1],[-.03,0,0,1],[-.12,0,0,1]],
+  fist:[[.1,.9,0,1],PU_CC,PU_CC,PU_CC,PU_CC],point:[[.1,.9,0,1],[0,0,0,1],PU_CC,PU_CC,PU_CC],
+  middle:[[.1,.9,0,1],PU_CC,[0,0,0,1],PU_CC,PU_CC],peace:[[.1,.9,0,1],[-.22,0,0,1],[.12,0,0,1],PU_CC,PU_CC],
+  three:[[.1,.9,0,1],[-.2,0,0,1],[0,0,0,1],[.18,0,0,1],PU_CC],four:[[.3,.9,0,1],[-.16,0,0,1],[-.03,0,0,1],[.09,0,0,1],[.24,0,0,1]],
+  horns:[[.2,.95,0,1],[-.14,0,0,1],PU_CC,PU_CC,[.28,0,0,1]],thumb:[[-.95,0,0,1],PU_CC,PU_CC,PU_CC,PU_CC],
+  gun:[[-.75,0,.1,1],[0,0,0,1],PU_CC,PU_CC,PU_CC],shaka:[[-.8,0,0,1],PU_CC,PU_CC,PU_CC,[.6,0,0,1]],
+  ok:[[-.25,0,.42,1],[-.05,.1,-1.1,1],[.04,0,0,1],[.16,0,0,1],[.32,0,0,1]],
+  claw:[[-.3,.4,0,1],[-.3,.5,0,1],[-.1,.5,0,1],[.12,.5,0,1],[.36,.5,0,1]],
+  snapSet:[[.15,.3,.25,1],[-.1,.6,0,1],[0,.28,-.38,1],[.1,.85,0,1],[.2,.9,0,1]],snapGo:[[-.3,0,0,1],[-.1,.6,0,1],[0,1,0,1],[.1,.85,0,1],[.2,.9,0,1]],
+  beckon:[[.15,.6,0,1],[-.08,0,0,1],[0,.92,0,1],[.08,.92,0,1],[.16,.92,0,1]],
+  pinch:[[.05,.1,.3,1],[-.15,.2,-.5,1],PU_CC,PU_CC,PU_CC],you:[[.1,.9,0,1],[0,0,0,2.1],PU_CC,PU_CC,PU_CC]};
+const puPz=n=>PU_P[n].map(d=>d.slice());
+function puWig(p,a,t){for(let f=0;f<5;f++){p[f][0]+=a*Math.sin(t*31+f*1.7);p[f][2]+=a*.6*Math.sin(t*23+f*2.3);}return p;}
+function puDigit(f,q,back,out){const D=PU_D[f];let x=D.b[0],y=D.b[1],phi=D.a+q[0],psi=q[3]>1?1.25:0;
+  const lay=q[1]>(f?.4:.35)?(back?2:1):0;
+  for(let j=0;j<3;j++){if(f===0)phi+=q[1]*PU_TC[j];else psi+=q[1]*PU_CU[j];if(j)phi+=q[2];
+    const L=D.L[j]*Math.cos(Math.min(psi,3.1)),nx=x+Math.sin(phi)*L,ny=y+Math.cos(phi)*L,g=1+.12*Math.min(1,psi);
+    out.push(x,y,nx,ny,D.r[j]*g,D.r[j+1]*g*(j===2&&q[3]>1?q[3]:1),f+1,lay);x=nx;y=ny;}
+  return[x,y];}
+function puBuildHand(pose,back,eye){const o=[];for(const c of PU_PALM)o.push(...c,0,0);
+  if(!back)for(const c of PU_CREASE)o.push(...c,7,0);
+  const tips=[];for(let f=0;f<5;f++)tips.push(puDigit(f,pose[f],back,o));
+  if(eye)o.push(eye[0],eye[1],eye[0]+eye[2],eye[1]+eye[3],.15,.07,8,0);
+  return{caps:o,tips};}
+function puH2W(h,lx,ly){const c=Math.cos(h.r),s=Math.sin(h.r);lx*=h.m;return[h.x+h.s*(c*lx-s*ly),h.y+h.s*(s*lx+c*ly)];}
+const PUDE={tex:null,U:new Float32Array(48),F:new Float32Array(72),S:new Float32Array(96),SR:new Float32Array(96),I:new Float32Array(60),
+  L:new Float32Array(8).fill(1),E:new Float32Array(96),Ec:new Float32Array(96),R:new Float32Array(24),
+  seen:false,st:'groove',stCh:false,gest:0,g0:0,cube:0,c0:0,k0:0,eff:0,swT:-9,prev:null,last:null,usedG:{},usedC:{},
+  model:[1,0,0,0,1,0,0,0,1],tum:null,ex:0,exV:0,lid:0,lidV:0,flat:0,flatT:0,spl:0,splV:0,splX:1,belt:[0,0],beltT:[0,0],
+  echoN:0,echoLv:0,wob:0,melt:0,gl:0,blk:0,blkT:-9,kal:0,fa:1,swap:null,yaw:0,
+  cell:new Float32Array(8).fill(1),cellV:new Float32Array(8),cellT:new Float32Array(8).fill(1),
+  colM:0,colPh:0,mask:0,maskA:.4,maskB:.5,sty:0,hue:0,
+  rings:[],sparks:[],trail:[],count:-1,force:0,forceN:0,burstT:-9,hitC:0,squash:0,pinch:1,pinchT:1,snapT:-9,peekT:-9,tapT:[-9,-9,-9,-9,-9],tapI:0,
+  grabCell:0,grabbed:false,spX:-1.3,spin:0,star:0,edge:0,cut:0,cutH:0,feat:null,ax:0,ay:0,anch:true,top:null};
+window.PUDE=PUDE;
+function puAtlas(){const S2=512,cv=document.createElement('canvas');cv.width=S2*3;cv.height=S2;const x=cv.getContext('2d');
+  x.fillStyle='#000';x.fillRect(0,0,cv.width,S2);x.globalCompositeOperation='lighter';
+  const k=S2/1.12,paths=PU_SVG.map(g=>new Path2D(g[3]));
+  PU_TILES.forEach((T,ti)=>{const det=T.U[0]*T.V[1]-T.V[0]*T.U[1],i00=T.V[1]/det,i01=-T.V[0]/det,i10=-T.U[1]/det,i11=T.U[0]/det;
+    x.save();x.setTransform(1,0,0,1,0,0);x.beginPath();x.rect(ti*S2+k*.025,k*.025,k*1.07,k*1.07);x.clip();
+    for(let g=0;g<PU_SVG.length;g++){const c=T.cls[PU_SVG[g][1]];if(!c)continue;
+      x.setTransform(k*i00,k*i10,k*i01,k*i11,ti*S2+k*.06-k*(i00*T.O[0]+i01*T.O[1]),k*.06-k*(i10*T.O[0]+i11*T.O[1]));
+      x.transform(...PU_SVG[g][0]);x.fillStyle=c==='r'?'#f00':c==='g'?'#0f0':'#00f';x.fill(paths[g],PU_SVG[g][2]?'evenodd':'nonzero');}
+    x.restore();});
+  PUDE.tex=tex(11,gl.LINEAR_MIPMAP_LINEAR,gl.LINEAR);gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL,false);
+  gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA8,gl.RGBA,gl.UNSIGNED_BYTE,cv);gl.generateMipmap(gl.TEXTURE_2D);gl.activeTexture(gl.TEXTURE0);PUDE.atlas=cv;}
+function puFeat(A){return{kd:Math.min(1,A.rate[0]/2.2),hd:Math.min(1,A.rate[2]/5),sd:Math.min(1,A.rate[1]/1.6),md:Math.min(1,A.rate[3]/3),
+  sw:Math.min(1,A.sweep*6),gr:Math.max(0,Math.min(1,(A.N[5]-.55)*2.5))*Math.min(1,A.eS/Math.max(A.eL,1e-3)),en:A.eS/Math.max(A.eL,1e-3)};}
+function puState(A,t){if(t-(A.dropT??-99)<32*60/A.bpm)return'drop';if(A.lull>.5)return'lull';if(A.build>.25)return'build';if(A.armT>1)return'break';return'groove';}
+/* choosing what fits the music: each gesture and each cube look scores on the song's features and its part (groove, breakdown,
+   build, drop, lull), loses points when it was shown recently, and gets a little luck */
+function puPickG(){const A=ADV,P=PUDE,f=P.feat||puFeat(A),fa=S.puFaith,now=performance.now()/1000,{kd,hd,sd,md,sw,gr,en}=f;
+  const s=[.2+.3*fa,.3+.3*(1-kd)+.2*md,.15+.8*kd*(1-.4*sd),.15+.6*kd+(en>1.1?.3:0),.1+.5*kd,S.puMid?.05+.45*gr+.2*sd:-9,.25+.2*kd,.1+.4*(1-kd),
+    .15+.4*md+.2*(1-kd),-9,.25+.3*md,.1+.8*gr+.2*kd,.2+.2*(1-kd),.1+.8*sd,.15+.4*hd*(1-gr),.05+.5*hd*kd,.1+.7*sd*(1-kd),.1+.9*hd,.1+.6*kd*gr+.3*kd,
+    .05+.9*md,.15+.3*sd,.1+.5*gr*(1-hd)+.2*(1-kd),.02,.05+1.2*sw,.1+.8*sd*kd,.05+.3*kd,.1+.6*kd*Math.min(1,en),.15+.3*kd,.1+.5*md*(1-gr),.15+.3*sd];
+  const B={break:{7:.9,22:.6,8:.5,0:.4,23:.5*sw,19:.3,1:.3,21:.3,28:.4,2:-.6,3:-.6,4:-.6,18:-.6,25:-.6,26:-.6,15:-.6},
+    build:{7:.6,23:.5,3:.4,18:.4,29:.3},drop:{4:.9,25:.8,26:.7,3:.6,11:.5,5:.3,15:.4,24:.4,2:.5},lull:{22:1.2,1:.4,0:.5}}[P.st]||{};
+  for(const k in B)s[k]+=B[k];
+  for(let i=0;i<s.length;i++)s[i]+=.3*Math.random()-.8*Math.exp(-(now-(P.usedG[i]??-99))/40);s[P.gest]-=.5;
+  return s.indexOf(Math.max(...s));}
+function puPickC(){const A=ADV,P=PUDE,f=P.feat||puFeat(A),fa=S.puFaith,now=performance.now()/1000,{kd,hd,sd,md,sw,gr,en}=f;
+  const s=[.15+.6*fa,.2+.5*sd,.15+.6*kd*Math.min(en,1.3),.2+.3*md,.15+.4*md,.25+.4*(1-kd),.2+.6*sd,.05+.9*gr,.2+.4*(1-kd),.02,.15+.8*kd,.15+.5*sd,.15+.7*hd,.05+.3*(1-kd),.1+.6*sw,.15+.4*md];
+  const B={break:{5:.6,8:.5,9:.9,13:.5,4:.3,3:.3,10:-.5,2:-.5},build:{6:.5,12:.6,15:.4,10:.4,7:.4},drop:{2:.8,10:.6,5:.4,1:.5,11:.4,7:.3},lull:{13:.9,8:.6,9:.4}}[P.st]||{};
+  for(const k in B)s[k]+=B[k];if(P.gest===8)s[5]+=.3;if(P.gest===18)s[10]+=.4;
+  for(let i=0;i<s.length;i++)s[i]+=.3*Math.random()-.8*Math.exp(-(now-(P.usedC[i]??-99))/60);s[P.cube]-=.5;
+  return s.indexOf(Math.max(...s));}
+function puSetG(g,t){const P=PUDE;P.usedG[g]=performance.now()/1000;if(g===P.gest)return;P.gest=g;P.g0=ADV.beatN;
+  if(g===20){P.grabCell=Math.floor(Math.random()*8);P.grabbed=false;}if(g===21)P.spX=-1.3;if(g===23)P.spin=0;}
+function puSetC(c){const P=PUDE;P.usedC[c]=performance.now()/1000;if(c===P.cube)return;P.cube=c;P.c0=ADV.beatN;P.swap=null;P.flatT=0;}
+/* the looks that make it never quite the logo: colours, a mask, letters that are missing, the hand's style */
+function puLooks(){const P=PUDE,fa=S.puFaith,r=Math.random,st=P.st;
+  P.colM=r()<.2+.55*fa?0:[1,1,2,3,4,5][Math.floor(r()*6)];if(st==='break'||st==='lull')P.colM=r()<.5?1:P.colM;if(P.cube===8||P.cube===13)P.colM=1;
+  P.mask=r()<.25+.6*fa?0:1+Math.floor(r()*7);P.maskA=[0,.28,.42,0,5,.6,7,0][P.mask]||.4;P.maskB=.35+.3*r();
+  P.sty=r()<.55+.3*fa?0:[1,2,3][Math.floor(r()*3)];P.hue=r();}
+function puCellsBar(){const P=PUDE,r=Math.random;for(let i=0;i<8;i++)P.cellT[i]=1;
+  if(r()<(1-S.puFaith)*.8){const n=1+Math.floor(r()*2.5);for(let k=0;k<n;k++)P.cellT[Math.floor(r()*8)]=0;}}
+function puRing(x,y,v,h,max){const R=PUDE.rings;if(R.length>=6)R.shift();R.push({x,y,r:.02,v,h,max:max||1.75});}
+function puSpark(x,y,n,h,v,spread,a0){const S2=PUDE.sparks;for(let i=0;i<n;i++){if(S2.length>=16)S2.shift();
+  S2.push({x,y,a:(a0??Math.random()*6.283)+(Math.random()-.5)*(spread??6.283),r:.03,v:(v||1.6)*(.7+.6*Math.random()),len:.06+.05*Math.random(),h:h+.1*Math.random(),life:1});}}
+function puSpring(x,v,tg,k,d,dt){for(let i=0;i<3;i++){const h=dt/3;v+=(-k*(x-tg)-d*v)*h;x+=v*h;}return[x,v];}
+/* the cube's looks */
+function puCubeStep(t,dts,G){const P=PUDE,A=ADV,md=P.cube,ph=G.ph,bpmK=G.bpm/120;
+  const C={cx:0,cy:-.4,s:.35,sx:1,sy:1,yaw:.7854+P.yaw,pitch:.3752,ex:0,lid:0,flat:0,cull:true};
+  let echoN=0,echoLv=0,wob=0,melt=0,gl=.12*G.gr,kal=0,fa=1,lidT=0,flatT=0,exT=0;
+  if(md!==1&&!P.tum&&P.model.some((v,i)=>Math.abs(v-[1,0,0,0,1,0,0,0,1][i])>1e-3)){   /* back home after a tumble */
+    const R=P.model,tr=R[0]+R[4]+R[8],ang=Math.acos(Math.max(-1,Math.min(1,(tr-1)/2)));
+    if(ang>1e-3&&ang<3.1){const s2=2*Math.sin(ang),ax=[(R[7]-R[5])/s2,(R[2]-R[6])/s2,(R[3]-R[1])/s2];P.tum={ax,a:-ang,t0:t,dur:.5*60/G.bpm,M0:P.model.slice()};}else P.model=[1,0,0,0,1,0,0,0,1];}
+  switch(md){
+  case 0:C.cy+=.015*Math.sin(2*Math.PI*(G.bk+ph)/4);break;
+  case 1:if(G.tick&&(G.bar===0||(G.st==='drop'&&G.oS>.4))&&!P.tum){const r=Math.random(),ax=r<.65?[0,1,0]:r<.83?[1,0,0]:[0,0,1];
+      P.tum={ax,a:(Math.random()<.5?-1:1)*Math.PI/2,t0:t,dur:.4*60/G.bpm,M0:P.model.slice()};}break;
+  case 2:if(G.oK)P.exV+=7*G.oK*Math.min(1.3,G.en);exT=.35*Math.exp(-ph*4)+.2*G.snr;break;   /* faces fly out on the beat, further on a hard kick */
+  case 3:if(G.oK)P.lidV+=7*G.oK;if(G.oS)P.lidV+=10*G.oS;break;
+  case 4:flatT=Math.floor((G.bk)/8)%2;break;
+  case 5:echoN=4;echoLv=.5;C.s*=.85;C.cy+=.04;break;
+  case 6:if(G.oS)P.beltT[0]+=.5;if(G.oK&&G.bar>=2)P.beltT[1]-=.5;break;
+  case 7:gl=.2+.8*G.snr+.5*G.gr;if(G.oS){P.swap=Math.random()<.6?[0,1,2,3,4,5].map(()=>Math.floor(Math.random()*3)):null;if(Math.random()<.4)P.blkT=t;}
+    kal=G.hat>.6&&Math.random()<.3?1:0;break;
+  case 8:fa=.22;P.yaw+=dts*(.35+1.6*G.sw)*bpmK;break;
+  case 9:melt=Math.min(.7,(G.bk%32)/32*.8);wob=.12;break;
+  case 10:{const hh=.09+.05*Math.min(1.5,G.en);C.cy+=hh*4*ph*(1-ph);const l=Math.exp(-ph*9);C.sy*=1-.17*l;C.sx*=1+.1*l;
+    if(G.tick){puSpark(C.cx-C.s*1.3,C.cy-C.s*1.45,3,P.colPh+.1,1.1,1.2,3.4);puSpark(C.cx+C.s*1.3,C.cy-C.s*1.45,3,P.colPh+.1,1.1,1.2,-.25);}
+    if(G.oK)puRing(C.cx,C.cy-C.s*.9,1.5*bpmK,P.colPh+.5);break;}
+  case 11:if(G.oS)P.splV+=3.2*G.oS;if(G.tick&&G.bar===0)P.splX=-P.splX;break;
+  case 12:if(G.oH){const i=Math.floor(Math.random()*8);P.cell[i]=0;P.cellV[i]=0;}if(G.oS)P.cellT[Math.floor(Math.random()*8)]=0;if(G.tick)for(let i=0;i<8;i++)if(Math.random()<.5)P.cellT[i]=1;break;
+  case 13:fa=.55;break;
+  case 14:kal=G.st==='build'||G.st==='drop'?2:1;P.yaw+=dts*.3*Math.sin(t*.2);break;
+  case 15:wob=.35+.8*G.snr;{const w=Math.cos(Math.PI*(G.bk+ph))*Math.exp(-ph*3);C.sy*=1+.1*w;C.sx*=1-.07*w;}break;}
+  if(md!==8&&md!==14)P.yaw*=Math.exp(-dts/.6);
+  if(P.tum){const T=P.tum,e=puBack((t-T.t0)/T.dur);P.model=m3(m3ax(T.ax,T.a*e),T.M0);if(t-T.t0>=T.dur){P.model=m3(m3ax(T.ax,T.a),T.M0);P.tum=null;}}
+  [P.ex,P.exV]=puSpring(P.ex,P.exV,exT,90,9,dts);P.ex=Math.max(-.3,P.ex);
+  [P.lid,P.lidV]=puSpring(P.lid,P.lidV,lidT,70,8,dts);P.lid=Math.max(0,Math.min(2.4,P.lid));
+  [P.spl,P.splV]=puSpring(P.spl,P.splV,0,80,9,dts);
+  for(let r=0;r<2;r++)P.belt[r]+=(P.beltT[r]-P.belt[r])*(1-Math.exp(-dts/.06));
+  if(md!==6)for(let r=0;r<2;r++){const h=Math.round(P.beltT[r]/4)*4;P.beltT[r]=h;}   /* belt winds back to where the letters belong */
+  P.flat+=(flatT-P.flat)*(1-Math.exp(-dts/.12));
+  const k1=1-Math.exp(-dts/.15);P.echoN+=(echoN-P.echoN)*k1;P.echoLv+=(echoLv-P.echoLv)*k1;P.wob+=(wob-P.wob)*k1;P.melt+=(melt-P.melt)*(1-Math.exp(-dts/(melt?.8:.12)));
+  P.gl+=(gl-P.gl)*(1-Math.exp(-dts/.05));P.fa+=(fa-P.fa)*k1;P.kal=kal;P.blk=t-P.blkT<.25*60/G.bpm?3:0;
+  for(let i=0;i<8;i++){[P.cell[i],P.cellV[i]]=puSpring(P.cell[i],P.cellV[i],P.cellT[i],160,11,dts);}
+  /* every look: kicks squash it, the fist bump and the stomp hit it, the pinch scales it */
+  C.sy*=1-.05*G.kick-.15*P.squash;C.sx*=1+.03*G.kick+.08*P.squash;C.s*=(1-.12*P.hitC)*(G.gest===29?.78+.3*P.pinch:1);
+  C.ex=P.ex;C.lid=P.lid;C.flat=P.flat;C.cull=P.ex<.02&&P.lid<.02;C.model=P.model;
+  return C;}
+function puCubeBuild(C){const P=PUDE,F=P.F;F.fill(0);
+  const Rv=m3(m3(m3ax([1,0,0],C.pitch),m3ax([0,1,0],C.yaw)),C.model),st=1.045,kx=C.s*C.sx,ky=C.s*C.sy*st,list=[];
+  const face=(i,lid)=>{const D=PU_FACES[i];let O=D.O,U=D.U,V=D.V;
+    if(i===4&&lid>0)V=[0,2*Math.sin(lid),2*Math.cos(lid)];
+    const cr=[U[1]*V[2]-U[2]*V[1],U[2]*V[0]-U[0]*V[2],U[0]*V[1]-U[1]*V[0]],cl=Math.hypot(...cr),n=cr.map(v=>-v/cl);
+    if(C.ex)O=O.map((o,k)=>o+n[k]*C.ex);
+    const o=m3v(Rv,O),u=m3v(Rv,U),v=m3v(Rv,V),nv=m3v(Rv,n);
+    let Ox=C.cx+kx*o[0],Oy=C.cy+ky*o[1],Ux=kx*u[0],Uy=ky*u[1],Vx=kx*v[0],Vy=ky*v[1],a=1;
+    if(C.flat>0){const T=PU_FLAT[i];if(T){const f=C.flat,X=[T[0]+C.cx,T[1]+C.cy+.4,T[2],T[3],T[4],T[5]];
+        Ox+=(X[0]-Ox)*f;Oy+=(X[1]-Oy)*f;Ux+=(X[2]-Ux)*f;Uy+=(X[3]-Uy)*f;Vx+=(X[4]-Vx)*f;Vy+=(X[5]-Vy)*f;}else a*=1-C.flat;}
+    return{Ox,Oy,Ux,Uy,Vx,Vy,a,nz:nv[2],ny:nv[1],z:o[2]+.5*(u[2]+v[2])};};
+  for(let i=0;i<6;i++){const f=face(i,C.lid);let a=f.a*(P.fa);if(C.cull&&f.nz<.02&&C.flat<.5)a=0;
+    const det=f.Ux*f.Vy-f.Vx*f.Uy;if(Math.abs(det)<1e-5||a<.003)continue;
+    list.push({f,a,z:C.flat>.5?(i===4?1:0):f.z,M:[f.Vy/det,-f.Vx/det,-f.Uy/det,f.Ux/det],tile:P.swap?P.swap[i]:PU_FACES[i].tile,belt:PU_FACES[i].belt});}
+  list.sort((a,b)=>a.z-b.z);
+  list.forEach((L,j)=>F.set([L.f.Ox,L.f.Oy,L.tile,L.a, ...L.M, 1,L.belt,0,0],j*12));
+  /* the hole: where the hand comes out, and the line in front of which it stays inside the cube */
+  const T=face(4,0),det=T.Ux*T.Vy-T.Vx*T.Uy;
+  P.ax=T.Ox+T.Ux*.487+T.Vx*.5;P.ay=T.Oy+T.Uy*.487+T.Vy*.5;
+  P.anch=(T.ny>.35&&C.flat<.5)||C.flat>.5;   /* the hand rides the top face, also when the cube flies apart */
+  P.top=Math.abs(det)>1e-5?[T.Ox,T.Oy,T.Vy/det,-T.Vx/det,-T.Uy/det,T.Ux/det]:null;
+  P.Rv=Rv;P.C=C;return list.length;}
+/* the gestures: one function of the beat clock each */
+function puBase(G){const P=PUDE,a=P.anch;
+  return a?{x:P.ax,y:P.ay+.27,r:0,s:.2,m:1,back:false,pose:puPz('open'),alpha:1,clip:true,arm:[P.ax,P.ay],armR:.27,eye:null}
+    :{x:0,y:.05,r:0,s:.2,m:1,back:false,pose:puPz('open'),alpha:1,clip:false,arm:null,armR:0,eye:null};}
+/* a hand away from the cube floats like a cartoon glove; only hands reaching in from the top or the crowd at the bottom keep their arm */
+function puFree(h,x,y,ax,ay,keep){h.clip=false;h.x=x;h.y=y;h.arm=keep&&ax!=null?[ax,ay]:null;if(!h.arm)h.armR=0;return h;}
+function puGest(id,G){const P=PUDE,PI=Math.PI,ph=G.ph,t=G.t,h=puBase(G),out=[h],cs=Math.cos,sn=Math.sin,ex=Math.exp;
+  switch(id){
+  case 0:h.pose=puWig(puPz('logo'),.03+.12*G.hat,t);h.r=-1.2+.07*sn(t*1.3)-.12*G.kick;h.y-=.07;h.s=.2*(1+.05*G.kick);break;
+  case 1:{const sl=G.st==='break'||G.st==='lull'?2:1,w=cs(PI*(G.bk+ph)/sl),v=sn(PI*(G.bk+ph)/sl);h.pose=puWig(puPz('open'),.05*G.hat,t);
+    for(let f=1;f<5;f++)h.pose[f][2]=-.13*v;h.r=.45*w;h.y+=.03*Math.abs(w);break;}
+  case 2:{const dbl=G.st==='drop'||G.build>.5,p2=dbl?(2*(G.bk+ph))%1:ph,dn=Math.pow(1-p2,3);h.pose=puPz('flat');h.r=-1.45-.28*dn;h.y+=.08-.16*dn;h.s=.21;h.x+=.04*(G.bar%2?1:-1);break;}
+  case 3:{const up=ex(-ph*6)*(.6+.4*G.kick);h.pose=puPz('fist');h.y+=.02+.2*up;h.r=-.12+.12*up;h.s=.2*(1+.08*up);break;}
+  case 4:{const z=ex(-(G.bar+ph)*1.6);puFree(h,0,.05,null);h.s=.19+.36*z;h.r=.08*sn(t*.9);h.pose=puPz('fist');
+    if(G.tick&&G.bar===0){puRing(0,.05,1.6*G.bpm/120,P.colPh);puSpark(0,.05,8,P.colPh+.3,1.8);P.hitC=1;}break;}
+  case 5:{if(!S.puMid)return puGest(11,G);const b=G.barPh,pop=b<.06?puEase(b/.06):b>.94?1-puEase((b-.94)/.06):1;h.pose=puPz('middle');h.pose[2][1]=1-pop;
+    h.r=-.05+.1*G.hat*sn(t*45);h.s=.21*(1+.06*G.kick);break;}
+  case 6:{const T=[.85,.3,-.3,-.85],r0=T[(G.bar+3)%4],r1=T[G.bar];h.pose=puPz('point');h.r=r0+(r1-r0)*puEase(ph*5);
+    if(G.b2%2===1&&G.bar===0){h.pose=puPz('you');h.r=0;h.s=.2*(1+.6*ex(-ph*2.5));h.y+=.05;}break;}
+  case 7:{h.pose=puPz('beckon');const cu=.88*Math.pow(sn(PI*ph),2);h.pose[1][1]=cu;
+    if(G.st==='build'||G.build>.3)for(let f=2;f<5;f++)h.pose[f][1]=Math.max(.05,cu);h.r=.2+.05*sn(t*.7);h.s=.2*(1+.03*Math.min(G.bk,10));break;}
+  case 8:h.pose=puPz('ok');h.r=-.15+.05*sn(t);h.s=.24;h.y+=.03*cs(2*PI*ph);h.ok=true;break;
+  case 9:{const n=G.count<0?5:G.count;puFree(h,.025*G.build*sn(t*53),.12,.2,-1.7);h.s=.25*(1+.18*ex(-ph*7));h.r=.04*sn(t*3);
+    h.pose=puPz(['fist','point','peace','three','four','open'][Math.max(0,Math.min(5,n))]);if(n===0)h.x+=.03*sn(t*60);break;}
+  case 10:h.pose=puPz('peace');h.pose[1][0]-=.18*G.snr;h.pose[2][0]+=.18*G.snr;h.r=.3*cs(PI*(G.bk+ph));break;
+  case 11:{const d=Math.pow(1-ph,2);h.pose=puPz('horns');h.r=-.1-.4*d+.06*G.hat*sn(t*40);h.y-=.06*d;break;}
+  case 12:{const b=sn(PI*(G.bk+ph));h.pose=puPz('thumb');h.r=-1.5708+.12*b;h.y+=.05*Math.abs(b);h.s=.21*(1+.1*ex(-ph*8));break;}
+  case 13:{const m=G.b2%2?-1:1;puFree(h,-m*.42,-.05,-m*.85,-1.7);h.m=m;h.r=-m*(1.25-.5*G.snr);h.pose=puPz('gun');h.pose[0][1]=.5*G.snr;h.flash=G.oS>.2;break;}
+  case 14:h.pose=puPz('shaka');h.r=.35*cs(2*PI*(G.bk+ph));break;
+  case 15:{out.length=0;for(const m of[1,-1]){const q=puFree(puBase(G),m*.42,.02+.06*ex(-ph*5),m*.8,-1.7);q.m=m;q.s=.2*(1+.12*G.kick);q.r=-m*.3;
+      q.pose=puWig(puPz('jazz'),.09*(.4+G.hat),t);out.push(q);}break;}
+  case 16:{if(G.oS)P.snapT=t;const go=t-P.snapT<.13;h.pose=puPz(go?'snapGo':'snapSet');h.r=-.15;h.snap=G.oS>.2;break;}
+  case 17:{puFree(h,P.ax,P.ay+.36,P.ax+.1,1.7,1);h.r=Math.PI;h.s=.19;h.pose=puPz('open');
+    if(G.oH){P.tapI=(P.tapI+1)%4;P.tapT[P.tapI+1]=t;h.tap=P.tapI+1;}if(G.oK){for(let f=1;f<5;f++)P.tapT[f]=t;h.tap=2;}
+    for(let f=1;f<5;f++)h.pose[f][1]=.6*ex(-(t-P.tapT[f])*16);break;}
+  case 18:{puFree(h,P.ax,P.ay+.12+.3*4*ph*(1-ph),P.ax+.05,1.7,1);h.r=Math.PI;h.pose=puPz('fist');
+    if(G.tick){P.squash=1;puRing(P.ax,P.ay,1.4*G.bpm/120,P.colPh+.4);puSpark(P.ax,P.ay,5,P.colPh+.2,1.3,2.2,Math.PI/2);}break;}
+  case 19:{h.m=-1;h.r=-1.5708;h.pose=puPz('flat');const mo=Math.min(1,Math.max(G.mel,G.snr*.8));h.pose[0]=[.6-.95*mo,.05,.1,1];
+    for(let f=1;f<5;f++)h.pose[f][1]=.12;h.y+=.04+.03*cs(2*PI*ph);h.eye=[.22,.72,.03*cs(t*.7),.02];h.s=.21;break;}
+  case 20:{const c=puCellPos(P.grabCell)||[P.ax,P.ay-.3];if(G.oS>.3&&!P.grabbed){P.grabbed=true;P.cellT[P.grabCell]=0;}
+    if(G.tick&&G.bar===0&&P.grabbed&&G.bk>2){P.grabbed=false;P.cellT[P.grabCell]=1;P.cell[P.grabCell]=0;P.cellV[P.grabCell]=6;P.grabCell=Math.floor(Math.random()*8);}
+    puFree(h,c[0]+.05,c[1]+(P.grabbed?.42:.24)+.02*sn(2*PI*ph),c[0]+.35,1.7,1);h.r=Math.PI*.93;h.pose=puPz(P.grabbed?'fist':'claw');break;}
+  case 21:{P.spX+=G.dts*.3*G.bpm/120;if(P.spX>1.35)P.spX=-1.35;puFree(h,P.spX,-.62+.03*Math.abs(sn(2*PI*ph)),null);h.r=Math.PI;h.s=.17;
+    const sp=[-.9,-.45,-.05,.3,.62];for(let f=0;f<5;f++){const lp=sn(PI*(G.bk+ph)*2+f*PI);h.pose[f]=[sp[f]-PU_D[f].a+.18*lp-(f?0:.5),f?.2+.25*Math.max(0,lp):0,.25*lp,1];}break;}
+  case 22:{if(G.oS>.3||G.oM>.3)P.peekT=t;const pk=ex(-(t-P.peekT)*2.2)*(G.st==='lull'?.5:1);h.y=P.ay-.45+.6*pk;h.pose=puWig(puPz('open'),.15*pk,t*1.5);h.r=.15*sn(t*4)*pk;break;}
+  case 23:P.spin+=G.dts*2*PI*(G.bpm/240)*(1+3*G.sw);puFree(h,0,.1,null);h.r=P.spin;h.pose=puPz('point');h.trail=true;break;
+  case 24:{out.length=0;const g=.04+.36*Math.pow(Math.abs(sn(PI*(G.bar+ph+1)/2)),.8);
+    for(const m of[1,-1]){const q=puFree(puBase(G),m*(g+.14),-.12,m*.9,-1.7);q.m=m;q.r=m*.3;q.pose=puPz('flat');out.push(q);}
+    if(G.oS>.25){puSpark(0,.08,7,P.colPh+.15,1.6);puRing(0,.05,1.4*G.bpm/120,P.colPh+.6);}break;}
+  case 25:{out.length=0;const up=.3+.12*G.kick+(G.st==='drop'?.15:0)+.2*G.build;
+    [-.8,-.4,0,.4,.8].forEach((x,i)=>{const q=puFree(puBase(G),x,-1+up+.04*sn(t*3+i),x+.1*(i-2),-1.8,1);q.s=.13;q.m=i%2?-1:1;q.r=.32*cs(PI*(G.bk+ph)+i*.9);q.armR=.25;out.push(q);});break;}
+  case 26:{out.length=0;for(const m of[1,-1]){const q=puFree(puBase(G),m*.42,.15+.18*ex(-ph*5),m*.9,-1.7);q.m=m;q.r=m*1.5708;q.s=.19;q.pose=puPz('flat');out.push(q);}break;}
+  case 27:{if(G.bar<3){h.pose=puPz('fist');h.y+=.06-.1*Math.pow(1-ph,3);}else{h.pose=puPz(['fist','open','peace'][(Math.floor(G.bk/4)*7+3)%3]);h.s=.2*(1+.15*ex(-ph*6));}h.r=-.1;break;}
+  case 28:{const Q=[[0,-.12],[-.34,.02],[.34,.02],[0,.3]],a=Q[G.bar],b=Q[(G.bar+1)%4],e=puEase(ph);
+    puFree(h,a[0]+(b[0]-a[0])*e,.1+a[1]+(b[1]-a[1])*e-.05*ex(-ph*9),.75,-1.7);h.r=-.35+.25*h.x;h.pose=puPz('pinch');h.baton=true;break;}
+  case 29:{if(G.oS>.25)P.pinchT=0;if(G.oK>.25)P.pinchT=1;P.pinch+=(P.pinchT-P.pinch)*(1-ex(-G.dts/.06));const o=P.pinch;
+    h.pose=puPz('pinch');h.pose[1][2]=-.5-.35*(1-o);h.pose[1][1]=.2+.15*(1-o);h.pose[0][2]=.3+.25*(1-o);h.r=-.35;h.y+=.05;break;}
+  }
+  return out;}
+function puBurst(G){const out=[];for(const m of[1,-1]){const q=puFree(puBase(G),m*.36,.08,m*.8,-1.7);q.m=m;q.s=.3;q.r=-m*.35;q.pose=puWig(puPz('jazz'),.12,G.t);out.push(q);}return out;}
+function puCellPos(cell){const P=PUDE;if(!P.C)return null;const tile=cell>>2,row=(cell>>1)&1,cx=cell&1,sp=tile===0?.47:.5,u=cx?(sp+1)/2:sp/2,v=row?.75:.25;
+  const i=tile;const D=PU_FACES[i],Rv=P.Rv,C=P.C,st=1.045,p=[0,1,2].map(k=>D.O[k]+D.U[k]*u+D.V[k]*v),w=m3v(Rv,p);
+  if(m3v(Rv,i===0?[-1,0,0]:[0,0,1])[2]<.05)return null;return[C.cx+C.s*C.sx*w[0],C.cy+C.s*C.sy*st*w[1]];}
+function puLerpH(a,b,e){const L=(x,y)=>x+(y-x)*e;let dr=b.r-a.r;dr=Math.atan2(Math.sin(dr),Math.cos(dr));
+  return{...b,x:L(a.x,b.x),y:L(a.y,b.y),r:a.r+dr*e,s:L(a.s,b.s),m:e<.5?a.m:b.m,alpha:L(a.alpha,b.alpha),pose:b.pose.map((d,f)=>d.map((v,k)=>L(a.pose[f][k],v))),
+    arm:a.arm&&b.arm?[L(a.arm[0],b.arm[0]),L(a.arm[1],b.arm[1])]:b.arm,armR:L(a.armR,b.armR),clip:e<.5?a.clip:b.clip};}
+function pudeDrop(t){const P=PUDE,A=ADV;P.burstT=t;P.exV+=9;P.colPh+=.5;P.st='drop';
+  for(let i=0;i<3;i++)puRing(0,-.1,(1.2+.5*i)*A.bpm/120,P.colPh+i*.17);puSpark(0,.1,12,P.colPh+.3,2.2);
+  if(!S.puC)puSetC(puPickC());if(!S.puG)puSetG(puPickG(),t);P.c0=A.beatN;P.g0=A.beatN;puLooks();for(let i=0;i<8;i++)P.cellT[i]=1;}
+/* "down on the screen" in the top face's uv: the arm is cut along the line through the hole's middle, square to it */
+function puDown(T){const x=-T[3],y=-T[5],l=Math.hypot(x,y)||1;return[x/l,y/l];}
+function puGate(t){const F=ADV.flashes;while(F.length&&t-F[0]>=1)F.shift();if(F.length>=3||(F.length&&t-F[F.length-1]<.15))return false;F.push(t);return true;}
+function pudeStep(t,dts,ons,beatTick){const A=ADV,P=PUDE;
+  A.strobe*=Math.exp(-dts/.045);A.drop*=Math.exp(-dts/1.5);
+  P.feat=puFeat(A);const st=puState(A,t);if(st!==P.st){P.st=st;P.stCh=true;}
+  if(!P.seen){P.seen=true;P.g0=P.c0=P.k0=A.beatN;puSetG(S.puG?S.puG-1:puPickG(),t);puSetC(S.puC?S.puC-1:puPickC());puLooks();puCellsBar();}
+  const bpos=A.beatN-A.phrase0,bar=((bpos%4)+4)%4;
+  if(beatTick){
+    /* the countdown: the last 5 beats before the 4-bar line where the drop should land, or 5 beats from the button */
+    if(P.force===1){P.force=2;P.forceN=5;}
+    if(P.force===2){P.count=P.forceN;if(P.forceN<=0){advDropNow=true;P.force=0;P.count=-1;}else P.forceN--;}
+    else{const p16=((bpos%16)+16)%16,rem=16-p16,want=S.puG===10||(!S.puG&&(st==='build'||(A.armT>4&&A.build>.12)));
+      P.count=want&&rem<=5?rem:(want&&p16===0&&P.count===1?0:-1);}
+    if(bar===0){
+      if(!S.puG&&(A.beatN-P.g0>=4*PU_EVERY[S.puEvery]||P.stCh))puSetG(puPickG(),t);
+      if(!S.puC&&(A.beatN-P.c0>=4*ADV_BARS[S.puBars]||(P.stCh&&(st==='break'||st==='lull'))))puSetC(puPickC());
+      if(A.beatN-P.k0>=16||P.stCh){P.k0=A.beatN;puLooks();}
+      puCellsBar();P.colPh+=.17;P.stCh=false;
+    }else if(P.stCh&&st!=='groove'){if(!S.puG)puSetG(puPickG(),t);P.stCh=false;}
+    if(P.colM===3)P.colPh+=.5;
+  }
+  if(S.puG&&P.gest!==S.puG-1)puSetG(S.puG-1,t);if(S.puC&&P.cube!==S.puC-1)puSetC(S.puC-1);
+  /* the clock everything moves by */
+  const G={t,dts,ph:A.ph,bk:A.beatN-P.g0,bar,barPh:(bar+A.ph)/4,b2:Math.floor((A.beatN-P.g0)/4),kick:A.env[0],snr:A.env[1],hat:A.env[2],mel:A.env[3],
+    oK:ons[0],oS:ons[1],oH:ons[2],oM:ons[3],tick:beatTick,build:A.build,st,bpm:A.bpm,sw:P.feat.sw,gr:P.feat.gr,en:P.feat.en,count:P.count,gest:P.gest};
+  const C=puCubeStep(t,dts,G),nF=puCubeBuild(C);
+  const burst=t-P.burstT<60/A.bpm,eff=burst?99:P.count>=0?9:P.gest;
+  if(eff!==P.eff){P.eff=eff;P.swT=t;P.prev=P.last;}
+  let hands=burst?puBurst(G):puGest(eff===9?9:P.gest,G);
+  for(const h of hands){h.s=Math.min(.8,h.s*1.4);h.armR*=.75;}   /* hand sizes above are in the logo's proportion; on 90 LEDs it reads better a size up */
+  if(P.prev&&t-P.swT<.16){const e=puEase((t-P.swT)/.16);hands=hands.map((h,i)=>P.prev[i]?puLerpH(P.prev[i],h,e):{...h,alpha:h.alpha*e});}
+  P.last=hands;
+  /* the hand's shape (all hands share it), then each hand's place */
+  const H0=hands[0],B=puBuildHand(H0.pose,H0.back,H0.eye),nc=Math.min(24,B.caps.length/8);
+  for(let i=0;i<nc;i++){P.S.set(B.caps.slice(i*8,i*8+4),i*4);P.SR.set(B.caps.slice(i*8+4,i*8+8),i*4);}
+  const nh=Math.min(5,hands.length);P.I.fill(0);
+  for(let i=0;i<nh;i++){const h=hands[i],a=h.arm,sty=P.cube===13&&P.sty===0?1:P.sty;
+    P.I.set([h.x,h.y,h.s,h.r, h.m,h.alpha,h.clip&&P.top?1:0,sty, a?a[0]:h.x,a?a[1]:h.y,a?h.armR:0,P.hue+i*.13],i*12);
+    const tip=f=>puH2W(h,B.tips[f][0],B.tips[f][1]);
+    if(h.ok&&G.oK>.3){const a1=tip(0),b1=tip(1);puRing((a1[0]+b1[0])/2,(a1[1]+b1[1])/2,1.2*A.bpm/120,P.colPh+.5);}
+    if(h.flash){const p=tip(1),d=Math.atan2(p[1]-h.y,p[0]-h.x);puSpark(p[0],p[1],5,.5,1.8,.9,d);}
+    if(h.snap){const p=tip(2);puSpark(p[0],p[1],6,P.colPh+.2,1.4);}
+    if(h.tap){const p=tip(h.tap);puRing(p[0],p[1],.9,P.colPh+.3,.18);}
+    if(h.trail){P.trail.push(tip(1));if(P.trail.length>8)P.trail.shift();}
+    if(h.baton){const p=tip(1),q=tip(1),d=Math.atan2(p[1]-h.y,p[0]-h.x);h.bat=[p,[q[0]+Math.cos(d)*.38,q[1]+Math.sin(d)*.38]];}}
+  if(!H0.trail)P.trail.length=0;
+  /* rings, sparks, light lines */
+  if(G.tick&&bar===0&&(st==='groove'||st==='drop')&&P.cube!==10)puRing(C.cx,C.cy+.05,1.3*A.bpm/120,P.colPh+.33);
+  if(st==='drop'&&G.oK>.4)puRing(C.cx,C.cy,1.7*A.bpm/120,P.colPh+(A.beatN%2)*.5);
+  P.rings=P.rings.filter(r=>(r.r+=r.v*dts)<r.max);P.R.fill(0);for(let i=0;i<6;i++){const r=P.rings[i];P.R.set(r?[r.x,r.y,r.r,r.h]:[0,0,-1,0],i*4);}
+  for(const s of P.sparks){s.r+=s.v*dts;s.life-=dts*2.2;}P.sparks=P.sparks.filter(s=>s.life>0);
+  let nl=0;const line=(a,b,c,w)=>{if(nl>=24)return;P.E.set([a[0],a[1],b[0],b[1]],nl*4);P.Ec.set([c[0],c[1],c[2],w],nl*4);nl++;};
+  if(P.cube===8){const V=[];for(let i=0;i<8;i++){const v=[i&1?1:-1,i&2?1:-1,i&4?1:-1],w=m3v(P.Rv,v);V.push([C.cx+C.s*C.sx*w[0],C.cy+C.s*C.sy*1.045*w[1],v]);}
+    const nz=(ax,sg)=>{const n=[0,0,0];n[ax]=sg;return m3v(P.Rv,n)[2];};
+    for(let i=0;i<8;i++)for(let k=0;k<3;k++){const j=i^(1<<k);if(j<i)continue;const o=[0,1,2].filter(q=>q!==k),vis=nz(o[0],V[i][2][o[0]])>0||nz(o[1],V[i][2][o[1]])>0,
+      c=puPalJ(P.colPh+(i+k)*.07).map(x=>x*(vis?.95:.3)*(1+.4*G.hat));line(V[i],V[j],c,vis?1.4:1);}}
+  for(const s of P.sparks){const c=Math.cos(s.a),n=Math.sin(s.a);line([s.x+c*s.r,s.y+n*s.r],[s.x+c*(s.r+s.len),s.y+n*(s.r+s.len)],puPalJ(s.h).map(x=>x*Math.min(1,s.life*1.5)),1.3);}
+  for(let i=1;i<P.trail.length;i++)line(P.trail[i-1],P.trail[i],puPalJ(P.colPh+.5).map(x=>x*i/P.trail.length),1.6);
+  for(const h of hands)if(h.bat)line(h.bat[0],h.bat[1],[.9,.95,1],1.2);
+  /* hole, star, edges, cuts, decays */
+  P.star+=dts*(.4+4*G.mel)+(G.oM>.3?.35:0);P.hitC*=Math.exp(-dts/.18);P.squash*=Math.exp(-dts/.12);
+  P.edge=Math.max(P.edge*Math.exp(-dts/.15),(st==='drop'||P.feat.en>1.05)?.7*(G.oS||0):0);
+  /* colour cuts only on the downbeats of the first 2 bars after a drop, and weak: a full panel of colour is a lot of light in a mirror */
+  if(st==='drop'&&G.tick&&bar===0&&t-(A.dropT??-99)<8*60/A.bpm&&puGate(t)){P.cut=.4;P.cutH=P.colPh+(A.beatN%2)*.5;}P.cut*=Math.exp(-dts/.08);
+  const R2=CFG.N/90,U=P.U;
+  U.set([nF,nc,nh,nl, P.colM,P.colPh,.55,P.colM===0?1:2.2, P.mask,P.maskA,P.maskB,P.mask===1?(G.bk+A.ph)/8:P.mask===3?(G.bk+A.ph)/2:P.mask===4?G.bk+A.ph:P.mask===6?(G.bk+A.ph)/4:P.mask===5?0:(G.bk+A.ph)/16,
+    P.belt[0],P.belt[1],P.wob,P.melt, P.splX*.12*P.spl,.3*P.spl,P.gl,P.blk, P.cube===13?1.15:1,P.star,.25*Math.min(1,A.subS/Math.max(A.subL,.02))+.6*G.mel,1+.15*G.hat,
+    P.echoN,1.45,1-Math.pow(1-A.ph,3),P.echoLv, Math.max(.9,R2),G.snr,P.kal,0, ...(P.top?[P.top[0],P.top[1],...puDown(P.top)]:[0,0,0,0]), ...(P.top?P.top.slice(2):[0,0,0,0]),
+    A.strobe,P.cut,0,P.edge, P.cutH,P.colPh+.5,t,0]);
+  if(P.mask===5)U[9]=.35+.6*Math.abs(Math.sin(Math.PI*(G.bk+A.ph)/8));if(P.mask===7)U[9]=((G.bk+A.ph)/8)%1;
+  /* readout */
+  if(frameN%8===0){const d=x=>x>.25?'●':'○',nm=burst?'Drop burst':P.count>=0?'Countdown '+P.count:PU_GN[P.gest];
+    $('puLive').textContent=Math.round(A.bpm)+' BPM · bar '+(Math.floor(bpos/4)%4+1)+' beat '+(bar+1)+' · '+d(A.env[0])+' kick '+d(A.env[1])+' snare '+d(A.env[2])+' hats '+d(A.env[3])+' melody · '+
+      {groove:'groove',break:'breakdown',build:'build '+Math.round(A.build*100)+' %',drop:'drop',lull:'lull'}[st]+' · hand: '+nm+(S.puG?' (locked)':'')+' · cube: '+PU_CN[P.cube]+(S.puC?' (locked)':'')+
+      ' · '+['logo colours','neon','letters','two-tone','negative','rainbow'][P.colM];}}
+function pudeUniforms(){const P=PUDE;if(!P.tex)puAtlas();
+  gl.activeTexture(gl.TEXTURE11);gl.bindTexture(gl.TEXTURE_2D,P.tex);gl.activeTexture(gl.TEXTURE0);uni(P1,'uPuTx','uniform1i',11);
+  uni(P1,'uPu[0]','uniform4fv',P.U);uni(P1,'uPuF[0]','uniform4fv',P.F);uni(P1,'uPuS[0]','uniform4fv',P.S);uni(P1,'uPuSR[0]','uniform4fv',P.SR);
+  uni(P1,'uPuI[0]','uniform4fv',P.I);uni(P1,'uPuL[0]','uniform1fv',P.cell.map(v=>Math.max(0,Math.min(1,v))));uni(P1,'uPuE[0]','uniform4fv',P.E);uni(P1,'uPuEc[0]','uniform4fv',P.Ec);uni(P1,'uPuR[0]','uniform4fv',P.R);}
 const adY=new Float32Array(AD*AD);
 function readAdapt(){
   gl.readPixels(0,0,AD,AD,gl.RGBA,gl.FLOAT,adBuf);
@@ -3294,7 +3791,8 @@ function frame(ts){
   const soft=S.soft<0.01?1:1-Math.exp(-dts/(0.04*Math.pow(100,S.soft)));
   updateAudio(t);mediaTick();
   tunnelAudio(t,dts);
-  if(S.pat===49)advAudio(t,dts);else ADV.seen=false;
+  if(S.pat===49||S.pat===51)advAudio(t,dts);else ADV.seen=false;
+  if(S.pat!==51)PUDE.seen=false;
 
   /* pass 1: pattern value per LED */
   gl.bindFramebuffer(gl.FRAMEBUFFER,fbos[cur]);gl.viewport(0,0,N,N);
@@ -3303,7 +3801,7 @@ function frame(ts){
   uni(P1,'uN','uniform1f',N);uni(P1,'uT','uniform1f',tunnelPat()?TEMPO.clock:t);uni(P1,'uSpeed','uniform1f',S.speed);
   const patId=(S.pat===9&&!media)?4:S.pat;
   uni(P1,'uPat','uniform1i',patId);uni(P1,'uSpec','uniform1i',1);uni(P1,'uWave','uniform1i',4);uni(P1,'uMedia','uniform1i',2);
-  uni(P1,'uLev','uniform4f',bass,mid,treb,beat);tunnelUniforms();if(S.pat===49)advUniforms(t);
+  uni(P1,'uLev','uniform4f',bass,mid,treb,beat);tunnelUniforms();if(S.pat===49)advUniforms(t);if(S.pat===51)pudeUniforms();
   uni(P1,'uAdvD','uniform1i',9);uni(P1,'uAdvTx','uniform1i',10);
   uni(P1,'uMed','uniform3f',mediaAspect,S.fit,0);uni(P1,'uVid','uniform3f',S.vContrast,S.vSat,S.vGamma);
   uni(P1,'uPrev','uniform1i',3);uni(P1,'uDecay','uniform1f',decay);uni(P1,'uSoft','uniform1f',soft);uni(P1,'uOvl','uniform1f',S.ovl);uni(P1,'uOvlC','uniform1f',S.ovlC);
