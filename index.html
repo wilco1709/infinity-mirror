@@ -1141,13 +1141,13 @@ void main(){
   o=vec4(clamp(prev+mv,0.,1.),1.);
 }`.replace('//PALDATA',palGLSL()+icoGLSL());
 
-/* The speaker trailer at its shortest, 120 cm deep. Subs 58 x 67 cm, tops 58 x 58 cm, the panel in a slot 1 cm
+/* The speaker trailer at its shortest, 95 cm deep between the wheels. Subs 58 x 67 cm, tops 58 x 58 cm, the panel in a slot 1 cm
    wider than the panel, right above the wheel case: 61 cm for the 600 mm panel (185 cm from number plate to right sub),
    101 or 105 cm for a 1 m panel (the centre column and so the trailer get 40 or 44 cm longer).
    Centimetres, ground at y = 0, cabinet fronts at z = 60. */
 function makeCart(sw){const s=58/181,bed=(550-447)*s,chT=15*s,wr=53*s,wy=(550-497)*s;
   const slotBot=Math.max(bed+6,wy+wr+6),slotTop=slotBot+sw,py=slotBot+sw/2,px=60+sw/2,subTop=bed+67,top=subTop+58,dX=sw-61;
-  return{s,bed,chT,wr,wy,sw,dX,slotBot,slotTop,py,px,subTop,top,floor:-py/100,len:185+dX,gap:top-slotTop-2};}
+  return{s,bed,chT,wr,wy,sw,dX,slotBot,slotTop,py,px,subTop,top,floor:-py/100,len:185+dX,gap:top-slotTop-2,D:95};}
 const slotFor=L=>Math.round((L.outer||600)/10)+1;
 let CART=makeCart(slotFor(LEDS[S.led]||LEDS[0]));
 /* The hall: 10 m wide (the bulb rows run wall to wall), 18 m deep with the trailer near the back wall,
@@ -1208,18 +1208,19 @@ function portMC(D0,wi){
 portMC(S.prtD/100,S.prtW);
 function cartGLSL(){
   const C=CART,L=(x,y,z)=>[(x-C.px)/100,(y-C.py)/100,(z-60)/100],d=C.dX,R0=123+d,RE=181+d,SR=60+C.sw;
-  /* The subs run the full 120 cm; the tops (mid + horn) are 30 cm deep at the front. Behind them the whole trailer is a
+  /* The subs run the full 95 cm; the tops (mid + horn) are 30 cm deep at the front. Behind them the whole trailer is a
      flat DJ desk at sub height: the space between the subs is closed up to the same height. The mirror sits in a
      30 cm deep block at the front, whatever its size. */
   const DK=30;   /* depth of the tops and of the mirror block, cm */
+  const ZB=60-C.D,ZC=60-C.D/2;   /* back of the body and its middle (the trailer is 95 cm deep between the wheels) */
   const B=[ /* x0,y0,z0, x1,y1,z1, id: 0 cabinet, 1 sub, 2 top, 3 steel, 4 number plate, 5 rear light, 11 desk top */
-    [0,C.bed,-60,58,C.subTop,60,1],[0,C.subTop,60-DK,58,C.top,60,2],[R0,C.bed,-60,RE,C.subTop,60,1],[R0,C.subTop,60-DK,RE,C.top,60,2],
-    [58,C.bed,-60,R0,C.slotBot,60,0],[58,C.slotBot,-60,R0,C.subTop,60-DK,0],
+    [0,C.bed,ZB,58,C.subTop,60,1],[0,C.subTop,60-DK,58,C.top,60,2],[R0,C.bed,ZB,RE,C.subTop,60,1],[R0,C.subTop,60-DK,RE,C.top,60,2],
+    [58,C.bed,ZB,R0,C.slotBot,60,0],[58,C.slotBot,ZB,R0,C.subTop,60-DK,0],
     [58,C.slotBot,60-DK,60,C.slotTop,60,0],[SR,C.slotBot,60-DK,R0,C.slotTop,60,0],
     [58,C.slotTop,60-DK,R0,C.slotTop+2,60,0],[60,C.slotBot,60-DK,SR,C.slotTop,48,0],
-    [-1,C.subTop,-60,RE+1,C.subTop+2.5,60-DK,11],
-    [-3,C.bed-C.chT,-56,183+d,C.bed,56,3],[181+d,29,-3,238+d,33,3,3],[236+d,30,-5,244+d,36,5,3],[222+d,6,-1.5,225+d,31,1.5,3],[218+d,0,-2,229+d,12,2,3],
-    [-4.6,17,-26,-4,28,26,4],[-5,23,-56,-4,28.2,-38,5],[-5,23,38,-4,28.2,56,5],
+    [-1,C.subTop,ZB,RE+1,C.subTop+2.5,60-DK,11],
+    [-3,C.bed-C.chT,ZB+4,183+d,C.bed,56,3],[181+d,29,ZC-3,238+d,33,ZC+3,3],[236+d,30,ZC-5,244+d,36,ZC+5,3],[222+d,6,ZC-1.5,225+d,31,ZC+1.5,3],[218+d,0,ZC-2,229+d,12,ZC+2,3],
+    [-4.6,17,ZC-26,-4,28,ZC+26,4],[-5,23,ZB+4,-4,28.2,ZB+22,5],[-5,23,38,-4,28.2,56,5],
     /* fog machine on a steel shelf against the outer side of the right sub, nozzle towards the dancefloor */
     [RE,33,14,RE+27,35,60,3],[RE+1,35,15,RE+26,55,59,9],[RE+9.5,42,59,RE+17.5,48,61.5,3]];
   const v=a=>'vec3('+a.map(n=>n.toFixed(4)).join(',')+')';
@@ -1228,7 +1229,7 @@ function cartGLSL(){
     +'const vec3 CB0[NCB]=vec3[NCB]('+B.map(b=>v(L(b[0],b[1],b[2]))).join(',')+');'
     +'const vec3 CB1[NCB]=vec3[NCB]('+B.map(b=>v(L(b[3],b[4],b[5]))).join(',')+');'
     +'const int CBI[NCB]=int[NCB]('+B.map(b=>b[6]).join(',')+');'
-    +'const float WHX='+((C.px-C.px)/100).toFixed(4)+',WHY='+((C.wy-C.py)/100).toFixed(4)+',WHR='+(C.wr/100).toFixed(4)+',WHW=.06,WHZA='+((69-60)/100).toFixed(4)+',WHZB='+((-69-60)/100).toFixed(4)+';'
+    +'const float WHX='+((C.px-C.px)/100).toFixed(4)+',WHY='+((C.wy-C.py)/100).toFixed(4)+',WHR='+(C.wr/100).toFixed(4)+',WHW=.06,WHZA='+((69-60)/100).toFixed(4)+',WHZB='+((ZB-9-60)/100).toFixed(4)+',ZMID='+((ZC-60)/100).toFixed(4)+';'
     +'const float COLX='+((C.px-29)/100).toFixed(4)+',SUBY='+((C.bed+39-C.py)/100).toFixed(4)+',SUBR='+(72*s/100).toFixed(4)
     +',PRT0='+((C.bed+2-C.py)/100).toFixed(4)+',PRT1='+((C.bed+12-C.py)/100).toFixed(4)
     +',PRTW='+(PORT.W).toFixed(4)+',PRTH='+(PORT.H).toFixed(4)+',PRTL='+(PORT.L).toFixed(4)+',PRTB='+(PORT.BW).toFixed(5)+',PRTA='+(PORT.P*PORT.BW).toFixed(5)
@@ -1236,7 +1237,7 @@ function cartGLSL(){
     +',TWY='+((top-115*s-C.py)/100).toFixed(4)+',TWR='+(50*s*.92/100).toFixed(4)
     +',FOGX='+((RE+13.5-C.px)/100).toFixed(4)+',FOGY='+((45-C.py)/100).toFixed(4)
     +',HALLW='+(HALL.W/2).toFixed(4)+',HALLH='+HALL.H.toFixed(4)+',BULBY='+(HALL.H-.12+C.floor).toFixed(4)
-    +',PLZ0='+((-26-60)/100).toFixed(4)+',PLZ1='+((26-60)/100).toFixed(4)+',PLY0='+((17-C.py)/100).toFixed(4)+',PLY1='+((28-C.py)/100).toFixed(4)+';';
+    +',PLZ0='+((ZC-26-60)/100).toFixed(4)+',PLZ1='+((ZC+26-60)/100).toFixed(4)+',PLY0='+((17-C.py)/100).toFixed(4)+',PLY1='+((28-C.py)/100).toFixed(4)+';';
 }
 /* Pass 2: you stand at (0,0,D) looking at the panel centre (origin). The panel turns about its centre.
    Every light value in here is a luminance in cd/m2 (nits), linear sRGB. Tone mapping happens at the very end. */
@@ -1478,7 +1479,7 @@ vec3 shadeCart(vec3 p,vec3 n,int id,int bi,vec3 rd,float dist){
     if(cab||id==0){vec3 ee=e+(1.-m)*9.;float c=step(ee.x,.045)+step(ee.y,.045)+step(ee.z,.045);
       if(c>1.5){rho=.05;spec=.07;}}
     /* recessed bar handles on the cabinet sides */
-    if(cab&&abs(n0.x)>.5){float yc=(CB0[bi].y+CB1[bi].y)*.5;vec2 q=vec2(p.z+.6,p.y-yc);
+    if(cab&&abs(n0.x)>.5){float yc=(CB0[bi].y+CB1[bi].y)*.5,zc=(CB0[bi].z+CB1[bi].z)*.5;vec2 q=vec2(p.z-zc,p.y-yc);
       if(abs(q.x)<.1&&abs(q.y)<.05){rho=.02;spec=.03;if(abs(q.y)<.009&&abs(q.x)<.085){rho=.06;spec=.08;}}}
   }
   if(cab&&n0.z>.5){
