@@ -534,7 +534,7 @@ const PGROUPS=[
  {sec:'Reacts to the sound',g:'Spectrum',items:[[0,'Spectrum bars'],[1,'Radial spectrum']]},
  {g:'Waveform',items:[[24,'Oscilloscope'],[25,'Mirrored wave'],[26,'Circle wave'],[27,'Lissajous'],[28,'Ribbon'],[29,'Sound bars']]},
  {g:'Pulses on the bass',items:[[2,'Tunnel rings'],[3,'Spiral arms'],[4,'Plasma'],[5,'Fire'],[13,'Ocean waves'],[6,'Matrix rain'],[19,'Suns'],[20,'Hearts']]},
- {g:'Infinity tunnel',items:[[37,'Edge chase'],[38,'Beat rings out'],[47,'Morphing beat rings'],[39,'Beat rings in'],[40,'Hyperspace stars'],[41,'Counter-rotating polygons'],[42,'Log spiral + drop'],[43,'Feedback tunnel'],[44,'Copy-ratio rings'],[45,'Moiré patch'],[46,'Layered ambient']]},
+ {g:'Infinity tunnel',items:[[37,'Edge chase'],[38,'Beat rings out'],[47,'Morphing beat rings'],[39,'Beat rings in'],[40,'Hyperspace stars'],[41,'Counter-rotating polygons'],[42,'Log spiral + drop'],[43,'Feedback tunnel'],[44,'Copy-ratio rings'],[45,'Moiré patch'],[46,'Layered ambient'],[48,'AI creature']]},
  {sec:'Not on the sound',g:'Still',items:[[34,'Buddha'],[33,'Solid colour'],[9,'Media'],[10,'Test grid'],[30,'Colour check']]},
  {g:'Tunnel frame',items:[[31,'Tunnel square'],[32,'Tunnel circle']]},
  {g:'Flowing',items:[[11,'Color flow'],[12,'Lava lamp'],[8,'Aurora'],[14,'Breathing']]},
@@ -579,6 +579,7 @@ const PAT_NOTE={
  36:'The real Buddhabrot: the orbits of millions of escaping points of z → z² + c, piled up live. The view turns slowly through the four-dimensional (z, c) space, so it never repeats. Red: orbits of 8 to 1000 steps, green up to 200, blue up to 40.',
  37:'A 1-LED outline on the outermost LEDs with two comets chasing round it, 0.5 to 2 laps a second on the bass, tails longer on the bass. The outline gives the biggest step between mirror copies, so the cleanest tunnel. Square or circle from the frame buttons.',
  38:'Every kick spawns a thin ring at the centre that grows exponentially to the edge, like the mirror copies themselves. Without beats a ring still flows out every 0.7 s.',
+ 48:'A small pixel creature with two glowing eyes, listening. Calm music: half-closed, soft cyan eyes that drift and blink lazily. Intense music: wide, bright magenta eyes that pulse on the bass, dart around and bounce on the beats, with sparks around them. It tilts its head and squints now and then, and every 8 to 20 s (straight away on a drop) it squeezes its eyes shut and shows off: a waveform, an infinity tunnel, a spectrum or a spiral, then pops back with happy ^ ^ eyes.',
  47:'Beat rings that each keep the shape they had when they were sent out, while the shape slowly melts through circle, triangle, diamond, pentagon, trapezium, hexagon, square, star and dodecagon. Speed speeds up everything (it never fully stops). Audio gain, together with how loud the music is, makes the rings come faster and the shapes follow each other faster. Every kick also sends a ring.',
  39:'The same beat rings, but shrinking from the edge to the centre. Lab work on vection found inward flow at least as strong as outward.',
  40:'44 sparse stars in the outer part of the panel, centre left empty: the mirror turns each one into a trail of dots. They cruise slowly and warp into streaks on the kicks; the treble makes them sparkle.',
@@ -843,6 +844,8 @@ uniform vec4 uAcc;        // audio-driven phases: x chase laps, y star travel, z
 uniform vec4 uFB;         // feedback: zoom per frame, rotation per frame (rad), decay, hold (spiral stopped = 1)
 uniform float uK1;        // scale of the first mirror copy at the current viewing distance
 float lnAA(float d,float w){return clamp(w*.5+.5-abs(d),0.,1.);}   /* anti-aliased line, d and w in LEDs */
+uniform vec4 uCre[4];   // AI creature: (gaze x, gaze y, eyes open, intensity), (show blend, show kind, happy, head tilt), (bounce, show time, blink, spare), (left/right eye squint, spare, spare)
+float sdRBox(vec2 p,vec2 b,float r){vec2 q=abs(p)-b+r;return length(max(q,0.))+min(max(q.x,q.y),0.)-r;}
 uniform float uMRing[8],uMRingS[8];   // morphing rings: age (s, < 0 = none) and shape phase at the moment each was sent out
 /* signed distances of unit-size shapes (after Inigo Quilez); mixing two of them morphs one shape smoothly into the next */
 float sdPoly(vec2 p,float r,float n){float an=3.141593/n;vec2 acs=vec2(cos(an),sin(an));float bn=mod(atan(p.x,p.y),2.*an)-an;
@@ -1233,6 +1236,35 @@ void main(){
       acc+=pal(n*.5+fi*.2+t*.01)*dens*fade*.75;
     }
     col=acc+stars(p,t)*.9;
+  }else if(uPat==48){
+    /* AI creature: two glowing eyes that listen, and now and then show off a trick */
+    float s=uN/90.,inten=uCre[0].w,blend=uCre[1].x,kind=uCre[1].y,happy=uCre[1].z,tilt=uCre[1].w,bounce=uCre[2].x,st=uCre[2].y;
+    vec2 m=vec2(uN*.5),gz=uCre[0].xy;float bass=uLev.x;
+    vec3 eyes=vec3(0.),ec=pal(.52+.33*inten);
+    for(int i=0;i<2;i++){float sd=i==0?-1.:1.;
+      vec2 e=m+vec2(sd*13.5*s,0.)+gz*s+vec2(0.,bounce*s+sd*tilt*3.5*s);
+      float wv2=1.+sd*gz.x*.025,op=uCre[0].z*(i==0?uCre[3].x:uCre[3].y);
+      vec2 b=vec2(6.5,8.5*max(op,.06))*s*(1.+.18*inten+.1*bass*inten)*wv2;
+      float d=sdRBox(c-e,b,min(b.x,b.y)*.85);
+      float dh=length(c-(e+vec2(0.,-b.y*1.25)))-b.x*1.3;d=mix(d,max(d,-dh),happy);   /* happy: the bottom eaten away, ^ ^ */
+      float inside=smoothstep(.6,-.6,d),glow=exp(-max(d,0.)/(1.2+3.*inten))*(.1+.35*inten);
+      float hl=smoothstep(1.6*s,.4*s,length(c-(e+vec2(-1.8,3.)*s*(1.-happy)+gz*.15*s)))*(1.-happy)*step(.3,op);
+      eyes+=ec*(inside*(.6+.4*inten)+glow)+vec3(1.)*hl*.8;}
+    /* intense: sparks drift round the eyes */
+    if(h21(floor(c)+floor(uT*10.))>1.-.012*inten*inten&&length(c-m)<uN*.42)eyes+=pal(.85)*inten;
+    /* the trick */
+    vec3 sh=vec3(0.);vec2 x=c-m;float R=uN*.5-.5,rs=max(abs(x.x),abs(x.y)),rc=length(x);
+    if(blend>.001){
+      if(kind<.5){float y=m.y+wv(q.x)*uN*.32*(.6+.6*inten);float d=abs(c.y-y);
+        sh=pal(q.x*.4+st*.15)*(lnAA(d,1.6)+exp(-d/2.5)*.35);}                       /* a sick waveform */
+      else if(kind<1.5){for(int j=0;j<8;j++){float rj=R*pow(.78,float(j)-fract(st*1.6));
+        sh+=pal(float(j)*.1+st*.2)*lnAA(rs-rj,1.3)*(1.-float(j)*.08);}}             /* infinity tunnel */
+      else if(kind<2.5){float u=abs(q.x-.5)*2.,h=spec(u,0.)*uN*.46;float bx=fract(c.x/3.);
+        sh=pal(u*.5+st*.1)*step(abs(c.y-m.y),h)*step(bx,.66)*(.5+.5*abs(c.y-m.y)/max(h,1.));}  /* mirrored spectrum */
+      else{float ph=4.*atan(x.y,x.x)-13.*log(max(rc,1.)/R)-st*6.;
+        float d=abs(fract(ph/6.28318)-.5)*6.28318*rc/length(vec2(4.,13.));sh=pal(st*.1+log(max(rc,1.))*.2)*lnAA(d,1.4)*smoothstep(2.,5.,rc);}  /* spiral */
+    }
+    float wr=blend*R*1.6;col=mix(eyes,sh,smoothstep(wr,wr-5.,rc));
   }else if(uPat==47){
     /* morphing beat rings: every ring keeps the shape it had when it was sent out, and the shapes melt from one into the next */
     vec2 x=c-uN*.5;float R=uN*.5-.5,bass=uLev.x;
@@ -1986,7 +2018,7 @@ function updateAudio(t){
   bass=b/8;mid=m/24;treb=h/32;
   const imp=Math.max(0,bass-bassAvg*1.25-0.04);bassAvg+=(bass-bassAvg)*0.05;
   beat=Math.max(imp*4,beat*0.9);beat=Math.min(1,beat);
-  if(S.pat>=24&&S.pat<=29){
+  if((S.pat>=24&&S.pat<=29)||S.pat===48){
     if(srcLive())waveFromAnalyser();
     else if(audioSrc==='demo')waveDemo(t);else waveBytes.fill(128);
     gl.activeTexture(gl.TEXTURE4);gl.bindTexture(gl.TEXTURE_2D,waveTex);
@@ -2664,7 +2696,43 @@ function uni(P,name,fn,...a){if(P.u[name]!=null)gl[fn](P.u[name],...a);}
    independent), spiral spins ~24 s then holds 6 s so it seems to swirl backwards (motion aftereffect).
    Kicks spawn small events instead of full-panel flashes, which keeps it inside the 3 flashes/s limit at any tempo. */
 const TUN={mr:new Float32Array(8).fill(-1),ms:new Float32Array(8),mi:0,mT:0,morph:0,mLast:-9,mPrev:0,rings:new Float32Array(8).fill(-1),ri:0,lastBeat:-9,lastSpawn:-9,prevBeat:0,acc:[0,0,0,0],warp:0};
+/* ---------- the AI creature's little brain ----------
+   intensity: slow-smoothed loudness. Eyes: spring-damped gaze that picks new targets (more often when intense), a bounce
+   spring kicked by beats, random blinks, now and then a curious head tilt or one squinting eye. Every 8-20 s (sooner
+   when intense, at once on a sudden rise = a drop) it squeezes its eyes, shows a trick for 2.5-4 s, then pops back happy. */
+const CRE={inten:0,slow:0,gx:0,gy:0,vx:0,vy:0,tx:0,ty:0,nextLook:0,by:0,vb:0,blinkT:3,blink:0,tilt:0,tiltT:0,tiltTo:0,
+  sqL:1,sqR:1,sqT:6,mode:0,modeT:0,next:10,kind:1,blend:0,happy:0,showT:0,prevB:0,last:[0,1,2,3]};
+const creU=new Float32Array(16);window.CRE=CRE;
+function creature(t,dts){const C=CRE,sp=Math.max(.2,S.speed),dtt=dts*sp,r=Math.random;
+  const lv=Math.min(1,(bass*.65+mid*.35)*1.25);
+  if(!(t-C.seen<.5)){C.inten=C.slow=lv;C.mode=0;C.modeT=0;C.blend=0;C.happy=0;C.next=t+5+r()*5;}   /* just switched on: settle first */
+  C.seen=t;C.inten+=(lv-C.inten)*(1-Math.exp(-dts/1.2));C.slow+=(C.inten-C.slow)*(1-Math.exp(-dts/6));
+  const I=C.inten;
+  /* gaze */
+  if(t>C.nextLook){const big=r()<.25;C.tx=(r()*2-1)*(big?11:6);C.ty=(r()*2-1)*(big?6:3);C.nextLook=t+(.6+r()*2.6)*(1.2-.8*I)/sp;}
+  if(beat>.6&&C.prevB<=.6&&I>.45&&r()<.5){C.tx=(r()*2-1)*10;C.ty=(r()*2-1)*5;}   /* quick saccade on a beat */
+  const kg=60*(1+I),cg=2*Math.sqrt(kg);C.vx+=(kg*(C.tx-C.gx)-cg*C.vx)*dtt;C.vy+=(kg*(C.ty-C.gy)-cg*C.vy)*dtt;C.gx+=C.vx*dtt;C.gy+=C.vy*dtt;
+  /* bounce: a springy jump on beats, bigger when intense; a slow bob when calm */
+  if(beat>.5&&C.prevB<=.5)C.vb+=(6+22*I);C.prevB=beat;
+  C.vb+=(-120*C.by-9*C.vb)*dtt;C.by+=C.vb*dtt;const bob=Math.sin(t*1.7*sp)*(1.2-.8*I);
+  /* blinks: slow and lazy when calm, quick when intense */
+  C.blinkT-=dtt;if(C.blinkT<0){C.blink=1;C.blinkT=(1.5+r()*4.5)*(1.3-.6*I);}
+  C.blink=Math.max(0,C.blink-dts*(5+6*I));const bl=C.blink>0?Math.abs(Math.cos(C.blink*Math.PI)):1;
+  /* curious head tilt and the odd squint */
+  C.tiltT-=dtt;if(C.tiltT<0){C.tiltTo=r()<.35?(r()*2-1):0;C.tiltT=2+r()*5;}C.tilt+=(C.tiltTo-C.tilt)*(1-Math.exp(-dts*3));
+  C.sqT-=dtt;if(C.sqT<0){const w=r();C.sqL=w<.15?.55:1;C.sqR=w>.85?.55:1;C.sqT=1.2+r()*4;}
+  /* showing off */
+  C.modeT+=dtt;const drop=C.inten-C.slow>.28&&C.mode===0&&C.modeT>3;
+  if(C.mode===0&&(t>C.next||drop)){C.mode=1;C.modeT=0;let k;do{k=Math.floor(r()*4);}while(k===C.kind&&r()<.8);C.kind=drop?1:k;}
+  let open=(.62+.38*I)*bl;
+  if(C.mode===1){open*=Math.max(.08,1-C.modeT/.35);C.happy=0;if(C.modeT>.4){C.mode=2;C.modeT=0;C.showT=0;}}
+  else if(C.mode===2){C.blend=Math.min(1,C.blend+dts*3.5);C.showT+=dtt*(1+I);if(C.modeT>2.5+1.5*r()*0+1.2*I){C.mode=3;C.modeT=0;}}
+  else if(C.mode===3){C.blend=Math.max(0,C.blend-dts*3);if(C.blend===0){C.mode=4;C.modeT=0;C.happy=1;C.vb+=18;}}
+  else if(C.mode===4){C.happy=Math.max(0,1-Math.max(0,C.modeT-1)*2);if(C.modeT>1.6){C.mode=0;C.modeT=0;C.happy=0;C.next=t+(8+r()*12)*(1.2-.6*I)/sp;}}
+  if(C.mode===2||C.mode===3)open*=.0+(1-C.blend);
+  creU.set([C.gx,C.gy+bob*.3,open,I, C.blend,C.kind,C.happy,C.tilt, C.by+bob,C.showT,0,0, C.sqL,C.sqR,0,0]);}
 function tunnelAudio(t,dts){const T=TUN,sp=S.speed;
+  if(S.pat===48)creature(t,dts);
   /* morphing rings. Speed never stops it (at least 0.15x) and speeds everything up; audio gain together with how loud
      the music is speeds up both how often rings are sent and how fast the shapes follow each other. */
   {const ms=Math.max(.15,sp),drive=S.gain*(.35+Math.min(1,bass)),every=.9/(ms*(.55+.45*drive));
@@ -2689,6 +2757,7 @@ function tunnelAudio(t,dts){const T=TUN,sp=S.speed;
   if(stepNow){T.fbT=0;T.fb=[1.14+.12*Math.min(1,bass),(.05+.1*mid)*(TUN.ri%2?1:-1),.62,T.warp];}
   else T.fb=[1,0,1,T.warp];}
 function tunnelUniforms(){const T=TUN;   /* call while the pattern program is in use */
+  uni(P1,'uCre[0]','uniform4fv',creU);
   uni(P1,'uMRing[0]','uniform1fv',T.mr);uni(P1,'uMRingS[0]','uniform1fv',T.ms);
   uni(P1,'uRing[0]','uniform1fv',T.rings);uni(P1,'uAcc','uniform4f',...T.acc);uni(P1,'uFB','uniform4f',...(T.fb||[1,0,0,0]));
   const g=CFG.acr?CFG.g.mm/1490:CFG.g.mm/1000,D=Math.max(.1,S.dist);uni(P1,'uK1','uniform1f',(D+g)/(D+3*g));}
