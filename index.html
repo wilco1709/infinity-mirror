@@ -335,6 +335,9 @@ ul.checks .wn{color:var(--accent);font-weight:600}
       </div>
       <audio id="player" controls hidden></audio>
       <p class="note" id="srcNote">Demo beat drives the audio visuals without a microphone. Pick Video sound to drive them from the video that is playing.</p>
+      <div id="pitchCtl"></div>
+      <p class="note" id="pitchLive" style="font-family:var(--mono)"></p>
+      <p class="note">The visuals follow the melody: the note of the loudest instrument or synth (110 Hz to 1.4 kHz, so the bass and kick stay out). The note sets the colour, round the circle of fifths so related keys get related colours; how high or low it is drives each infinity-tunnel pattern in its own way, and every new note can send a ring.</p>
     </section>
 
     <section aria-labelledby="h-dj" data-tab="dj">
@@ -517,7 +520,7 @@ const FACES=['north','north-east','east','south-east','south','south-west','west
 /* ---------- state ---------- */
 const DEF={pat:31,pal:0,solid:0,speed:1,gain:1.4,trail:0,soft:0,ovl:0,ovlC:0,frW:2,frIn:0,frMode:1,frRate:2,fit:0,vContrast:1.15,vSat:1.1,vGamma:1,loop:'all',
   led:0,bal:0,bright:1,cgam:2.2,front:1,back:4,gap:9,dist:2,yaw:0,pitch:0,eyeH:1.65,amb:0,clock:21.5,face:6,prtM:0,prtB:1,prtS:0.6,prtF:0.12,prtD:30,prtW:0,
-  tab:'view',look:0,wedge:0,djP:0,djH:30,djR:0,djStat:180,djShow:1,
+  tab:'view',look:0,wedge:0,pitchAmt:.7,djP:0,djH:30,djR:0,djStat:180,djShow:1,
   bMix:1,bMixPos:3,bMixRow:0,bSet:1,bSetPos:3,bSetRow:0,bLap:1,bLapPos:1,bLapRow:1,bVj:1,bVjPos:5,bVjRow:0,fogM:0,fogOut:.7,fogLen:3,fogInt:30,fogAch:2,blbW:2,blbP:0,blbM:1,blbS:1,blbSens:0.6,blbF:0.08,blbC:[255,230,200,170,140,110,80,60,40,20]};
 const S=Object.assign({},DEF);
 const KEY='infinity-grid-v12';
@@ -760,6 +763,7 @@ function syncTab(){tabBtns.forEach(b=>b.setAttribute('aria-selected',String(b.da
 tabBtns.forEach(b=>b.addEventListener('click',()=>{S.tab=b.dataset.tabbtn;save();syncTab();const rl=document.getElementById('rail');rl.scrollTop=0;
   if(getComputedStyle(rl).overflowY==='visible'){const tb=rl.querySelector('nav.tabs'),want=tb.offsetTop+rl.getBoundingClientRect().top+scrollY-parseFloat(getComputedStyle(tb).top);if(scrollY>want)scrollTo(0,want);}}));
 if(!['view','av','vis','mirror','woofer','room','smoke','dj','booth'].includes(S.tab))S.tab='view';
+buildCtl('pitchCtl',[{k:'pitchAmt',l:'Follow the melody',min:0,max:1,step:.05,f:v=>v<.01?'off':Math.round(v*100)+' %'}]);
 buildCtl('wedgeCtl',[{k:'wedge',l:'Wedge between the films',min:0,max:1.5,step:.05,f:v=>v<.01?'parallel':v.toFixed(2)+'° · '+(Math.tan(v*D2R)*600).toFixed(1)+' mm more gap on one side'}]);
 /* booth item controls: per item its type, a spot along the desk and a row */
 {const box=document.getElementById('bootBox');
@@ -872,7 +876,9 @@ float fbm(vec2 p){float a=.5,s=0.;for(int i=0;i<5;i++){s+=a*vn(p);p=p*2.03+17.1;
 vec3 hsv(float h,float s,float v){vec3 k=clamp(abs(fract(h+vec3(0.,2./3.,1./3.))*6.-3.)-1.,0.,1.);return v*mix(vec3(1.),k,s);}
 float wv(float x){return texture(uWave,vec2(clamp(x,0.,1.),.5)).r*2.-1.;}
 float spec(float x,float row){x=clamp(x,0.,1.);return texture(uSpec,vec2((x*63.+.5)/64.,(row+.5)/2.)).r;}
+uniform vec4 uPitch;   // melody: height (0 low .. 1 high, already pulled to 0.5 by how sure and how much to follow), note colour (circle of fifths, 0..1), follow amount, new-note pulse
 vec3 pal(float x){
+  x+=uPitch.y*uPitch.z;   /* the colour follows the note of the melody */
   if(uPal==0)return hsv(x,.88,1.);
   if(uPal>=PALN)return uSolid;
   float s=fract(x)*4.;int i=int(floor(s));float f=smoothstep(0.,1.,fract(s));
@@ -1242,9 +1248,9 @@ void main(){
     vec2 m=vec2(uN*.5),gz=uCre[0].xy;float bass=uLev.x;
     vec3 eyes=vec3(0.),ec=pal(.52+.33*inten);
     for(int i=0;i<2;i++){float sd=i==0?-1.:1.;
-      vec2 e=m+vec2(sd*13.5*s,0.)+gz*s+vec2(0.,bounce*s+sd*tilt*3.5*s);
+      vec2 e=m+vec2(sd*13.5*s,0.)+gz*s+vec2(0.,bounce*s+sd*tilt*3.5*s+(uPitch.x-.5)*9.*s);   /* it looks up at high notes, down at low ones */
       float wv2=1.+sd*gz.x*.025,op=uCre[0].z*(i==0?uCre[3].x:uCre[3].y);
-      vec2 b=vec2(6.5,8.5*max(op,.06))*s*(1.+.18*inten+.1*bass*inten)*wv2;
+      vec2 b=vec2(6.5,8.5*max(op,.06))*s*(1.+.18*inten+.1*bass*inten+.12*uPitch.w)*wv2;   /* a little pop on every new note */
       float d=sdRBox(c-e,b,min(b.x,b.y)*.85);
       float dh=length(c-(e+vec2(0.,-b.y*1.25)))-b.x*1.3;d=mix(d,max(d,-dh),happy);   /* happy: the bottom eaten away, ^ ^ */
       float inside=smoothstep(.6,-.6,d),glow=exp(-max(d,0.)/(1.2+3.*inten))*(.1+.35*inten);
@@ -1274,7 +1280,7 @@ void main(){
       int A=int(mod(floor(ph),9.)),B=int(mod(floor(ph)+1.,9.));
       vec2 q=mat2(cos(ang),sin(ang),-sin(ang),cos(ang))*x/r;
       float d=mix(sdShape(A,q),sdShape(B,q),f)*r;
-      col+=pal(ph*.11+float(i)*.07)*lnAA(d,1.5)*smoothstep(0.,.15,u)*smoothstep(1.,.85,u)*(.7+.3*bass);}
+      col+=pal(ph*.11+float(i)*.07)*lnAA(d,1.1+1.4*(1.-uPitch.x))*smoothstep(0.,.15,u)*smoothstep(1.,.85,u)*(.7+.3*bass);}
     col+=pal(uMRingS[0]*.05)*lnAA(max(abs(x.x),abs(x.y))-R,1.)*.12;
   }else if(uPat>=37&&uPat<=46){
     /* ---- infinity-tunnel patterns: thin lines and sparse points on pure black, far from the centre ---- */
@@ -1283,16 +1289,16 @@ void main(){
     float bass=uLev.x,mid=uLev.y,tre=uLev.z,bt=uLev.w;
     if(uPat==37){                                /* edge outline with comets chasing round it */
       float s=fract(th/6.28318+.5),line=lnAA(rr-R,1.);
-      float tail=(10.+20.*bass)/(uN*4.),cm=0.;
+      float tail=(10.+20.*bass)*(1.6-uPitch.x)/(uN*4.),cm=0.;   /* low notes: long tails, high notes: short and quick */
       for(int j=0;j<2;j++){float h=fract(uAcc.x+float(j)*.5),b=fract(h-s);cm+=exp(-b/tail)*step(b,.999);}
-      col=line*(pal(t*.02+s*.3)*(.28+.25*bass)+mix(pal(t*.02+.5),vec3(1.),.5)*min(cm,1.3));
+      col=line*(pal(t*.02+s*.3)*(.28+.25*bass)+mix(pal(t*.02+.5),vec3(1.),.3+.5*uPitch.x)*min(cm,1.3)*(1.+.6*uPitch.w));
     }else if(uPat==38||uPat==39){                /* rings spawned on the kick, growing exponentially (out) or shrinking (in) */
       float k=2.2;
       for(int i=0;i<8;i++){float a=uRing[i];if(a<0.)continue;
         float r=uPat==38?1.5*exp(k*a):R*exp(-k*a),life=log(R/1.5)/k,u=a/life;
         if(u>1.)continue;
         float fade=uPat==38?smoothstep(0.,.2,u):smoothstep(1.,.8,u)*smoothstep(0.,.05,u);
-        col+=pal(float(i)*.13+t*.02)*lnAA(rr-r,1.5)*fade*(.7+.3*bass);}
+        col+=pal(float(i)*.13+t*.02)*lnAA(rr-r,1.1+1.6*(1.-uPitch.x))*fade*(.7+.3*bass);}   /* low notes: thicker rings */
       col+=pal(t*.02)*lnAA(rr-R,1.)*(.15+.2*bass);
     }else if(uPat==40){                          /* sparse star field: the mirror turns every star into a trail */
       for(int i=0;i<30;i++){float fi=float(i),ang=h11(fi*1.7)*6.28318,u=fract(h11(fi*3.1+.4)+uAcc.y*(.6+.8*h11(fi)));
@@ -1302,12 +1308,12 @@ void main(){
         col+=mix(vec3(1.),pal(h11(fi*5.3)+t*.01),.45)*lnAA(d,1.1)*smoothstep(0.,.15,u)*(.6+.4*tre);}
     }else if(uPat==41){                          /* nested polygons, counter-rotating at golden-ratio speeds, breathing on the bass */
       float tw=.35*sin(6.28318*.07*t);
-      for(int k=0;k<6;k++){float fk=float(k),n=k%2==0?4.:6.;
+      for(int k=0;k<6;k++){float fk=float(k),n=k%2==0?3.+floor(uPitch.x*4.99):6.;   /* the melody sets the number of sides: higher note, more sides */
         float Rk=(R-.5)*pow(.8,fk)*(1.+.1*bass),ph=(k%2==0?1.:-1.)*uAcc.z*pow(.618,fk)+fk*tw;
         float a=mod(th-ph,6.28318/n)-3.14159/n,d=rc*cos(a)-Rk*cos(3.14159/n);
         col+=pal(fk*.12+t*.015)*lnAA(d,1.4)*(1.-fk*.1);}
     }else if(uPat==42){                          /* log spiral: each mirror copy is the same spiral turned, so the arms twist inwards */
-      float n=3.,ib=1./.065,ph=n*th-ib*log(max(rc,1.)/R)-uAcc.w;
+      float n=2.+floor(uPitch.x*3.99),ib=1./mix(.09,.05,uPitch.x),ph=n*th-ib*log(max(rc,1.)/R)-uAcc.w;   /* higher note: more and tighter arms */
       float d=abs(fract(ph/6.28318)-.5)*6.28318*rc/length(vec2(n,ib));
       col=pal(t*.02+log(max(rc,1.))*.15)*lnAA(d,1.3)*smoothstep(2.,5.,rc)*(.7+.4*bass);
     }else if(uPat==43){                          /* feedback seed: a thin outline that breathes, plus sparks on the beat */
@@ -1317,17 +1323,17 @@ void main(){
     }else if(uPat==44){                          /* nested rings at the mirror's own copy ratio (fused tunnel) or 5 LEDs apart */
       float mode=smoothstep(.4,.6,abs(fract(uT/24.)*2.-1.)),drift=fract(uAcc.w*.15);
       for(int j=0;j<14;j++){float fj=float(j)+drift;
-        float r1=R*pow(uK1,fj*1.),r2=R-5.*fj,r=mix(r1,r2,mode);if(r<3.)continue;
+        float r1=R*pow(uK1,fj*1.),r2=R-(3.5+4.*(1.-uPitch.x))*fj,r=mix(r1,r2,mode);if(r<3.)continue;
         col+=pal(fj*.07+t*.02)*lnAA(rr-r,1.)*(.55+.45*bass)*(.4+.6*r/R);}
     }else if(uPat==45){                          /* moire patch: a fine grating that beats against its own mirror copies */
-      float Rp=uN*.28,v=.5+.5*cos(6.28318*(rc/2.-uAcc.w*.4));
+      float Rp=uN*.28,per=1.6+2.*(1.-uPitch.x),v=.5+.5*cos(6.28318*(rc/per-uAcc.w*.4));   /* low notes: wider grating */
       col=pal(t*.03+floor(uAcc.x)*.1)*(.18+.22*v)*smoothstep(Rp,Rp-2.,rc);
       col+=pal(t*.02+.5)*lnAA(rr-R,1.)*(.3+.3*bass);
     }else{                                       /* layered ambient: breathing outline, slow lines, sparse twinkles */
       float br=pow(.5+.5*sin(6.28318*t/6.),2.)*(.5+.5*bass);
       col=pal(t/60.)*lnAA(rr-R,1.)*(.2+.6*br);
       for(int i=0;i<3;i++){float fi=float(i),a=t*(.05+.03*fi)+fi*2.1;vec2 dir=vec2(cos(a),sin(a));
-        float d=abs(dot(x,vec2(-dir.y,dir.x))-R*.6*sin(t*.07+fi*1.7));col+=pal(t/60.+fi*.2)*lnAA(d,1.)*.25*smoothstep(R,R*.5,rc);}
+        float d=abs(dot(x,vec2(-dir.y,dir.x))-R*.6*sin(t*.07+fi*1.7)-(uPitch.x-.5)*R*.6);col+=pal(t/60.+fi*.2)*lnAA(d,1.)*.25*smoothstep(R,R*.5,rc);}
       if(h21(floor(c)+floor(uT*3.))>.997-.01*bt)col+=vec3(.8)*smoothstep(R*.3,R*.5,rc);
     }
   }else{
@@ -1970,6 +1976,46 @@ function waveDemo(t){
     v=Math.tanh(v*S.gain*.7)*.95;waveBytes[i]=Math.round(128+v*127);
   }
 }
+let pitchAn=null,pitchBuf=null;
+/* ---------- melody pitch ----------
+   Harmonic sum on a fine FFT (8192 points, ~6 Hz per bin): for every candidate note from A2 (110 Hz) to F#6 (1.4 kHz),
+   in thirds of a semitone, add the magnitude at its first six harmonics (weights 0.8^h). The best candidate, refined
+   with a parabola, is the note the loudest melodic instrument or synth plays; below 110 Hz is left to the bass so the
+   kick does not pull it down. Confidence = best salience over the median. Outputs: height (0 = A2 .. 1 = F#6), pitch
+   class, confidence, and a pulse on each new note. */
+const PITCH={midi:69,height:.5,pc:0,hx:1,hy:0,conf:0,onset:0,cand:69,candT:0,name:'–',hz:0};
+const NOTE_NAMES=['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
+function pitchTrack(t,dts){const P=PITCH;let m=null,conf=0;
+  if(srcLive()&&pitchAn){pitchAn.getFloatFrequencyData(pitchBuf);
+    const hz=actx.sampleRate/pitchAn.fftSize,mag=i=>{const k=Math.round(i);return k<pitchBuf.length?Math.pow(10,pitchBuf[k]/20):0;};
+    const sal=[];let best=-1,bi=0;
+    for(let c=0;c<=162;c++){const mi=45+c/3,f0=440*Math.pow(2,(mi-69)/12);let s=0,w=1;
+      for(let h=1;h<=6;h++){const b=f0*h/hz;s+=w*Math.max(mag(b-1),mag(b),mag(b+1));w*=.8;}
+      sal.push(s);if(s>best){best=s;bi=c;}}
+    /* sure = how far the best note stands out above the strongest note that is not its own neighbour or octave relative */
+    let second=0;for(let c=0;c<sal.length;c++){const d=Math.abs(c-bi)%36;if(d>2&&d<34&&sal[c]>second)second=sal[c];}
+    conf=Math.min(1,Math.max(0,(best/Math.max(second,1e-9)-1.05)/.5));
+    const a=sal[bi-1]||best,b=sal[bi+1]||best,off=(a-b)/(2*(a-2*best+b)||1);m=45+(bi+Math.max(-.5,Math.min(.5,off)))/3;
+    if(pitchBuf[0]<-200)conf=0;}
+  else if(audioSrc==='demo'){   /* the demo plays an A-minor pentatonic arpeggio in 8th notes, an octave up every 4 bars */
+    const bl=60/118,st=Math.floor(t/(bl/2)),sc=[0,3,5,7,10,12,10,7],oct=Math.floor(t/(bl*16))%2;
+    m=57+sc[st%8]+12*oct+(Math.floor(st/32)%4===3?5:0);conf=.9;}
+  /* a note counts once it is held for 60 ms; then glide to it quickly */
+  if(m!==null&&conf>.15){if(Math.abs(m-P.cand)>.7){P.cand=m;P.candT=0;}else P.candT+=dts;
+    if(P.candT>.06&&Math.abs(P.cand-P.midi)>.7)P.onset=1;
+    if(P.candT>.06)P.midi+=(P.cand-P.midi)*(1-Math.exp(-dts/.05));}
+  P.conf+=(conf-P.conf)*(1-Math.exp(-dts/.15));P.onset=Math.max(0,P.onset-dts*4);
+  /* high and low relative to the song's own range: the band follows the notes played, opening at once and closing
+     at 0.4 semitone per second, at least an octave wide */
+  if(P.lo===undefined){P.lo=P.midi-6;P.hi=P.midi+6;}
+  if(P.conf>.2){P.lo=Math.min(P.lo+dts*.4,P.midi);P.hi=Math.max(P.hi-dts*.4,P.midi);}
+  if(P.hi-P.lo<12){const c=(P.hi+P.lo)/2;P.lo=c-6;P.hi=c+6;}
+  P.height=Math.max(0,Math.min(1,(P.midi-P.lo)/(P.hi-P.lo)));
+  /* colour follows the note round the circle of fifths (neighbouring keys get neighbouring colours), smoothed on the circle */
+  const pcl=((Math.round(P.midi)%12)+12)%12,ang=((pcl*7)%12)/12*2*Math.PI;
+  P.hx+=(Math.cos(ang)-P.hx)*(1-Math.exp(-dts/.25));P.hy+=(Math.sin(ang)-P.hy)*(1-Math.exp(-dts/.25));
+  P.pc=(Math.atan2(P.hy,P.hx)/(2*Math.PI)+1)%1;
+  P.name=NOTE_NAMES[pcl]+(Math.floor(Math.round(P.midi)/12)-1);P.hz=440*Math.pow(2,(P.midi-69)/12);}
 let actx=null,analyser=null,fftBuf=null,audioSrc='demo',playerEl=document.getElementById('player'),mediaNode=null;
 function ensureAudio(){
   if(actx)return true;
@@ -1977,6 +2023,8 @@ function ensureAudio(){
     actx=new (window.AudioContext||window.webkitAudioContext)();
     analyser=actx.createAnalyser();analyser.fftSize=2048;analyser.smoothingTimeConstant=0.6;analyser.minDecibels=-88;analyser.maxDecibels=-22;
     fftBuf=new Uint8Array(analyser.frequencyBinCount);
+    pitchAn=actx.createAnalyser();pitchAn.fftSize=8192;pitchAn.smoothingTimeConstant=0;pitchBuf=new Float32Array(pitchAn.frequencyBinCount);
+    analyser.connect(pitchAn);   /* an analyser passes its input on unchanged, so the pitch tracker hears the same source */
     mediaNode=actx.createMediaElementSource(playerEl);mediaNode.connect(analyser);mediaNode.connect(actx.destination); /* the analyser itself stays silent, so captured computer sound is not played twice */
     playerEl.addEventListener('play',()=>{if(actx.state==='suspended')actx.resume();});
     return true;
@@ -2018,6 +2066,8 @@ function updateAudio(t){
   bass=b/8;mid=m/24;treb=h/32;
   const imp=Math.max(0,bass-bassAvg*1.25-0.04);bassAvg+=(bass-bassAvg)*0.05;
   beat=Math.max(imp*4,beat*0.9);beat=Math.min(1,beat);
+  pitchTrack(t,Math.min(.1,t-(updateAudio.lt||t)));updateAudio.lt=t;
+  if(frameN%8===0)$('pitchLive').textContent=PITCH.conf>.2?'Melody: '+PITCH.name+' · '+Math.round(PITCH.hz)+' Hz · '+(PITCH.height<.33?'low':PITCH.height<.66?'middle':'high')+' for this song · sure '+Math.round(PITCH.conf*100)+' %':'Melody: no clear note right now';
   if((S.pat>=24&&S.pat<=29)||S.pat===48){
     if(srcLive())waveFromAnalyser();
     else if(audioSrc==='demo')waveDemo(t);else waveBytes.fill(128);
@@ -2733,6 +2783,13 @@ function creature(t,dts){const C=CRE,sp=Math.max(.2,S.speed),dtt=dts*sp,r=Math.r
   creU.set([C.gx,C.gy+bob*.3,open,I, C.blend,C.kind,C.happy,C.tilt, C.by+bob,C.showT,0,0, C.sqL,C.sqR,0,0]);}
 function tunnelAudio(t,dts){const T=TUN,sp=S.speed;
   if(S.pat===48)creature(t,dts);
+  /* a new melody note also sends a ring (beat rings and morphing rings), when following the melody */
+  const note=S.pitchAmt>.05&&PITCH.onset>.9&&!T.noteHeld;T.noteHeld=PITCH.onset>.9;
+  if(note&&t-T.lastSpawn>.12){T.rings[T.ri]=0;T.ri=(T.ri+1)%8;T.lastSpawn=t;}
+  if(note&&T.mT>.12/Math.max(.15,sp)){T.mr[T.mi]=0;T.ms[T.mi]=T.morph;T.mi=(T.mi+1)%8;T.mT=0;}
+  /* the melody moving up turns the feedback one way, down the other; high notes speed the stars */
+  const dm=PITCH.midi-(T.lastMidi??PITCH.midi);T.lastMidi=PITCH.midi;T.climb=(T.climb||0)*Math.exp(-dts/.6)+dm*S.pitchAmt;
+  T.acc[1]+=dts*sp*.25*PITCH.height*S.pitchAmt*Math.min(1,PITCH.conf*1.5);
   /* morphing rings. Speed never stops it (at least 0.15x) and speeds everything up; audio gain together with how loud
      the music is speeds up both how often rings are sent and how fast the shapes follow each other. */
   {const ms=Math.max(.15,sp),drive=S.gain*(.35+Math.min(1,bass)),every=.9/(ms*(.55+.45*drive));
@@ -2754,9 +2811,10 @@ function tunnelAudio(t,dts){const T=TUN,sp=S.speed;
      (bass) and turned 3-9 degrees (mids) and faded to 70 %; between steps it holds. A continuous 1 %-per-frame zoom
      smears into a solid band on a 90 x 90 grid, the "fill in disguise" the research warns about. */
   T.fbT=(T.fbT||0)+dts*sp;const stepNow=T.fbT>.15||(beat>.5&&T.prevStep<=.5);T.prevStep=beat;
-  if(stepNow){T.fbT=0;T.fb=[1.14+.12*Math.min(1,bass),(.05+.1*mid)*(TUN.ri%2?1:-1),.62,T.warp];}
+  if(stepNow){T.fbT=0;T.fb=[1.14+.12*Math.min(1,bass),(.05+.1*mid)*(Math.abs(T.climb||0)>.5?Math.sign(T.climb):(TUN.ri%2?1:-1)),.62,T.warp];}
   else T.fb=[1,0,1,T.warp];}
-function tunnelUniforms(){const T=TUN;   /* call while the pattern program is in use */
+function tunnelUniforms(){const T=TUN,P=PITCH,a=S.pitchAmt;   /* call while the pattern program is in use */
+  uni(P1,'uPitch','uniform4f',.5+(P.height-.5)*a*Math.min(1,P.conf*1.5),P.pc,a,P.onset*a);
   uni(P1,'uCre[0]','uniform4fv',creU);
   uni(P1,'uMRing[0]','uniform1fv',T.mr);uni(P1,'uMRingS[0]','uniform1fv',T.ms);
   uni(P1,'uRing[0]','uniform1fv',T.rings);uni(P1,'uAcc','uniform4f',...T.acc);uni(P1,'uFB','uniform4f',...(T.fb||[1,0,0,0]));
