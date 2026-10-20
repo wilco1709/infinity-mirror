@@ -1072,9 +1072,11 @@ uniform vec4 uPu[12];    // (faces, capsules, hands, lines) (colour mode, colour
                          // (echo copies, echo ratio, echo phase, echo level) (outline LEDs, letter glow, mirror mode, spare) (top face origin x, y, hole clip, spare)
                          // (top face matrix) (white strobe, colour cut, dip, edge glow) (cut hue, edge hue, time, spare)
 uniform vec4 uPuF[18];   // per face: (origin x, y, tile, alpha) (screen to face uv matrix) (shade, belt index or -1, mirror u, spare)
-uniform vec4 uPuS[24];   // hand capsules in hand space: a.xy, b.xy
-uniform vec4 uPuSR[24];  // radius at a, radius at b, part (0 palm, 1-5 thumb..pinky, 7 crease, 8 eye), layer (0 grown on, 1 in front of the palm, 2 behind it)
-uniform vec4 uPuI[15];   // per hand: (x, y, size, turn) (mirror, alpha, cut at the hole, style) (arm end x, y, arm radius, hue)
+uniform vec4 uPuS[24];   // the hand's finger bones in 3D hand space: start xyz, radius there
+uniform vec4 uPuSR[24];  // end xyz, radius there
+uniform float uPuSI[24]; // which digit: 1 thumb .. 5 pinky
+uniform vec4 uPuI[25];   // per hand: (x, y, size, mirror) (screen-to-hand turn row 1, alpha) (row 2, cut at the hole) (row 3, style) (arm end x, y, arm radius, hue)
+uniform vec4 uPuEye;     // the talking hand's eye: centre in hand space, radius (0: none)
 uniform float uPuL[8];   // letter cells P U D E, upper and lower row: size, 0 gone .. 1 there
 uniform vec4 uPuE[24];   // light lines: a.xy, b.xy
 uniform vec4 uPuEc[24];  // their colour and width in LEDs
@@ -1137,38 +1139,54 @@ vec4 puCube(vec2 p,float sc,float full){vec4 acc=vec4(0.);int nf=int(uPu[0].x+.5
   for(int i=0;i<6;i++){if(i>=nf)break;vec4 c=puFace(i,p,sc,full);
     if(full<.5)acc.rgb+=c.rgb;else{acc.rgb=mix(acc.rgb,c.rgb,c.a);acc.a=max(acc.a,c.a);}}
   return acc;}
-float puCap(vec2 p,vec4 s,vec2 r){vec2 pa=p-s.xy,ba=s.zw-s.xy;float h=clamp(dot(pa,ba)/max(dot(ba,ba),1e-8),0.,1.);return length(pa-ba*h)-mix(r.x,r.y,h);}
 float puSmin(float a,float b,float k){float h=clamp(.5+.5*(b-a)/k,0.,1.);return mix(b,a,h)-k*h*(1.-h);}
-void puPaint(inout vec4 acc,float d,float sup,vec3 fc,vec3 lc,float pxl,float w){
-  float a=clamp(.5-d/pxl,0.,1.);acc.rgb=mix(acc.rgb,fc,a);acc.a=max(acc.a,a);
-  float o=lnAA(d/pxl,w/pxl)*sup;acc.rgb=mix(acc.rgb,lc,o);acc.a=max(acc.a,o);}
+float puCap3(vec3 p,vec3 a,vec3 b,float ra,float rb){vec3 pa=p-a,ba=b-a;float h=clamp(dot(pa,ba)/max(dot(ba,ba),1e-8),0.,1.);return length(pa-ba*h)-mix(ra,rb,h);}
+float puRBox(vec3 p,vec3 b,float r){vec3 q=abs(p)-b+r;return length(max(q,0.))+min(max(q.x,max(q.y,q.z)),0.)-r;}
+/* the hand as a 3D distance field: a rounded palm narrowing to the wrist, the thumb's muscle, the wrist and arm, three bones per digit */
+vec2 puSDF(vec3 p,vec3 ae,float ar,int nc){
+  vec3 q=p-vec3(0.,.52,0.);q.x*=1.+.16*clamp(-q.y*2.2,0.,1.);
+  float d=puRBox(q,vec3(.33,.4,.07),.13),pt=0.;
+  d=puSmin(d,puCap3(p,vec3(-.14,.12,.06),vec3(-.33,.42,.07),.18,.15),.08);   /* the ball of the thumb, round its metacarpal */
+  d=puSmin(d,puCap3(p,vec3(0.,-.06,0.),vec3(0.,.3,0.),.21,.24),.1);
+  if(ar>0.)d=puSmin(d,puCap3(p,vec3(0.,.06,0.),ae,ar*.92,ar),.08);
+  for(int i=0;i<24;i++){if(i>=nc)break;float dd=puCap3(p,uPuS[i].xyz,uPuSR[i].xyz,uPuS[i].w,uPuSR[i].w);if(dd<d)pt=uPuSI[i];d=puSmin(d,dd,.03);}
+  if(uPuEye.w>0.){float de=length(p-uPuEye.xyz)-uPuEye.w;if(de<d){d=de;pt=8.;}}
+  return vec2(d,pt);}
+/* one hand, ray-marched per LED (orthographic, looking into the panel), toon-shaded in the logo's pink with black outlines
+   round the silhouette and wherever a finger passes in front of the palm or another finger */
 vec4 puHand(int hi,vec2 p,float px,float olw){
-  vec4 I0=uPuI[hi*3],I1=uPuI[hi*3+1],I2=uPuI[hi*3+2];
-  if(I1.y<.003)return vec4(0.);
-  float sz=I0.z,cr=cos(I0.w),sr=sin(I0.w);
-  vec2 d=p-I0.xy,l=vec2(cr*d.x+sr*d.y,-sr*d.x+cr*d.y)/sz;l.x*=I1.x;
-  float pxl=px/sz,w=olw*px/sz;
-  float dP=1e3;
-  if(I2.z>0.){vec2 ae=I2.xy-I0.xy;ae=vec2(cr*ae.x+sr*ae.y,-sr*ae.x+cr*ae.y)/sz;ae.x*=I1.x;dP=puCap(l,vec4(0.,.12,ae),vec2(I2.z*.92,I2.z));}
-  float dF[5];int lay[5];for(int f=0;f<5;f++){dF[f]=1e3;lay[f]=0;}
-  float dCr=1e3,dEye=1e3;vec2 pup=vec2(0.);float pupR=0.;
+  vec4 I0=uPuI[hi*5],I1=uPuI[hi*5+1],I2=uPuI[hi*5+2],I3=uPuI[hi*5+3],I4=uPuI[hi*5+4];
+  if(I1.w<.003)return vec4(0.);
+  float sz=I0.z,mr=I0.w;
+  vec2 hc=I0.xy+sz*.85*I2.xy;   /* skip LEDs far from the hand and its arm */
+  if(length(p-hc)>1.8*sz&&!(I4.z>0.&&segD(p,I0.xy,I4.xy)<I4.z*sz*1.1+2.*px))return vec4(0.);
+  vec3 w0=vec3((p-I0.xy)/sz,5.),ro=vec3(dot(I1.xyz,w0),dot(I2.xyz,w0),dot(I3.xyz,w0)),rd=-vec3(I1.z,I2.z,I3.z);
+  ro.x*=mr;rd.x*=mr;
+  vec3 aw=vec3((I4.xy-I0.xy)/sz,0.),ae=vec3(dot(I1.xyz,aw),dot(I2.xyz,aw),dot(I3.xyz,aw));ae.x*=mr;
   int nc=int(uPu[0].y+.5);
-  for(int i=0;i<24;i++){if(i>=nc)break;vec4 s=uPuS[i],r=uPuSR[i];int part=int(r.z+.5);
-    if(part==8){dEye=length(l-s.xy)-r.x;pup=s.zw;pupR=r.y;continue;}
-    float dd=puCap(l,s,r.xy);
-    if(part==0)dP=puSmin(dP,dd,.09);else if(part==7)dCr=min(dCr,dd);else{dF[part-1]=min(dF[part-1],dd);lay[part-1]=int(r.w+.5);}}
-  int sty=int(I1.w+.5);float hu=I2.w;
-  vec3 fc=vec3(.93,.004,.32),lc=vec3(0.);
-  if(sty==1){fc=vec3(.93,.004,.32)*.1;lc=puPal(hu);}else if(sty==3){fc=puPal(hu)*.04;lc=puPal(hu)*.85;}
+  float w=olw*px/sz,t=0.,pd=1e3,gD=1e3;vec2 h=vec2(1e3,0.);bool hit=false,dn=false;
+  for(int i=0;i<72;i++){h=puSDF(ro+rd*t,ae,I4.z,nc);
+    if(h.x<.003){hit=true;break;}
+    if(h.x>pd&&dn&&pd<w)gD=min(gD,pd);   /* passed close by an edge and moved away again: an outline */
+    dn=h.x<pd;pd=h.x;t+=h.x*.92;if(t>10.)break;}
+  if(!hit&&pd<w)gD=min(gD,pd);
+  int sty=int(I3.w+.5);float hu=I4.w;
+  vec3 lc=sty==0||sty==2?vec3(0.):puPal(hu);
   vec4 acc=vec4(0.);
-  for(int f=0;f<5;f++)if(lay[f]==2)puPaint(acc,dF[f],1.,sty==2?puPal(hu+float(f)*.17):fc,lc,pxl,w);
-  puPaint(acc,dP,1.,fc,lc,pxl,w);
-  if(dCr<1e2)acc.rgb=mix(acc.rgb,lc,lnAA(dCr/pxl,w*.6/pxl)*step(dP,-w));
-  for(int f=0;f<5;f++)if(lay[f]==0)puPaint(acc,dF[f],smoothstep(-w*1.3,-w*.3,dP),sty==2?puPal(hu+float(f)*.17):fc,lc,pxl,w);
-  for(int f=0;f<5;f++)if(lay[f]==1)puPaint(acc,dF[f],1.,sty==2?puPal(hu+float(f)*.17):fc,lc,pxl,w);
-  if(dEye<1e2){puPaint(acc,dEye,1.,vec3(.95),lc,pxl,w);acc.rgb=mix(acc.rgb,vec3(0.),clamp(.5-(length(l-pup)-pupR)/pxl,0.,1.));}
-  acc.a*=I1.y;
-  if(I1.z>.5){vec2 q=p-uPu[8].xy;vec2 tu=vec2(uPu[9].x*q.x+uPu[9].y*q.y,uPu[9].z*q.x+uPu[9].w*q.y);   /* out of the hole: what is in front of its middle stays inside the cube */
+  if(hit){vec3 q=ro+rd*t;const vec2 e=vec2(.004,-.004);
+    vec3 n=normalize(e.xyy*puSDF(q+e.xyy,ae,I4.z,nc).x+e.yyx*puSDF(q+e.yyx,ae,I4.z,nc).x+e.yxy*puSDF(q+e.yxy,ae,I4.z,nc).x+e.xxx*puSDF(q+e.xxx,ae,I4.z,nc).x);
+    n.x*=mr;vec3 nw=normalize(I1.xyz*n.x+I2.xyz*n.y+I3.xyz*n.z);
+    vec3 L=normalize(vec3(-.45,.6,.65));float df=dot(nw,L),sp=pow(max(dot(reflect(-L,nw),vec3(0.,0.,1.)),0.),20.);
+    vec3 base=sty==2&&h.y>.5?puPal(hu+h.y*.17):vec3(.93,.004,.32);
+    vec3 c=base*(df>.5?1.:df>.05?.62:.36)+vec3(1.,.72,.84)*step(.55,sp)*.4;
+    if(h.y>7.5){c=vec3(.95)*(df>-.2?1.:.7);if(dot(normalize(q-uPuEye.xyz),-rd)>.8)c=vec3(0.);}
+    float fr=pow(1.-clamp(nw.z,0.,1.),2.);
+    if(sty==1)c=base*.1+puPal(hu)*fr*1.3;else if(sty==3)c=puPal(hu)*fr*fr*1.2;
+    acc=vec4(c,1.);}
+  float o=gD<1e2?clamp(.5+(w-gD)*sz/px,0.,1.):0.;
+  acc.rgb=mix(acc.rgb,lc,o);acc.a=max(acc.a,o);
+  acc.a*=I1.w;
+  if(I2.w>.5){vec2 q=p-uPu[8].xy;vec2 tu=vec2(uPu[9].x*q.x+uPu[9].y*q.y,uPu[9].z*q.x+uPu[9].w*q.y);   /* out of the hole: what is in front of its middle stays inside the cube */
     acc.a*=smoothstep(.01,-.01,dot(tu-vec2(.487,.5),uPu[8].zw));}
   return acc;
 }
@@ -3469,42 +3487,46 @@ const m3v=(m,v)=>[m[0]*v[0]+m[1]*v[1]+m[2]*v[2],m[3]*v[0]+m[4]*v[1]+m[5]*v[2],m[
 function m3ax(ax,a){const c=Math.cos(a),s=Math.sin(a),k=1-c,[x,y,z]=ax;return[c+x*x*k,x*y*k-z*s,x*z*k+y*s, y*x*k+z*s,c+y*y*k,y*z*k-x*s, z*x*k-y*s,z*y*k+x*s,c+z*z*k];}
 const puEase=x=>x<=0?0:x>=1?1:x*x*(3-2*x),puBack=x=>{x=Math.min(1,Math.max(0,x));const c=1.7;return 1+(c+1)*Math.pow(x-1,3)+c*Math.pow(x-1,2);};
 /* the hand, in hand units (palm about 1 high), wrist at 0,0, fingers up, thumb on the left */
-const PU_D=[{b:[-.36,.3],a:-.75,L:[.42,.34,.3],r:[.19,.17,.155,.145]},   /* fat cartoon digits, like the logo's */
-  {b:[-.27,.86],a:-.14,L:[.46,.3,.25],r:[.145,.138,.13,.122]},{b:[-.09,.92],a:-.03,L:[.5,.33,.27],r:[.15,.142,.134,.125]},
-  {b:[.09,.9],a:.07,L:[.47,.31,.25],r:[.145,.138,.13,.122]},{b:[.26,.82],a:.2,L:[.36,.25,.21],r:[.13,.122,.115,.108]}];
-const PU_PALM=[[-.19,.26,-.23,.78,.17,.17],[.17,.26,.2,.74,.17,.17],[0,.2,0,.8,.24,.22],[0,.04,0,.26,.25,.27]],
-  PU_CREASE=[[-.3,.56,-.06,.63,0,0],[.04,.36,.24,.6,0,0]],PU_CU=[1.5,1.75,1.2],PU_TC=[.95,.85,.7];
-/* poses: per digit (thumb, index, middle, ring, pinky) spread, curl (0 straight .. 1 folded), sideways bend per joint, tip size (> 1: pointing at you) */
-const PU_CC=[0,1,0,1];
-const PU_P={logo:[[-.59,0,.06,1],[-.16,.05,.1,1],[.02,.05,.08,1],[.09,.05,.06,1],[.48,.05,.02,1]],
-  open:[[-.15,0,.05,1],[-.12,0,0,1],[-.02,0,0,1],[.08,0,0,1],[.2,0,0,1]],
-  jazz:[[-.5,0,-.05,1],[-.38,0,0,1],[-.1,0,0,1],[.17,0,0,1],[.5,0,0,1]],
-  flat:[[.4,.12,0,1],[.06,0,0,1],[.02,0,0,1],[-.03,0,0,1],[-.12,0,0,1]],
-  fist:[[.1,.9,0,1],PU_CC,PU_CC,PU_CC,PU_CC],point:[[.1,.9,0,1],[0,0,0,1],PU_CC,PU_CC,PU_CC],
-  middle:[[.1,.9,0,1],PU_CC,[0,0,0,1],PU_CC,PU_CC],peace:[[.1,.9,0,1],[-.22,0,0,1],[.12,0,0,1],PU_CC,PU_CC],
-  three:[[.1,.9,0,1],[-.2,0,0,1],[0,0,0,1],[.18,0,0,1],PU_CC],four:[[.3,.9,0,1],[-.16,0,0,1],[-.03,0,0,1],[.09,0,0,1],[.24,0,0,1]],
-  horns:[[.2,.95,0,1],[-.14,0,0,1],PU_CC,PU_CC,[.28,0,0,1]],thumb:[[-.95,0,0,1],PU_CC,PU_CC,PU_CC,PU_CC],
-  gun:[[-.75,0,.1,1],[0,0,0,1],PU_CC,PU_CC,PU_CC],shaka:[[-.8,0,0,1],PU_CC,PU_CC,PU_CC,[.6,0,0,1]],
-  ok:[[-.25,0,.42,1],[-.05,.1,-1.1,1],[.04,0,0,1],[.16,0,0,1],[.32,0,0,1]],
-  claw:[[-.3,.4,0,1],[-.3,.5,0,1],[-.1,.5,0,1],[.12,.5,0,1],[.36,.5,0,1]],
-  snapSet:[[.15,.3,.25,1],[-.1,.6,0,1],[0,.28,-.38,1],[.1,.85,0,1],[.2,.9,0,1]],snapGo:[[-.3,0,0,1],[-.1,.6,0,1],[0,1,0,1],[.1,.85,0,1],[.2,.9,0,1]],
-  beckon:[[.15,.6,0,1],[-.08,0,0,1],[0,.92,0,1],[.08,.92,0,1],[.16,.92,0,1]],
-  pinch:[[.05,.1,.3,1],[-.15,.2,-.5,1],PU_CC,PU_CC,PU_CC],you:[[.1,.9,0,1],[0,0,0,2.1],PU_CC,PU_CC,PU_CC]};
+/* hand space: wrist at 0,0,0, fingers up (+y), palm facing the viewer (+z), thumb on the left; fat cartoon digits like the logo's */
+const PU_D=[{b:[-.2,.08,.05],a:-.6,L:[.42,.3,.25],r:[.17,.16,.15,.14]},   /* thumb: its first bone (metacarpal) sits in the ball of the palm, only the last two stick out */
+  {b:[-.25,.88,0],a:-.14,L:[.46,.3,.25],r:[.145,.138,.13,.122]},{b:[-.08,.93,0],a:-.03,L:[.5,.33,.27],r:[.15,.142,.134,.125]},
+  {b:[.09,.91,0],a:.07,L:[.47,.31,.25],r:[.145,.138,.13,.122]},{b:[.25,.84,0],a:.2,L:[.36,.25,.21],r:[.13,.122,.115,.108]}];
+const PU_CU=[1.45,1.75,1.15];   /* knuckle, middle and end joint at full curl: 83°, 100°, 66° */
+/* poses, per digit (thumb, index, middle, ring, pinky): spread in the palm's plane, curl (0 straight .. 1 folded into the palm),
+   sideways bend per joint. The thumb's curl swings it forward and across the palm (opposition), its third number bends its tip in. */
+const PU_CC=[0,1,0,0],PU_TT=[.1,.85,.6,0];
+const PU_P={logo:[[-.4,.12,.3,0],[-.16,.08,0,0],[.02,.08,0,0],[.09,.08,0,0],[.48,.08,0,0]],
+  open:[[-.05,0,0,0],[-.12,0,0,0],[-.02,0,0,0],[.08,0,0,0],[.2,0,0,0]],
+  jazz:[[-.5,0,0,0],[-.38,0,0,0],[-.1,0,0,0],[.17,0,0,0],[.5,0,0,0]],
+  flat:[[.45,.15,0,0],[.04,0,0,0],[.01,0,0,0],[-.03,0,0,0],[-.08,0,0,0]],
+  fist:[PU_TT,PU_CC,PU_CC,PU_CC,PU_CC],point:[PU_TT,[0,0,0,0],PU_CC,PU_CC,PU_CC],
+  middle:[PU_TT,PU_CC,[0,0,0,0],PU_CC,PU_CC],peace:[PU_TT,[-.22,0,0,0],[.12,0,0,0],PU_CC,PU_CC],
+  three:[PU_TT,[-.2,0,0,0],[0,0,0,0],[.18,0,0,0],PU_CC],four:[[.3,1,.8,0],[-.16,0,0,0],[-.03,0,0,0],[.09,0,0,0],[.24,0,0,0]],
+  horns:[[.2,.95,.6,0],[-.14,0,0,0],PU_CC,PU_CC,[.28,0,0,0]],thumb:[[-.95,0,0,0],PU_CC,PU_CC,PU_CC,PU_CC],
+  gun:[[-.75,0,0,0],[0,0,0,0],PU_CC,PU_CC,PU_CC],shaka:[[-.8,0,0,0],PU_CC,PU_CC,PU_CC,[.6,0,0,0]],
+  ok:[[-.37,.92,0,0],[-.08,.6,0,0],[.04,0,0,0],[.16,0,0,0],[.32,0,0,0]],
+  claw:[[-.3,.4,0,0],[-.3,.5,0,0],[-.1,.5,0,0],[.12,.5,0,0],[.36,.5,0,0]],
+  snapSet:[[-.05,.85,0,0],[-.1,.5,0,0],[0,.6,0,0],[.1,.8,0,0],[.2,.85,0,0]],snapGo:[[-.35,.25,0,0],[-.1,.5,0,0],[0,1,0,0],[.1,.85,0,0],[.2,.9,0,0]],
+  beckon:[[.1,.6,.4,0],[-.08,0,0,0],[0,.92,0,0],[.08,.92,0,0],[.16,.92,0,0]],
+  pinch:[[-.3,.9,0,0],[-.08,.62,0,0],PU_CC,PU_CC,PU_CC]};
 const puPz=n=>PU_P[n].map(d=>d.slice());
-function puWig(p,a,t){for(let f=0;f<5;f++){p[f][0]+=a*Math.sin(t*31+f*1.7);p[f][2]+=a*.6*Math.sin(t*23+f*2.3);}return p;}
-function puDigit(f,q,back,out){const D=PU_D[f];let x=D.b[0],y=D.b[1],phi=D.a+q[0],psi=q[3]>1?1.25:0;
-  const lay=q[1]>(f?.4:.35)?(back?2:1):0;
-  for(let j=0;j<3;j++){if(f===0)phi+=q[1]*PU_TC[j];else psi+=q[1]*PU_CU[j];if(j)phi+=q[2];
-    const L=D.L[j]*Math.cos(Math.min(psi,3.1)),nx=x+Math.sin(phi)*L,ny=y+Math.cos(phi)*L,g=1+.12*Math.min(1,psi);
-    out.push(x,y,nx,ny,D.r[j]*g,D.r[j+1]*g*(j===2&&q[3]>1?q[3]:1),f+1,lay);x=nx;y=ny;}
-  return[x,y];}
-function puBuildHand(pose,back,eye){const o=[];for(const c of PU_PALM)o.push(...c,0,0);
-  if(!back)for(const c of PU_CREASE)o.push(...c,7,0);
-  const tips=[];for(let f=0;f<5;f++)tips.push(puDigit(f,pose[f],back,o));
-  if(eye)o.push(eye[0],eye[1],eye[0]+eye[2],eye[1]+eye[3],.15,.07,8,0);
-  return{caps:o,tips};}
-function puH2W(h,lx,ly){const c=Math.cos(h.r),s=Math.sin(h.r);lx*=h.m;return[h.x+h.s*(c*lx-s*ly),h.y+h.s*(s*lx+c*ly)];}
-const PUDE={tex:null,U:new Float32Array(48),F:new Float32Array(72),S:new Float32Array(96),SR:new Float32Array(96),I:new Float32Array(60),
+function puWig(p,a,t){for(let f=0;f<5;f++){p[f][0]+=a*Math.sin(t*31+f*1.7);p[f][1]=Math.max(0,p[f][1]+a*.5*Math.sin(t*23+f*2.3));}return p;}
+/* forward kinematics, three bones per digit */
+function puDigit(f,q,out){const D=PU_D[f];let[x,y,z]=D.b,th=0;
+  for(let j=0;j<3;j++){let d;
+    if(f===0){   /* the metacarpal follows the spread and the swing across only partly, as it does in a real hand */
+      const a=j?D.a+q[0]+q[1]*1.3:D.a+.4*q[0]+.9*q[1],e=q[1]*(j?.9:.7),fl=q[2]*j*.5;d=[Math.sin(a)*Math.cos(e),Math.cos(a)*Math.cos(e),Math.sin(e)];
+      if(fl){d=[d[0]+.6*fl,d[1]-.55*fl,d[2]+.1*fl];const l=Math.hypot(...d);d=d.map(v=>v/l);}}
+    else{const phi=D.a+q[0]+q[2]*j;th+=q[1]*PU_CU[j];d=[Math.sin(phi)*Math.cos(th),Math.cos(phi)*Math.cos(th),Math.sin(th)];}
+    const L=D.L[j],nx=x+d[0]*L,ny=y+d[1]*L,nz=z+d[2]*L;
+    out.push(x,y,z,D.r[j],nx,ny,nz,D.r[j+1],f+1);x=nx;y=ny;z=nz;}
+  return[x,y,z];}
+function puBuildHand(pose){const o=[],tips=[];for(let f=0;f<5;f++)tips.push(puDigit(f,pose[f],o));return{caps:o,tips};}
+/* the hand's turn: about its own finger axis (yaw: palm, side or back to you), then in the screen (r), then tipped towards you (tilt) */
+function puRot(h){const cy=Math.cos(h.yaw||0),sy=Math.sin(h.yaw||0),cz=Math.cos(h.r),sz=Math.sin(h.r),cx=Math.cos(h.tilt||0),sx=Math.sin(h.tilt||0);
+  return m3([1,0,0, 0,cx,-sx, 0,sx,cx],m3([cz,-sz,0, sz,cz,0, 0,0,1],[cy,0,sy, 0,1,0, -sy,0,cy]));}
+function puH2W(h,v){const w=m3v(puRot(h),[v[0]*h.m,v[1],v[2]]);return[h.x+h.s*w[0],h.y+h.s*w[1]];}
+const PUDE={tex:null,U:new Float32Array(48),F:new Float32Array(72),S:new Float32Array(96),SR:new Float32Array(96),SI:new Float32Array(24),Eye:new Float32Array(4),I:new Float32Array(100),
   L:new Float32Array(8).fill(1),E:new Float32Array(96),Ec:new Float32Array(96),R:new Float32Array(24),
   seen:false,st:'groove',stCh:false,gest:0,g0:0,cube:0,c0:0,k0:0,eff:0,swT:-9,prev:null,last:null,usedG:{},usedC:{},
   model:[1,0,0,0,1,0,0,0,1],tum:null,ex:0,exV:0,lid:0,lidV:0,flat:0,flatT:0,spl:0,splV:0,splX:1,belt:[0,0],beltT:[0,0],
@@ -3626,8 +3648,8 @@ function puCubeBuild(C){const P=PUDE,F=P.F;F.fill(0);
   P.Rv=Rv;P.C=C;return list.length;}
 /* the gestures: one function of the beat clock each */
 function puBase(G){const P=PUDE,a=P.anch;
-  return a?{x:P.ax,y:P.ay+.27,r:0,s:.2,m:1,back:false,pose:puPz('open'),alpha:1,clip:true,arm:[P.ax,P.ay],armR:.27,eye:null}
-    :{x:0,y:.05,r:0,s:.2,m:1,back:false,pose:puPz('open'),alpha:1,clip:false,arm:null,armR:0,eye:null};}
+  return a?{x:P.ax,y:P.ay+.27,r:0,yaw:0,tilt:0,s:.2,m:1,pose:puPz('open'),alpha:1,clip:true,arm:[P.ax,P.ay],armR:.27,eye:null}
+    :{x:0,y:.05,r:0,yaw:0,tilt:0,s:.2,m:1,pose:puPz('open'),alpha:1,clip:false,arm:null,armR:0,eye:null};}
 /* a hand away from the cube floats like a cartoon glove; only hands reaching in from the top or the crowd at the bottom keep their arm */
 function puFree(h,x,y,ax,ay,keep){h.clip=false;h.x=x;h.y=y;h.arm=keep&&ax!=null?[ax,ay]:null;if(!h.arm)h.armR=0;return h;}
 function puGest(id,G){const P=PUDE,PI=Math.PI,ph=G.ph,t=G.t,h=puBase(G),out=[h],cs=Math.cos,sn=Math.sin,ex=Math.exp;
@@ -3635,60 +3657,60 @@ function puGest(id,G){const P=PUDE,PI=Math.PI,ph=G.ph,t=G.t,h=puBase(G),out=[h],
   case 0:h.pose=puWig(puPz('logo'),.03+.12*G.hat,t);h.r=-1.2+.07*sn(t*1.3)-.12*G.kick;h.y-=.07;h.s=.2*(1+.05*G.kick);break;
   case 1:{const sl=G.st==='break'||G.st==='lull'?2:1,w=cs(PI*(G.bk+ph)/sl),v=sn(PI*(G.bk+ph)/sl);h.pose=puWig(puPz('open'),.05*G.hat,t);
     for(let f=1;f<5;f++)h.pose[f][2]=-.13*v;h.r=.45*w;h.y+=.03*Math.abs(w);break;}
-  case 2:{const dbl=G.st==='drop'||G.build>.5,p2=dbl?(2*(G.bk+ph))%1:ph,dn=Math.pow(1-p2,3);h.pose=puPz('flat');h.r=-1.45-.28*dn;h.y+=.08-.16*dn;h.s=.21;h.x+=.04*(G.bar%2?1:-1);break;}
+  case 2:{const dbl=G.st==='drop'||G.build>.5,p2=dbl?(2*(G.bk+ph))%1:ph,dn=Math.pow(1-p2,3);h.pose=puPz('flat');h.r=-1.45-.28*dn;h.yaw=1.5708;h.tilt=.5;h.y+=.08-.16*dn;h.s=.21;h.x+=.04*(G.bar%2?1:-1);break;}   /* palm down, seen a little from above */
   case 3:{const up=ex(-ph*6)*(.6+.4*G.kick);h.pose=puPz('fist');h.y+=.02+.2*up;h.r=-.12+.12*up;h.s=.2*(1+.08*up);break;}
-  case 4:{const z=ex(-(G.bar+ph)*1.6);puFree(h,0,.05,null);h.s=.19+.36*z;h.r=.08*sn(t*.9);h.pose=puPz('fist');
+  case 4:{const z=ex(-(G.bar+ph)*1.6);puFree(h,0,.05,null);h.s=.19+.36*z;h.r=.08*sn(t*.9);h.tilt=1.3;h.pose=puPz('fist');   /* knuckles first, at the crowd */
     if(G.tick&&G.bar===0){puRing(0,.05,1.6*G.bpm/120,P.colPh);puSpark(0,.05,8,P.colPh+.3,1.8);P.hitC=1;}break;}
   case 5:{if(!S.puMid)return puGest(11,G);const b=G.barPh,pop=b<.06?puEase(b/.06):b>.94?1-puEase((b-.94)/.06):1;h.pose=puPz('middle');h.pose[2][1]=1-pop;
-    h.r=-.05+.1*G.hat*sn(t*45);h.s=.21*(1+.06*G.kick);break;}
+    h.r=-.05+.1*G.hat*sn(t*45);h.yaw=Math.PI;h.s=.21*(1+.06*G.kick);break;}
   case 6:{const T=[.85,.3,-.3,-.85],r0=T[(G.bar+3)%4],r1=T[G.bar];h.pose=puPz('point');h.r=r0+(r1-r0)*puEase(ph*5);
-    if(G.b2%2===1&&G.bar===0){h.pose=puPz('you');h.r=0;h.s=.2*(1+.6*ex(-ph*2.5));h.y+=.05;}break;}
+    if(G.b2%2===1&&G.bar===0){h.r=0;h.tilt=1.15;h.s=.2*(1+.5*ex(-ph*2.5));h.y+=.12;}break;}   /* every other bar: straight at you */
   case 7:{h.pose=puPz('beckon');const cu=.88*Math.pow(sn(PI*ph),2);h.pose[1][1]=cu;
-    if(G.st==='build'||G.build>.3)for(let f=2;f<5;f++)h.pose[f][1]=Math.max(.05,cu);h.r=.2+.05*sn(t*.7);h.s=.2*(1+.03*Math.min(G.bk,10));break;}
-  case 8:h.pose=puPz('ok');h.r=-.15+.05*sn(t);h.s=.24;h.y+=.03*cs(2*PI*ph);h.ok=true;break;
+    if(G.st==='build'||G.build>.3)for(let f=2;f<5;f++)h.pose[f][1]=Math.max(.05,cu);h.r=.2+.05*sn(t*.7);h.tilt=-.45;h.s=.2*(1+.03*Math.min(G.bk,10));break;}
+  case 8:h.pose=puPz('ok');h.r=-.15+.05*sn(t);h.yaw=-1.2;h.s=.24;   /* thumb side towards you, so the ring faces the crowd */h.y+=.03*cs(2*PI*ph);h.ok=true;break;
   case 9:{const n=G.count<0?5:G.count;puFree(h,.025*G.build*sn(t*53),.12,.2,-1.7);h.s=.25*(1+.18*ex(-ph*7));h.r=.04*sn(t*3);
     h.pose=puPz(['fist','point','peace','three','four','open'][Math.max(0,Math.min(5,n))]);if(n===0)h.x+=.03*sn(t*60);break;}
   case 10:h.pose=puPz('peace');h.pose[1][0]-=.18*G.snr;h.pose[2][0]+=.18*G.snr;h.r=.3*cs(PI*(G.bk+ph));break;
   case 11:{const d=Math.pow(1-ph,2);h.pose=puPz('horns');h.r=-.1-.4*d+.06*G.hat*sn(t*40);h.y-=.06*d;break;}
   case 12:{const b=sn(PI*(G.bk+ph));h.pose=puPz('thumb');h.r=-1.5708+.12*b;h.y+=.05*Math.abs(b);h.s=.21*(1+.1*ex(-ph*8));break;}
-  case 13:{const m=G.b2%2?-1:1;puFree(h,-m*.42,-.05,-m*.85,-1.7);h.m=m;h.r=-m*(1.25-.5*G.snr);h.pose=puPz('gun');h.pose[0][1]=.5*G.snr;h.flash=G.oS>.2;break;}
+  case 13:{const m=G.b2%2?-1:1;puFree(h,-m*.42,-.05,-m*.85,-1.7);h.m=m;h.r=-m*(1.25-.5*G.snr);h.tilt=.25;h.pose=puPz('gun');h.pose[0][1]=.5*G.snr;h.flash=G.oS>.2;break;}
   case 14:h.pose=puPz('shaka');h.r=.35*cs(2*PI*(G.bk+ph));break;
   case 15:{out.length=0;for(const m of[1,-1]){const q=puFree(puBase(G),m*.42,.02+.06*ex(-ph*5),m*.8,-1.7);q.m=m;q.s=.2*(1+.12*G.kick);q.r=-m*.3;
       q.pose=puWig(puPz('jazz'),.09*(.4+G.hat),t);out.push(q);}break;}
-  case 16:{if(G.oS)P.snapT=t;const go=t-P.snapT<.13;h.pose=puPz(go?'snapGo':'snapSet');h.r=-.15;h.snap=G.oS>.2;break;}
+  case 16:{if(G.oS)P.snapT=t;const go=t-P.snapT<.13;h.pose=puPz(go?'snapGo':'snapSet');h.r=-.15;h.yaw=-1;h.snap=G.oS>.2;break;}
   case 17:{puFree(h,P.ax,P.ay+.36,P.ax+.1,1.7,1);h.r=Math.PI;h.s=.19;h.pose=puPz('open');
     if(G.oH){P.tapI=(P.tapI+1)%4;P.tapT[P.tapI+1]=t;h.tap=P.tapI+1;}if(G.oK){for(let f=1;f<5;f++)P.tapT[f]=t;h.tap=2;}
     for(let f=1;f<5;f++)h.pose[f][1]=.6*ex(-(t-P.tapT[f])*16);break;}
   case 18:{puFree(h,P.ax,P.ay+.12+.3*4*ph*(1-ph),P.ax+.05,1.7,1);h.r=Math.PI;h.pose=puPz('fist');
     if(G.tick){P.squash=1;puRing(P.ax,P.ay,1.4*G.bpm/120,P.colPh+.4);puSpark(P.ax,P.ay,5,P.colPh+.2,1.3,2.2,Math.PI/2);}break;}
-  case 19:{h.m=-1;h.r=-1.5708;h.pose=puPz('flat');const mo=Math.min(1,Math.max(G.mel,G.snr*.8));h.pose[0]=[.6-.95*mo,.05,.1,1];
-    for(let f=1;f<5;f++)h.pose[f][1]=.12;h.y+=.04+.03*cs(2*PI*ph);h.eye=[.22,.72,.03*cs(t*.7),.02];h.s=.21;break;}
+  case 19:{h.m=-1;h.r=-1.5708;h.pose=puPz('flat');const mo=Math.min(1,Math.max(G.mel,G.snr*.8));h.pose[0]=[.6-.95*mo,.05,0,0];
+    for(let f=1;f<5;f++)h.pose[f][1]=.12;h.y+=.04+.03*cs(2*PI*ph);h.eye=[.2+.02*cs(t*.7),.7,.2];h.s=.21;break;}
   case 20:{const c=puCellPos(P.grabCell)||[P.ax,P.ay-.3];if(G.oS>.3&&!P.grabbed){P.grabbed=true;P.cellT[P.grabCell]=0;}
     if(G.tick&&G.bar===0&&P.grabbed&&G.bk>2){P.grabbed=false;P.cellT[P.grabCell]=1;P.cell[P.grabCell]=0;P.cellV[P.grabCell]=6;P.grabCell=Math.floor(Math.random()*8);}
     puFree(h,c[0]+.05,c[1]+(P.grabbed?.42:.24)+.02*sn(2*PI*ph),c[0]+.35,1.7,1);h.r=Math.PI*.93;h.pose=puPz(P.grabbed?'fist':'claw');break;}
-  case 21:{P.spX+=G.dts*.3*G.bpm/120;if(P.spX>1.35)P.spX=-1.35;puFree(h,P.spX,-.62+.03*Math.abs(sn(2*PI*ph)),null);h.r=Math.PI;h.s=.17;
-    const sp=[-.9,-.45,-.05,.3,.62];for(let f=0;f<5;f++){const lp=sn(PI*(G.bk+ph)*2+f*PI);h.pose[f]=[sp[f]-PU_D[f].a+.18*lp-(f?0:.5),f?.2+.25*Math.max(0,lp):0,.25*lp,1];}break;}
+  case 21:{P.spX+=G.dts*.3*G.bpm/120;if(P.spX>1.35)P.spX=-1.35;puFree(h,P.spX,-.62+.03*Math.abs(sn(2*PI*ph)),null);h.r=Math.PI;h.tilt=1.1;h.s=.17;   /* upside down, back of the hand up, walking on its fingertips */
+    const sp=[-.9,-.45,-.05,.3,.62];for(let f=0;f<5;f++){const lp=sn(PI*(G.bk+ph)*2+f*PI);h.pose[f]=[sp[f]-PU_D[f].a+.18*lp-(f?0:.5),f?.35+.3*Math.max(0,lp):.2,0,0];}break;}
   case 22:{if(G.oS>.3||G.oM>.3)P.peekT=t;const pk=ex(-(t-P.peekT)*2.2)*(G.st==='lull'?.5:1);h.y=P.ay-.45+.6*pk;h.pose=puWig(puPz('open'),.15*pk,t*1.5);h.r=.15*sn(t*4)*pk;break;}
   case 23:P.spin+=G.dts*2*PI*(G.bpm/240)*(1+3*G.sw);puFree(h,0,.1,null);h.r=P.spin;h.pose=puPz('point');h.trail=true;break;
   case 24:{out.length=0;const g=.04+.36*Math.pow(Math.abs(sn(PI*(G.bar+ph+1)/2)),.8);
-    for(const m of[1,-1]){const q=puFree(puBase(G),m*(g+.14),-.12,m*.9,-1.7);q.m=m;q.r=m*.3;q.pose=puPz('flat');out.push(q);}
+    for(const m of[1,-1]){const q=puFree(puBase(G),m*(g+.14),-.12,m*.9,-1.7);q.m=m;q.r=m*.3;q.yaw=-m*1.2;q.pose=puPz('flat');out.push(q);}   /* palms facing each other */
     if(G.oS>.25){puSpark(0,.08,7,P.colPh+.15,1.6);puRing(0,.05,1.4*G.bpm/120,P.colPh+.6);}break;}
   case 25:{out.length=0;const up=.3+.12*G.kick+(G.st==='drop'?.15:0)+.2*G.build;
     [-.8,-.4,0,.4,.8].forEach((x,i)=>{const q=puFree(puBase(G),x,-1+up+.04*sn(t*3+i),x+.1*(i-2),-1.8,1);q.s=.13;q.m=i%2?-1:1;q.r=.32*cs(PI*(G.bk+ph)+i*.9);q.armR=.25;out.push(q);});break;}
-  case 26:{out.length=0;for(const m of[1,-1]){const q=puFree(puBase(G),m*.42,.15+.18*ex(-ph*5),m*.9,-1.7);q.m=m;q.r=m*1.5708;q.s=.19;q.pose=puPz('flat');out.push(q);}break;}
+  case 26:{out.length=0;for(const m of[1,-1]){const q=puFree(puBase(G),m*.62,.15+.18*ex(-ph*5),m*.9,-1.7);q.m=m;q.r=m*1.5708;q.tilt=-.7;q.s=.19;q.pose=puPz('flat');out.push(q);}break;}
   case 27:{if(G.bar<3){h.pose=puPz('fist');h.y+=.06-.1*Math.pow(1-ph,3);}else{h.pose=puPz(['fist','open','peace'][(Math.floor(G.bk/4)*7+3)%3]);h.s=.2*(1+.15*ex(-ph*6));}h.r=-.1;break;}
   case 28:{const Q=[[0,-.12],[-.34,.02],[.34,.02],[0,.3]],a=Q[G.bar],b=Q[(G.bar+1)%4],e=puEase(ph);
     puFree(h,a[0]+(b[0]-a[0])*e,.1+a[1]+(b[1]-a[1])*e-.05*ex(-ph*9),.75,-1.7);h.r=-.35+.25*h.x;h.pose=puPz('pinch');h.baton=true;break;}
   case 29:{if(G.oS>.25)P.pinchT=0;if(G.oK>.25)P.pinchT=1;P.pinch+=(P.pinchT-P.pinch)*(1-ex(-G.dts/.06));const o=P.pinch;
-    h.pose=puPz('pinch');h.pose[1][2]=-.5-.35*(1-o);h.pose[1][1]=.2+.15*(1-o);h.pose[0][2]=.3+.25*(1-o);h.r=-.35;h.y+=.05;break;}
+    h.pose=puPz('pinch');h.pose[1][1]=.35+.27*(1-o);h.pose[0][1]=.6+.3*(1-o);h.r=-.35;h.yaw=-1.1;h.y+=.05;break;}
   }
   return out;}
 function puBurst(G){const out=[];for(const m of[1,-1]){const q=puFree(puBase(G),m*.36,.08,m*.8,-1.7);q.m=m;q.s=.3;q.r=-m*.35;q.pose=puWig(puPz('jazz'),.12,G.t);out.push(q);}return out;}
 function puCellPos(cell){const P=PUDE;if(!P.C)return null;const tile=cell>>2,row=(cell>>1)&1,cx=cell&1,sp=tile===0?.47:.5,u=cx?(sp+1)/2:sp/2,v=row?.75:.25;
   const i=tile;const D=PU_FACES[i],Rv=P.Rv,C=P.C,st=1.045,p=[0,1,2].map(k=>D.O[k]+D.U[k]*u+D.V[k]*v),w=m3v(Rv,p);
   if(m3v(Rv,i===0?[-1,0,0]:[0,0,1])[2]<.05)return null;return[C.cx+C.s*C.sx*w[0],C.cy+C.s*C.sy*st*w[1]];}
-function puLerpH(a,b,e){const L=(x,y)=>x+(y-x)*e;let dr=b.r-a.r;dr=Math.atan2(Math.sin(dr),Math.cos(dr));
-  return{...b,x:L(a.x,b.x),y:L(a.y,b.y),r:a.r+dr*e,s:L(a.s,b.s),m:e<.5?a.m:b.m,alpha:L(a.alpha,b.alpha),pose:b.pose.map((d,f)=>d.map((v,k)=>L(a.pose[f][k],v))),
+function puLerpH(a,b,e){const L=(x,y)=>x+(y-x)*e,LA=(x,y)=>{x=x||0;y=y||0;const d=Math.atan2(Math.sin(y-x),Math.cos(y-x));return x+d*e;};
+  return{...b,x:L(a.x,b.x),y:L(a.y,b.y),r:LA(a.r,b.r),yaw:LA(a.yaw,b.yaw),tilt:LA(a.tilt,b.tilt),s:L(a.s,b.s),m:e<.5?a.m:b.m,alpha:L(a.alpha,b.alpha),pose:b.pose.map((d,f)=>d.map((v,k)=>L(a.pose[f][k],v))),
     arm:a.arm&&b.arm?[L(a.arm[0],b.arm[0]),L(a.arm[1],b.arm[1])]:b.arm,armR:L(a.armR,b.armR),clip:e<.5?a.clip:b.clip};}
 function pudeDrop(t){const P=PUDE,A=ADV;P.burstT=t;P.exV+=9;P.colPh+=.5;P.st='drop';
   for(let i=0;i<3;i++)puRing(0,-.1,(1.2+.5*i)*A.bpm/120,P.colPh+i*.17);puSpark(0,.1,12,P.colPh+.3,2.2);
@@ -3727,12 +3749,13 @@ function pudeStep(t,dts,ons,beatTick){const A=ADV,P=PUDE;
   if(P.prev&&t-P.swT<.16){const e=puEase((t-P.swT)/.16);hands=hands.map((h,i)=>P.prev[i]?puLerpH(P.prev[i],h,e):{...h,alpha:h.alpha*e});}
   P.last=hands;
   /* the hand's shape (all hands share it), then each hand's place */
-  const H0=hands[0],B=puBuildHand(H0.pose,H0.back,H0.eye),nc=Math.min(24,B.caps.length/8);
-  for(let i=0;i<nc;i++){P.S.set(B.caps.slice(i*8,i*8+4),i*4);P.SR.set(B.caps.slice(i*8+4,i*8+8),i*4);}
+  const H0=hands[0],B=puBuildHand(H0.pose),nc=Math.min(24,B.caps.length/9);
+  for(let i=0;i<nc;i++){const c=B.caps;P.S.set(c.slice(i*9,i*9+4),i*4);P.SR.set(c.slice(i*9+4,i*9+8),i*4);P.SI[i]=c[i*9+8];}
+  P.Eye.set(H0.eye?[...H0.eye,.13]:[0,0,0,0]);
   const nh=Math.min(5,hands.length);P.I.fill(0);
-  for(let i=0;i<nh;i++){const h=hands[i],a=h.arm,sty=P.cube===13&&P.sty===0?1:P.sty;
-    P.I.set([h.x,h.y,h.s,h.r, h.m,h.alpha,h.clip&&P.top?1:0,sty, a?a[0]:h.x,a?a[1]:h.y,a?h.armR:0,P.hue+i*.13],i*12);
-    const tip=f=>puH2W(h,B.tips[f][0],B.tips[f][1]);
+  for(let i=0;i<nh;i++){const h=hands[i],a=h.arm,sty=P.cube===13&&P.sty===0?1:P.sty,R=puRot(h);   /* rows of the screen-to-hand turn = columns of the hand's turn */
+    P.I.set([h.x,h.y,h.s,h.m, R[0],R[3],R[6],h.alpha, R[1],R[4],R[7],h.clip&&P.top?1:0, R[2],R[5],R[8],sty, a?a[0]:h.x,a?a[1]:h.y,a?h.armR:0,P.hue+i*.13],i*20);
+    const tip=f=>puH2W(h,B.tips[f]);
     if(h.ok&&G.oK>.3){const a1=tip(0),b1=tip(1);puRing((a1[0]+b1[0])/2,(a1[1]+b1[1])/2,1.2*A.bpm/120,P.colPh+.5);}
     if(h.flash){const p=tip(1),d=Math.atan2(p[1]-h.y,p[0]-h.x);puSpark(p[0],p[1],5,.5,1.8,.9,d);}
     if(h.snap){const p=tip(2);puSpark(p[0],p[1],6,P.colPh+.2,1.4);}
@@ -3771,7 +3794,7 @@ function pudeStep(t,dts,ons,beatTick){const A=ADV,P=PUDE;
       ' · '+['logo colours','neon','letters','two-tone','negative','rainbow'][P.colM];}}
 function pudeUniforms(){const P=PUDE;if(!P.tex)puAtlas();
   gl.activeTexture(gl.TEXTURE11);gl.bindTexture(gl.TEXTURE_2D,P.tex);gl.activeTexture(gl.TEXTURE0);uni(P1,'uPuTx','uniform1i',11);
-  uni(P1,'uPu[0]','uniform4fv',P.U);uni(P1,'uPuF[0]','uniform4fv',P.F);uni(P1,'uPuS[0]','uniform4fv',P.S);uni(P1,'uPuSR[0]','uniform4fv',P.SR);
+  uni(P1,'uPu[0]','uniform4fv',P.U);uni(P1,'uPuF[0]','uniform4fv',P.F);uni(P1,'uPuS[0]','uniform4fv',P.S);uni(P1,'uPuSR[0]','uniform4fv',P.SR);uni(P1,'uPuSI[0]','uniform1fv',P.SI);uni(P1,'uPuEye','uniform4fv',P.Eye);
   uni(P1,'uPuI[0]','uniform4fv',P.I);uni(P1,'uPuL[0]','uniform1fv',P.cell.map(v=>Math.max(0,Math.min(1,v))));uni(P1,'uPuE[0]','uniform4fv',P.E);uni(P1,'uPuEc[0]','uniform4fv',P.Ec);uni(P1,'uPuR[0]','uniform4fv',P.R);}
 const adY=new Float32Array(AD*AD);
 function readAdapt(){
