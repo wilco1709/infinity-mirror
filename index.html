@@ -534,7 +534,7 @@ const PGROUPS=[
  {sec:'Reacts to the sound',g:'Spectrum',items:[[0,'Spectrum bars'],[1,'Radial spectrum']]},
  {g:'Waveform',items:[[24,'Oscilloscope'],[25,'Mirrored wave'],[26,'Circle wave'],[27,'Lissajous'],[28,'Ribbon'],[29,'Sound bars']]},
  {g:'Pulses on the bass',items:[[2,'Tunnel rings'],[3,'Spiral arms'],[4,'Plasma'],[5,'Fire'],[13,'Ocean waves'],[6,'Matrix rain'],[19,'Suns'],[20,'Hearts']]},
- {g:'Infinity tunnel',items:[[37,'Edge chase'],[38,'Beat rings out'],[39,'Beat rings in'],[40,'Hyperspace stars'],[41,'Counter-rotating polygons'],[42,'Log spiral + drop'],[43,'Feedback tunnel'],[44,'Copy-ratio rings'],[45,'Moiré patch'],[46,'Layered ambient']]},
+ {g:'Infinity tunnel',items:[[37,'Edge chase'],[38,'Beat rings out'],[47,'Morphing beat rings'],[39,'Beat rings in'],[40,'Hyperspace stars'],[41,'Counter-rotating polygons'],[42,'Log spiral + drop'],[43,'Feedback tunnel'],[44,'Copy-ratio rings'],[45,'Moiré patch'],[46,'Layered ambient']]},
  {sec:'Not on the sound',g:'Still',items:[[34,'Buddha'],[33,'Solid colour'],[9,'Media'],[10,'Test grid'],[30,'Colour check']]},
  {g:'Tunnel frame',items:[[31,'Tunnel square'],[32,'Tunnel circle']]},
  {g:'Flowing',items:[[11,'Color flow'],[12,'Lava lamp'],[8,'Aurora'],[14,'Breathing']]},
@@ -579,6 +579,7 @@ const PAT_NOTE={
  36:'The real Buddhabrot: the orbits of millions of escaping points of z → z² + c, piled up live. The view turns slowly through the four-dimensional (z, c) space, so it never repeats. Red: orbits of 8 to 1000 steps, green up to 200, blue up to 40.',
  37:'A 1-LED outline on the outermost LEDs with two comets chasing round it, 0.5 to 2 laps a second on the bass, tails longer on the bass. The outline gives the biggest step between mirror copies, so the cleanest tunnel. Square or circle from the frame buttons.',
  38:'Every kick spawns a thin ring at the centre that grows exponentially to the edge, like the mirror copies themselves. Without beats a ring still flows out every 0.7 s.',
+ 47:'Beat rings that each keep the shape they had when they were sent out, while the shape slowly melts through circle, triangle, diamond, pentagon, trapezium, hexagon, square, star and dodecagon. Speed speeds up everything (it never fully stops). Audio gain, together with how loud the music is, makes the rings come faster and the shapes follow each other faster. Every kick also sends a ring.',
  39:'The same beat rings, but shrinking from the edge to the centre. Lab work on vection found inward flow at least as strong as outward.',
  40:'44 sparse stars in the outer part of the panel, centre left empty: the mirror turns each one into a trail of dots. They cruise slowly and warp into streaks on the kicks; the treble makes them sparkle.',
  41:'Six nested squares and hexagons, each 0.8 times the one outside it, turning in alternate directions at golden-ratio speeds (25 to 60 degrees a second on the bass) with a slow twist. They swell 10 % on the bass.',
@@ -842,6 +843,20 @@ uniform vec4 uAcc;        // audio-driven phases: x chase laps, y star travel, z
 uniform vec4 uFB;         // feedback: zoom per frame, rotation per frame (rad), decay, hold (spiral stopped = 1)
 uniform float uK1;        // scale of the first mirror copy at the current viewing distance
 float lnAA(float d,float w){return clamp(w*.5+.5-abs(d),0.,1.);}   /* anti-aliased line, d and w in LEDs */
+uniform float uMRing[8],uMRingS[8];   // morphing rings: age (s, < 0 = none) and shape phase at the moment each was sent out
+/* signed distances of unit-size shapes (after Inigo Quilez); mixing two of them morphs one shape smoothly into the next */
+float sdPoly(vec2 p,float r,float n){float an=3.141593/n;vec2 acs=vec2(cos(an),sin(an));float bn=mod(atan(p.x,p.y),2.*an)-an;
+  p=length(p)*vec2(cos(bn),abs(sin(bn)));p-=r*acs;p.y+=clamp(-p.y,0.,r*acs.y);return length(p)*sign(p.x);}
+float sdTrap(vec2 p,float r1,float r2,float he){vec2 k1=vec2(r2,he),k2=vec2(r2-r1,2.*he);p.x=abs(p.x);
+  vec2 ca=vec2(p.x-min(p.x,(p.y<0.)?r1:r2),abs(p.y)-he),cb=p-k1+k2*clamp(dot(k1-p,k2)/dot(k2,k2),0.,1.);
+  float s=(cb.x<0.&&ca.y<0.)?-1.:1.;return s*sqrt(min(dot(ca,ca),dot(cb,cb)));}
+float sdStar5(vec2 p,float r,float rf){const vec2 k1=vec2(.809016994375,-.587785252292);vec2 k2=vec2(-k1.x,k1.y);
+  p.x=abs(p.x);p-=2.*max(dot(k1,p),0.)*k1;p-=2.*max(dot(k2,p),0.)*k2;p.x=abs(p.x);p.y-=r;
+  vec2 ba=rf*vec2(-k1.y,k1.x)-vec2(0,1);float h=clamp(dot(p,ba)/dot(ba,ba),0.,r);return length(p-ba*h)*sign(p.y*ba.x-p.x*ba.y);}
+float sdShape(int i,vec2 p){   /* 0 circle, 1 triangle, 2 diamond, 3 pentagon, 4 trapezium, 5 hexagon, 6 square, 7 star, 8 dodecagon */
+  if(i==0)return length(p)-1.;if(i==1)return sdPoly(p,1.,3.);if(i==2)return sdPoly(p,1.,4.);if(i==3)return sdPoly(p,1.,5.);
+  if(i==4)return sdTrap(p,.95,.5,.62);if(i==5)return sdPoly(p,1.,6.);if(i==6)return sdPoly(mat2(.7071,.7071,-.7071,.7071)*p,1.,4.);
+  if(i==7)return sdStar5(p,1.,.5);return sdPoly(p,1.,12.);}
 mat3 rotAx(vec3 a,float g){float c=cos(g),s=sin(g),k=1.-c;
   return mat3(c+a.x*a.x*k,a.y*a.x*k+a.z*s,a.z*a.x*k-a.y*s, a.x*a.y*k-a.z*s,c+a.y*a.y*k,a.z*a.y*k+a.x*s, a.x*a.z*k+a.y*s,a.y*a.z*k-a.x*s,c+a.z*a.z*k);}
 float segD(vec2 p,vec2 a,vec2 b){vec2 pa=p-a,ba=b-a;float h=clamp(dot(pa,ba)/max(dot(ba,ba),1e-8),0.,1.);return length(pa-ba*h);}
@@ -1218,6 +1233,17 @@ void main(){
       acc+=pal(n*.5+fi*.2+t*.01)*dens*fade*.75;
     }
     col=acc+stars(p,t)*.9;
+  }else if(uPat==47){
+    /* morphing beat rings: every ring keeps the shape it had when it was sent out, and the shapes melt from one into the next */
+    vec2 x=c-uN*.5;float R=uN*.5-.5,bass=uLev.x;
+    for(int i=0;i<8;i++){float a=uMRing[i];if(a<0.)continue;
+      float k=2.,r=1.5*exp(k*a),u=r/(R*1.55);if(u>1.)continue;
+      float ph=uMRingS[i],f=smoothstep(0.,1.,fract(ph)),ang=ph*.35;
+      int A=int(mod(floor(ph),9.)),B=int(mod(floor(ph)+1.,9.));
+      vec2 q=mat2(cos(ang),sin(ang),-sin(ang),cos(ang))*x/r;
+      float d=mix(sdShape(A,q),sdShape(B,q),f)*r;
+      col+=pal(ph*.11+float(i)*.07)*lnAA(d,1.5)*smoothstep(0.,.15,u)*smoothstep(1.,.85,u)*(.7+.3*bass);}
+    col+=pal(uMRingS[0]*.05)*lnAA(max(abs(x.x),abs(x.y))-R,1.)*.12;
   }else if(uPat>=37&&uPat<=46){
     /* ---- infinity-tunnel patterns: thin lines and sparse points on pure black, far from the centre ---- */
     vec2 x=c-uN*.5;float rs=max(abs(x.x),abs(x.y)),rc=length(x),R=uN*.5-.5,th=atan(x.y,x.x);
@@ -2637,8 +2663,15 @@ function uni(P,name,fn,...a){if(P.u[name]!=null)gl[fn](P.u[name],...a);}
    polygons 10-60 deg/s at golden-ratio speeds, feedback zoom 1.005-1.03 and decay ~0.96-0.98 per frame (frame-rate
    independent), spiral spins ~24 s then holds 6 s so it seems to swirl backwards (motion aftereffect).
    Kicks spawn small events instead of full-panel flashes, which keeps it inside the 3 flashes/s limit at any tempo. */
-const TUN={rings:new Float32Array(8).fill(-1),ri:0,lastBeat:-9,lastSpawn:-9,prevBeat:0,acc:[0,0,0,0],warp:0};
+const TUN={mr:new Float32Array(8).fill(-1),ms:new Float32Array(8),mi:0,mT:0,morph:0,mLast:-9,mPrev:0,rings:new Float32Array(8).fill(-1),ri:0,lastBeat:-9,lastSpawn:-9,prevBeat:0,acc:[0,0,0,0],warp:0};
 function tunnelAudio(t,dts){const T=TUN,sp=S.speed;
+  /* morphing rings. Speed never stops it (at least 0.15x) and speeds everything up; audio gain together with how loud
+     the music is speeds up both how often rings are sent and how fast the shapes follow each other. */
+  {const ms=Math.max(.15,sp),drive=S.gain*(.35+Math.min(1,bass)),every=.9/(ms*(.55+.45*drive));
+   T.morph+=dts*ms*(.08+.22*drive);                             /* shapes per second */
+   T.mT+=dts;const kick=beat>.5&&T.mPrev<=.5&&t-T.mLast>.2/ms;T.mPrev=beat;
+   if(kick||T.mT>every){T.mr[T.mi]=0;T.ms[T.mi]=T.morph;T.mi=(T.mi+1)%8;T.mT=0;if(kick)T.mLast=t;}
+   for(let i=0;i<8;i++)if(T.mr[i]>=0){T.mr[i]+=dts*ms;if(T.mr[i]>3)T.mr[i]=-1;}}
   if(beat>.5&&T.prevBeat<=.5&&t-T.lastBeat>.22){T.lastBeat=t;T.rings[T.ri]=0;T.ri=(T.ri+1)%8;T.lastSpawn=t;}
   T.prevBeat=beat;
   if(t-T.lastBeat>1.2&&t-T.lastSpawn>.7){T.rings[T.ri]=0;T.ri=(T.ri+1)%8;T.lastSpawn=t;}   /* quiet: keep a slow flow going */
@@ -2656,6 +2689,7 @@ function tunnelAudio(t,dts){const T=TUN,sp=S.speed;
   if(stepNow){T.fbT=0;T.fb=[1.14+.12*Math.min(1,bass),(.05+.1*mid)*(TUN.ri%2?1:-1),.62,T.warp];}
   else T.fb=[1,0,1,T.warp];}
 function tunnelUniforms(){const T=TUN;   /* call while the pattern program is in use */
+  uni(P1,'uMRing[0]','uniform1fv',T.mr);uni(P1,'uMRingS[0]','uniform1fv',T.ms);
   uni(P1,'uRing[0]','uniform1fv',T.rings);uni(P1,'uAcc','uniform4f',...T.acc);uni(P1,'uFB','uniform4f',...(T.fb||[1,0,0,0]));
   const g=CFG.acr?CFG.g.mm/1490:CFG.g.mm/1000,D=Math.max(.1,S.dist);uni(P1,'uK1','uniform1f',(D+g)/(D+3*g));}
 const adY=new Float32Array(AD*AD);
