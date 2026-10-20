@@ -326,6 +326,7 @@ ul.checks .wn{color:var(--accent);font-weight:600}
         <button type="button" id="aSys" role="radio" aria-checked="false">Computer</button>
       </div>
       <div class="chips">
+        <button type="button" id="aStd">▶ Rone – Origami</button>
         <label class="btn filebtn" for="audioIn"><input type="file" id="audioIn" accept="audio/*">Load audio</label>
         <label class="btn filebtn" for="mediaIn"><input type="file" id="mediaIn" accept="image/*">Load image</label>
         <button type="button" id="mediaClear" hidden>Stop media</button>
@@ -1914,11 +1915,22 @@ function setAudioSrc(s){const was=audioSrc;audioSrc=s;
     srcNote.textContent=playlist.length?'The audio visuals follow the sound of the playing video.':'Add a video first. The audio visuals will follow its sound.';
   }}
 aDemo.addEventListener('click',()=>setAudioSrc('demo'));aFile.addEventListener('click',()=>setAudioSrc('file'));aVid.addEventListener('click',()=>setAudioSrc('video'));aSys.addEventListener('click',()=>setAudioSrc('system'));
-document.getElementById('audioIn').addEventListener('change',e=>{
-  const f=e.target.files&&e.target.files[0];if(!f)return;
+function playBlob(blob,name){
   if(!ensureAudio()){srcNote.textContent='This browser view did not allow audio analysis. The demo beat still works.';return;}
-  playerEl.src=URL.createObjectURL(f);playerEl.hidden=false;setAudioSrc('file');srcNote.textContent=f.name;
-  playerEl.play().catch(()=>{});
+  playerEl.src=URL.createObjectURL(blob);playerEl.hidden=false;setAudioSrc('file');srcNote.textContent=name;
+  playerEl.play().catch(()=>{});}
+document.getElementById('audioIn').addEventListener('change',e=>{
+  const f=e.target.files&&e.target.files[0];if(!f)return;playBlob(f,f.name);});
+/* standard song: lives in standard-song.js next to this page, on this computer only (the track is copyrighted,
+   so it is not on the public site). Loaded as a script, so it also works when the page is opened as a file. */
+if(/github\.io$/.test(location.hostname))document.getElementById('aStd').hidden=true;
+document.getElementById('aStd').addEventListener('click',()=>{
+  const go=()=>{const s=window.STANDARD_SONG,bin=atob(s.b64),u=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)u[i]=bin.charCodeAt(i);
+    playBlob(new Blob([u],{type:s.type}),s.name);};
+  if(window.STANDARD_SONG){go();return;}
+  srcNote.textContent='Loading Rone – Origami…';
+  const sc=document.createElement('script');sc.src='standard-song.js';sc.onload=()=>window.STANDARD_SONG?go():fail();sc.onerror=fail;document.head.appendChild(sc);
+  function fail(){srcNote.textContent='The standard song is only in the copy on your own computer (the track is copyrighted, so it is not on the public site). Use Load audio here.';}
 });
 
 /* ---------- media: video playlist and images ---------- */
