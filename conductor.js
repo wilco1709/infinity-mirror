@@ -25,6 +25,7 @@ const P = (id, label, def, min, max, step, unit, tip) => ({ id, group: 'Timing',
 
 const PARAMS = [
   P('calmBusy', 'Calm ↔ Busy', .5, 0, 1, .01, '', 'How much and how often things change. Calm: long scenes (phrases of 16), soft cross-fades, a lower level so fewer layers and less white. Busy: short scenes (down to 4 bars), more cuts, a higher level. The middle is the tuned Director. The Pad has this same slider.'),
+  P('variety', 'Variety', 0, 0, 1, .01, '', 'How much the changes vary. 0: exactly the tuned conductor, scenes of the same length and always the best fit for the music. Higher: scene lengths vary (a short one, then a long one) and the pick is wider, so scenes that fit the music less closely also get a turn. The Pad has this same slider.'),
   P('phraseBars', 'Change on phrase', 8, 4, 16, 4, 'bars', 'Scenes change on a phrase line: every 4, 8 or 16 bars of the music. 8 is the usual phrase. Calm ↔ Busy stretches or shortens it.'),
   P('phraseMin', 'Shortest scene', 4, 2, 16, 1, 'bars', 'A scene stays at least this many bars before the next change, even if the music asks for one sooner.'),
   P('maxBars', 'Longest scene', 32, 8, 64, 4, 'bars', 'A scene never stays longer than this many bars (stories and scenes that hold on purpose excepted).'),
@@ -40,6 +41,7 @@ const FIXED = {
   beatsPerBar: 4, planAhead: 1.5, lvDrop: .9, lvSig: .14, lvTop: .85, lvLow: .35, lvHigh: .65,
   roleOff: .06, recentLast: .12, recentIn: .4, novelBoost: 2, partYes: 1.3, partNo: .7, fitFloor: .02,
   dropMin: 4,            /* a drop changes the scene only if it ran at least this many bars (x the hold factor) */
+  ixSpan: .4,            /* Epic's light / motion / darkness / detail follow Calm-Busy by up to this much (the old Intensity slider was +-.5)  */
   holdSpan: 1,           /* the hold factor is 2^(-span x (calmBusy - .5) x 2) */
   styleSoft: .8, styleHard: .6   /* how far Calm takes cuts away / Busy adds them */
 };
@@ -75,6 +77,8 @@ function create() {
   C.dropMinBars = () => { const m = C.holdMul(); return m === 1 ? FIXED.dropMin : Math.max(1, Math.round(FIXED.dropMin * m)); };
   /* after a change the conductor rests swCool bars (x the hold factor) before it takes a change from the live music */
   C.cooling = (beat, lastSw) => beat - (lastSw == null ? -1e9 : lastSw) < C.cfg.swCool * C.holdMul() * FIXED.beatsPerBar;
+  /* what Epic's own light / motion / darkness / detail paths take from Calm-Busy: -ixSpan (calm) .. +ixSpan (busy), exactly 0 in the middle (this is what the Entropy + Intensity sliders were) */
+  C.ix = () => { const k = C.kb(); return k === 0 ? 0 : FIXED.ixSpan * k; };
   C.lvShift = () => { const k = C.kb(); return k === 0 ? 0 : C.cfg.cbLevel * k; };
   C.newSeed = () => { C.take = (C.take | 0) + 1; C.emit('seed', C.take); return C.take; };
 
@@ -87,11 +91,11 @@ function create() {
 
   /* ---------------- level ---------------- */
   /* the intensity the music has: the older target (a rest or a break stays quiet) */
-  C.target = inp => { const x = .35 * (inp.ix || 0);
-    if (inp.rest > 0 || inp.brk) return clamp(.05 + x);
-    return clamp((inp.gen ? inp.arc : .7 * inp.I + .3 * inp.energy) + .25 * inp.build + x); };
+  C.target = inp => {
+    if (inp.rest > 0 || inp.brk) return clamp(.05);
+    return clamp((inp.gen ? inp.arc : .7 * inp.I + .3 * inp.energy) + .25 * inp.build); };
   C.adj = v => { const s = C.lvShift(); return s ? clamp(v + s) : v; };
-  /* once per frame. inp = { planLevel (the song map's level now, or null), gen, arc, I, energy, build, drop, dropReq, brk, rest, ix }. */
+  /* once per frame. inp = { planLevel (the song map's level now, or null), gen, arc, I, energy, build, drop, dropReq, brk, rest }. */
   C.frame = (dts, inp) => { const cfg = C.cfg; let v = null;
     if (inp.planLevel != null && isFinite(inp.planLevel)) v = clamp(inp.planLevel);
     if (v != null) C.lvlS = v;
@@ -101,9 +105,9 @@ function create() {
     const tg = C.target(inp); C.tgtS = C.tgtS == null || inp.drop ? tg : C.tgtS + (tg - C.tgtS) * (1 - Math.exp(-dts / cfg.lvAtk)); return C.lvl; };
   C.lvlS = null;
   C.resetLevel = () => { C.lvl = null; C.lvlS = null; C.tgtS = null; };
-  /* the energy a scene should have now: with a plan the level (+ the intensity slider), live the target smoothed; a rest or a break stays quiet */
+  /* the energy a scene should have now: with a plan the level, live the target smoothed; a rest or a break stays quiet */
   C.want = inp => { if (C.lvl == null) return C.adj(C.target(inp)); if (inp.rest > 0 || inp.brk) return C.adj(C.target(inp));
-    return inp.plan && C.lvl != null ? clamp(C.lvl + .35 * (inp.ix || 0)) : C.tgtS == null ? C.adj(C.target(inp)) : C.adj(C.tgtS); };
+    return inp.plan && C.lvl != null ? clamp(C.lvl) : C.tgtS == null ? C.adj(C.target(inp)) : C.adj(C.tgtS); };
 
   /* ---------------- the dice ---------------- */
   /* seeded random numbers (mulberry32): a seed and the decision log replay a show exactly */
@@ -115,17 +119,17 @@ function create() {
   /* ---------------- the choice ---------------- */
   /* pool: [candidate]. ctx = { target, recent:[keys, last 3], phase, parts, sparse, novel, rng, filter(c), bridge(c, rng) -> {via, mul} | null (skip) | undefined (no bridge) }
      -> { key, w, via, c } or null. The dice only break near-ties: the best energy fit wins. */
-  C.choose = (pool, ctx) => { const cfg = C.cfg, R = ctx.rng, out = [], recent = ctx.recent || [], parts = ctx.parts || [];
+  C.choose = (pool, ctx) => { const cfg = C.cfg, R = ctx.rng, out = [], recent = ctx.recent || [], parts = ctx.parts || [], vy = +cfg.variety || 0;
     for (const c of pool) { if (ctx.filter && !ctx.filter(c)) continue; let via = null, w = (c.w == null ? 1 : c.w) * (c.wx == null ? 1 : c.wx);
       if (ctx.bridge) { const b = ctx.bridge(c, R); if (b === null) continue; if (b) { via = b.via || null; w *= b.mul == null ? 1 : b.mul; } }
-      const d = (c.energy == null ? .5 : c.energy) - ctx.target; w *= Math.exp(-d * d / (2 * cfg.lvSig * cfg.lvSig)) + cfg.fitFloor;
+      const d = (c.energy == null ? .5 : c.energy) - ctx.target, sg = cfg.lvSig * (1 + 2 * vy); w *= Math.exp(-d * d / (2 * sg * sg)) + cfg.fitFloor;   /* Variety widens the energy fit */
       if (recent[recent.length - 1] === c.key) w *= cfg.recentLast; else if (recent.includes(c.key)) w *= cfg.recentIn;
       if (ctx.novel && (c.w == null ? 1 : c.w) < .95) w *= cfg.novelBoost;
       if (c.role && ctx.phase && !c.role.includes(ctx.phase)) w *= cfg.roleOff;
       if (c.sparse) w *= ctx.sparse ? c.sparse[0] : c.sparse[1];
       for (const k of parts) w *= (c.cover || []).includes(k) ? cfg.partYes : cfg.partNo;
       out.push({ key: c.key, w, via, c }); }
-    if (!out.length) return null; let mx = 0; out.forEach(o => { if (o.w > mx) mx = o.w; }); const top = out.filter(o => o.w >= cfg.lvTop * mx);
+    if (!out.length) return null; let mx = 0; out.forEach(o => { if (o.w > mx) mx = o.w; }); const lt = cfg.lvTop * (1 - .6 * vy), top = out.filter(o => o.w >= lt * mx);   /* Variety lets more scenes stay in the draw */
     let s = 0; top.forEach(o => s += o.w); let r = R() * s; for (const o of top) { r -= o.w; if (r <= 0) return o; } return top[top.length - 1]; };
 
   /* how to cut between two scenes that fit: hard on kicks and drops, softer when it is calm. ctx = { phase, e (energy 0..1), rng, morph (the two shapes can flow) }.
@@ -156,7 +160,8 @@ function create() {
     if (o.noSnap) return { b1: o.b1, bars: Math.max(1, Math.round((o.b1 - o.b0) / bpb)) };
     const Pn = o.plan, st = o.st, minB = o.b0 + C.minBarsNow() * bpb - (mul < 1 ? .5 * bpb : 0), per = C.phraseBarsNow() * bpb; let bounds = null, stop = null;
     if (Pn && st != null) { const bb = Pn.entries.map(e => ({ e, b: C.planBeat(e.t, st, o.beat, o.bpm, bpb) })).filter(x => x.b > o.b0 + .5 * bpb); bounds = bb.map(x => x.b); const s = bb.find(x => x.e.kind === 'section'); stop = s ? s.b : null; }
-    const drawn = mul === 1 ? o.b1 : o.b0 + (o.b1 - o.b0) * mul;
+    const vy = +C.cfg.variety || 0, vj = vy > 0 && o.rng ? Math.pow(2, (o.rng() * 2 - 1) * vy * 1.5) : 1;   /* Variety: the drawn length varies up to x2.8 shorter or longer, then snaps to a phrase line (no dice drawn at 0) */
+    const drawn = mul === 1 && vj === 1 ? o.b1 : o.b0 + (o.b1 - o.b0) * mul * vj;
     let b1 = C.snapPhrase(drawn, minB, bounds, o.phr0, per); if (stop != null && stop <= b1 + C.cfg.phraseMin * bpb) b1 = stop;
     const cap = o.b0 + C.cfg.maxBars * bpb; if (b1 > cap && stop == null) b1 = Math.max(minB, Math.round(cap / bpb) * bpb);
     return { b1, bars: Math.max(1, Math.round((b1 - o.b0) / bpb)) }; };
@@ -208,7 +213,7 @@ function create() {
     const log = s => { RN.log.push(s); if (RN.log.length > 60) RN.log.shift(); };
     const rng = () => (RN.R || host.rng || Math.random)();
     const pool = () => { let l = host.pool() || []; const pins = o.pins && o.pins(); if (pins && pins.length) { const f = l.filter(c => pins.includes(c.key)); if (f.length) l = f; } return l; };
-    const inp = (m, planLevel) => { const A = m.ear || {}; return { planLevel, gen: !!A.gen, arc: m.arc == null ? .2 : m.arc, I: A.I || 0, energy: A.energy || 0, build: A.build || 0, drop: !!A.drop, brk: !!A.brk, rest: 0, ix: 0 }; };
+    const inp = (m, planLevel) => { const A = m.ear || {}; return { planLevel, gen: !!A.gen, arc: m.arc == null ? .2 : m.arc, I: A.I || 0, energy: A.energy || 0, build: A.build || 0, drop: !!A.drop, brk: !!A.brk, rest: 0 }; };
     RN.level = () => C.lvl; RN.stop = () => { RN.cur = null; RN.plan = null; };
     RN.restart = () => { RN.cur = null; };
     function holdBars(c) { let l = Array.isArray(o.bars) && o.bars.length ? o.bars : Array.isArray(c.bars) ? c.bars : c.bars ? [c.bars] : [8, 16]; return l[Math.floor(rng() * l.length)]; }
@@ -216,11 +221,11 @@ function create() {
     function pick(why, filterOvr) { const m = M(), A = m.ear || {}, l = pool(); if (!l.length) return null; const cur = RN.cur;
       if (o.order === 'in order') { const ix = cur ? l.findIndex(c => c.key === cur.key) : -1, c = l[(ix + 1) % l.length]; return { c, key: c.key }; }
       const ph = C.phase(A, m.arc, 0), pl = RN.plan; let cands = l; if (o.noRepeat && cur && l.length > 1) cands = l.filter(c => c.key !== cur.key);
-      const ctx = { target: C.want({ plan: !!pl, rest: 0, brk: !!A.brk, ix: 0, gen: !!A.gen, arc: m.arc, I: A.I || 0, energy: A.energy || 0, build: A.build || 0 }), recent: RN.hist.slice(-3), phase: ph, parts: A.env ? C.parts(A) : [], sparse: C.sparse(A, ph, .12), novel: false, rng, filter: filterOvr };
+      const ctx = { target: C.want({ plan: !!pl, rest: 0, brk: !!A.brk, gen: !!A.gen, arc: m.arc, I: A.I || 0, energy: A.energy || 0, build: A.build || 0 }), recent: RN.hist.slice(-3), phase: ph, parts: A.env ? C.parts(A) : [], sparse: C.sparse(A, ph, .12), novel: false, rng, filter: filterOvr };
       return C.choose(cands, ctx) || (filterOvr && C.choose(cands, Object.assign({}, ctx, { filter: null }))) || null; }
     function enter(sel, tr, kind, endB, silent) { const m = M(), bpb = FIXED.beatsPerBar, beat = m.beat, c = sel.c || sel, pl = RN.plan;
       const b0 = Math.round(beat / bpb) * bpb, drawn = b0 + holdBars(c) * bpb, st = pl ? C.songT() : null;
-      const e = C.endSnap({ b0, b1: drawn, beat, bpm: m.bpm || 120, bpb, phr0: m.phrase0 || 0, plan: pl, st, endB, noSnap: kind === 'drop' });
+      const e = C.endSnap({ b0, b1: drawn, beat, bpm: m.bpm || 120, bpb, phr0: m.phrase0 || 0, plan: pl, st, endB, noSnap: kind === 'drop', rng });
       RN.cur = c; RN.b0 = b0; RN.b1 = e.b1; RN.last = beat; RN.n++; RN.hist.push(c.key); if (RN.hist.length > 50) RN.hist.shift(); RN.planNext = null;
       log((kind || 'change') + ': ' + (c.name || c.key) + ' (' + tr.type + ', ' + e.bars + ' bars)');
       if (silent) return;
@@ -229,7 +234,7 @@ function create() {
     RN.adopt = key => { const c = pool().find(x => x.key === key); if (c) enter({ c }, { type: 'cut' }, 'adopt', null, true); return !!c; };
     function change(kind) { const m = M(), A = m.ear || {}, pl = RN.plan, bpb = FIXED.beatsPerBar; let tr = { type: 'cut' }, sel, endB = null, why = kind;
       const pn = RN.planNext && pl && Math.abs(m.beat - RN.planB) <= bpb * 1.01 ? RN.planNext : null; RN.planNext = null;
-      if (kind === 'drop') { const hot = pool().filter(c => (c.role || '').includes('drop')); sel = C.choose(hot.length ? hot : pool(), { target: Math.max(.8, C.want({ plan: !!pl, rest: 0, brk: false, ix: 0, I: A.I || 0, energy: A.energy || 0, build: 0, arc: m.arc })), recent: RN.hist.slice(-3), phase: 'flow', parts: [], rng });
+      if (kind === 'drop') { const hot = pool().filter(c => (c.role || '').includes('drop')); sel = C.choose(hot.length ? hot : pool(), { target: Math.max(.8, C.want({ plan: !!pl, rest: 0, brk: false, I: A.I || 0, energy: A.energy || 0, build: 0, arc: m.arc })), recent: RN.hist.slice(-3), phase: 'flow', parts: [], rng });
         if (sel && RN.cur && sel.key === RN.cur.key && pool().length > 1) sel = pick('drop', c => c.key !== RN.cur.key); tr = { type: 'cut', drop: true }; }
       else if (pn && C.planKind(pn.trans)) { const K = C.planKind(pn.trans), tn = pn.trans;
         if (tn === 'vary') { sel = { c: RN.cur }; tr = { type: 'xfade', vary: true }; }
@@ -249,9 +254,8 @@ function create() {
       const bar = m.barTick;
       if (bar && pl && st != null && root.DESK && DESK.nextChange) { const r = C.planTick({ e: DESK.nextChange(st, FIXED.planAhead * pl.bar), planKey: RN.planKey, beat: m.beat, bpm: m.bpm || 120, bpb, st, scene: { b1: RN.b1, hold: false } });
         if (r) { RN.planKey = r.key; log(r.log); if (r.change) { RN.planNext = r.e; RN.planB = r.eb; RN.b1 = r.eb; } } }
-      if (RN.dropReq) { RN.dropReq = false; if (o.changeOnDrop && (m.beat - RN.b0) / bpb >= C.dropMinBars()) { RN.dropPending = true; } }
+      if (RN.dropReq) { RN.dropReq = false; if (o.changeOnDrop && (m.beat - RN.b0) / bpb >= C.dropMinBars()) { change('drop'); return; } }   /* a DROP changes on its own frame (the cut), never waits for the bar */
       if (RN.secReq && bar) { RN.secReq = false; if (!pl && m.beat - (RN.last == null ? -1e9 : RN.last) >= C.cfg.swCool * bpb && (m.beat - RN.b0) / bpb >= C.minBarsNow()) { RN.phr0 = m.beat; change('section'); return; } }
-      if (RN.dropPending && bar) { RN.dropPending = false; change('drop'); return; }
       if (bar && m.beat >= RN.b1 - 1e-6) change(RN.planNext ? 'plan' : 'end'); };
     return RN; };
 

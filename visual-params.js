@@ -1,7 +1,7 @@
 /* Slider definitions for every visual of the infinity-mirror simulator (data only, no behaviour).
    Written 2026-10-22 from Slider candidates.md and the code of that day. `def` is the literal now in the code.
    html = Infinity Mirror Pixel Grid.html. target 'uniform' = GLSL literal that becomes a uniform; 'js' = JavaScript literal.
-   Masters (Reactivity, Speed, Trail, Softness, Brightness) are NOT here; shared Sound values are in SHARED_PARAMS; the Light / Motion / Transitions numbers (brightness, white cap, power, flash gate, breathing ...) are HOUSE (house-style.js). */
+   Masters (Reactivity, Speed, Trail, Softness, Brightness) are NOT here; the shared Sound values are MUSIC.cfg (General > Listen) and the conductor's (General > Timing); the Light / Motion / Transitions numbers (brightness, white cap, power, flash gate, breathing ...) are HOUSE (house-style.js). */
 (function(){
 const P=(k,label,section,def,min,max,step,unit,where,target,extra)=>Object.assign({k,label,section,def,min,max,step,unit,where,target},extra||{});
 const U='uniform',J='js';
@@ -167,10 +167,9 @@ window.VISUAL_PARAMS={
   P('sat','Saturation','main',1.1,0,2,.01,'×','html DEF.vSat / uniform uVid.y',U,{existing:true}),
   P('gamma','Gamma','fine',1,.5,2.5,.01,'','html DEF.vGamma / uniform uVid.z',U,{existing:true})],
   notes:'These three already exist as sliders (vContrast, vSat, vGamma); move them into the panel.'},
-49:{name:'Text show',kind:'set',desc:'The live show: four scenes (colour fields, rings with text, particles, plexus) cut on the phrase.',colours:['own'],existing:['White strobes (advStrobe)','Auto: change scene every (advBars)','Text (advTxt)'],
+49:{name:'Text show',kind:'set',desc:'The live show: four scenes (colour fields, rings with text, particles, plexus) cut on the phrase.',colours:['own'],existing:['Text (advTxt)'],
   scenes:[{id:0,name:'Colour fields'},{id:1,name:'Rings + text'},{id:2,name:'Particles'},{id:3,name:'Plexus'}],params:[
   P('flashFade','White flash fade','timing',.045,.02,.2,.005,'s','html advStep: `A.strobe*=Math.exp(-dts/.045)`',J),
-  P('kickFlash','Kick strength for a white flash','sound',.3,.1,.9,.01,'','html advAudio scene 0: `kick>.3&&advFlash`',J),
   P('particles','Particle amount','main',6,0,60,1,'per s','html advAudio scene 2: `(6+30*..)+140*A.build`',J),
   P('dropBurst','Drop burst','main',100,0,128,1,'particles','html advDrop: `advBurst(100,1.2,3.4,.35)`',J,{notes:'cap 128 by array'}),
   P('textStart','Text appears from beat','timing',16,0,31,1,'beats','html advAudio scene 1: `sb>=16`',J),
@@ -180,7 +179,7 @@ window.VISUAL_PARAMS={
   P('ringTravel','Ring travel','timing',2.2,1,4,.1,'beats','html advAudio scene 1: `A.ar[i]>2.2`',J),
   P('ghost','Ghost ring after quiet','timing',.8,.3,2,.05,'s','html advAudio scene 1: `t-A.lastK>.8`',J),
   P('shatter','Plexus spring','fine',70,20,150,1,'','html advAudio scene 3: `kk=70*(1-.9*A.shat)`',J)]},
-51:{name:'Hand and Cube',kind:'story',desc:'The PUDE hand and cube: gestures, cube looks and scripted scenes on the beat.',colours:['own','palette','single','music'],existing:['Faithful to the logo (puFaith)','Auto: new gesture every (puEvery)','Auto: new cube look every (puBars)','Middle finger (puMid)','Roll over every (coRoll)','Screen broken for (coBroken)','How broken it looks (coGlitch)'],
+51:{name:'Hand and Cube',kind:'story',desc:'The PUDE hand and cube: gestures, cube looks and scripted scenes on the beat.',colours:['own','palette','single','music'],existing:['Faithful to the logo (puFaith)','Middle finger (puMid)','Roll over every (coRoll)','Screen broken for (coBroken)','How broken it looks (coGlitch)'],
   scenes:[{id:0,name:'Auto'},{id:1,name:'Roll over'},{id:2,name:'Countdown and throw'},{id:3,name:'Stomp'},{id:4,name:'The idea'},{id:5,name:'Nesting'},{id:6,name:'Sisyphus'}],
   scenesNote:'html CO_N=[Off,Roll over,Count down and throw,Stomp from above,The idea: building the cube,Nesting,Sisyphus]; S.puCombo 0..6, 0 = Auto/off',params:[
   P('handSize','Hand size','main',1.46,.5,2,.01,'×','html PU_SHAPE0.size (PU_SH.size)',J),
@@ -195,7 +194,7 @@ window.VISUAL_PARAMS={
   P('tumble','Cube tumble time','timing',.4,.2,1,.05,'beats','html puCubeStep case 1: `dur:.4*60/G.bpm`',J),
   P('outline','Hand outline','fine',1,.5,2,.05,'×','html PU_SHAPE0.outline',J),
   P('speedScene','Scene speed','timing',1,.5,2,.5,'×','scenes in html puCoCube / puCoHands (no single literal yet)',J,{notes:'audit: x.5/1/2; needs a scene-clock factor added, not a single literal'})]},
-52:{name:'Tunnel show',kind:'set',desc:'A tunnel that reacts to the stereo field, reverb and distortion of the song, with its own drop detector.',colours:['own'],existing:['White flashes (tsStrobe)','Glitch on distortion (tsGlitch)','Depth from reverb (tsDepth)','Restraint in breakdowns (tsCalm)','Turn and twist from stereo (tsDrift)'],params:[
+52:{name:'Tunnel show',kind:'set',desc:'A tunnel that reacts to the stereo field, reverb and distortion of the song, with its own drop detector.',colours:['own'],existing:['Glitch on distortion (tsGlitch)','Depth from reverb (tsDepth)','Restraint in breakdowns (tsCalm)','Turn and twist from stereo (tsDrift)'],params:[
   P('phrase','New colour (and tunnel) every','timing',32,8,64,4,'beats','html tsStep: `Math.floor(bp/32)`',J),
   P('mouth','Mouth size','main',.3,.1,.5,.01,'','html tsStep: `T.core=(.3-.13*..)`',J),
   P('wall','Wall speed','main',1,.25,3,.05,'rings/bar','html tsStep: `dts*bps/4*(.5+2.5*bld)`',J),
@@ -205,7 +204,7 @@ window.VISUAL_PARAMS={
   P('lapBuild','Edge chase lap in a build','timing',1,1,4,1,'beats','html tsStep: `T.lap=bld>.6?1:..`',J,{notes:'laps 4/2/1 beats'}),
   P('dropLock','Own drop lockout','sound',4,1,10,.5,'s','html tsStep: `t-(A.dropT??-99)>4`',J),
   P('dropSub','Own drop: sub jump','sound',1.3,1.1,2,.05,'×','html tsStep: `sub>1.3*T.dropC.ref`',J)]},
-53:{name:'Body',kind:'visual',desc:'The DJ seen through the panel, dancing and jumping on the drop.',colours:['own'],existing:['How much the DJ dances (bdDance)','Auto: new costume every (bdEvery)'],params:[
+53:{name:'Body',kind:'visual',desc:'The DJ seen through the panel, dancing and jumping on the drop.',colours:['own'],existing:['How much the DJ dances (bdDance)'],params:[
   P('jump','Drop jump','main',230,60,400,5,'','html bdDrop: `BD.jv=BD.look===3?150:230` (about 27 cm)',J,{notes:'units cm/s of launch speed'}),
   P('calm','Calm in a breakdown','main',.3,0,1,.05,'','html bdUniforms: `calm=..?.3:1`',J),
   P('handUp','Hand goes up in a build above','sound',.35,.1,.8,.01,'','html bdStep: `A.build>.35`',J),
@@ -214,7 +213,7 @@ window.VISUAL_PARAMS={
   P('sway','Sway','fine',3.5,0,8,.1,'cm','html bdUniforms: `amp*3.5*Math.sin`',J),
   P('nod','Head nod','fine',2.5,0,6,.1,'cm','html bdUniforms: `amp*2.5*cs*cs*cs`',J),
   P('heel','Heel lift','fine',5,0,10,.1,'cm','html bdUniforms: `amp*5*..`',J)]},
-54:{name:'Bear',kind:'visual',desc:'The bear flows from cute teddy to screaming monster and goes psychedelic at the peaks.',colours:['own'],existing:['How psychedelic (brPsy)','Speed through the stages (brSpeed)','Bending, swirling, ripples (brWarp)','Auto: new layout every (brEvery)'],params:[
+54:{name:'Bear',kind:'visual',desc:'The bear flows from cute teddy to screaming monster and goes psychedelic at the peaks.',colours:['own'],existing:['How psychedelic (brPsy)','Speed through the stages (brSpeed)','Bending, swirling, ripples (brWarp)'],params:[
   P('base','Calm monster level','main',.25,0,1,.01,'','html brStep: `.25+.6*(en-.85)`',J,{notes:'audit said .25 / BR.fierce start .2'}),
   P('roar','Roar after a drop','timing',6,1,20,.5,'s','html brStep: `B.roar*=Math.exp(-dts/6)`',J),
   P('wander','Wander through all stages','timing',150,30,600,5,'s','html brStep: `2*Math.PI*t/150`',J),
@@ -225,8 +224,8 @@ window.VISUAL_PARAMS={
   P('tripOn','Psychedelic trigger: loud above','sound',1.2,1,2,.05,'×','html brStep: `(B.enS-1.2)/.3`',J),
   P('tripRise','Psychedelic fade in','timing',.6,.1,3,.05,'s','html brStep: `pk>B.trip?.6:4`',J),
   P('tripFall','Psychedelic fade out','timing',4,.5,15,.5,'s','html brStep: `pk>B.trip?.6:4`',J)]},
-55:{name:'Director',kind:'set',desc:'A director that listens to the music and chains scenes, loops and surprises.',colours:['own'],
-  existing:['Entropy','Intensity','White flashes','Feedback tunnel','Own clock, without music','Sound waits for the light'],
+55:{name:'Epic',kind:'set',desc:'A director that listens to the music and chains scenes, loops and surprises.',colours:['own'],
+  existing:['Feedback tunnel','Own clock, without music','Sound waits for the light'],
   stories:[{id:'merger',name:'Merger'},{id:'blackhole',name:'Black hole'},{id:'supernova',name:'Supernova'},{id:'sundive',name:'Sun dive'},{id:'celdeling',name:'Celdeling'},{id:'toonmerger',name:'Comic merger'},{id:'morphology',name:'Morphology'},{id:'arrivals',name:'Arrivals'}],
   scenes:['void:Void','portal:Portal','inversion:Inversion','accumulation:Accumulation','puncture:Puncture','perimeter:Perimeter','tracer:Tracer','rings:Tunnel rings','ripple:Ripple','rain:Rain','scanner:Scanner','shatter:Shatter','heartbeat:Heartbeat','static:Static','corridor:Corridor','figures:Figures','dynamo:Dynamo','core:Core'].map(s=>{const a=s.split(':');return{id:a[0],name:a[1]};}),
   params:[
@@ -241,7 +240,7 @@ window.VISUAL_PARAMS={
   P('rest','Rest after loud bars','timing',48,16,128,4,'bars','show-director.js ENG_CFG.restBars',J),
   P('restLen','Rest length','timing',8,2,16,1,'bars','show-director.js ENG_CFG.restLen',J),
   P('callback','Callback chance','fine',.04,0,.2,.01,'','show-director.js ENG_CFG.callbackP',J),
-  P('layerFreq','Layer frequency','fine',1,0,3,.1,'×','show-director.js ENG_CFG.modP (chance = a + b*entropy)',J,{notes:'factor that scales every modP entry'}),
+  P('layerFreq','Layer frequency','fine',1,0,3,.1,'×','show-director.js ENG_CFG.modP (chance = a + b*entropy, which follows Calm-Busy)',J,{notes:'factor that scales every modP entry'}),
   P('colourDrift','Colour drift','colours',.012,0,.05,.001,'','show-director.js ENG_CFG.drift',J),
   P('flashes','White flashes','fine',.7,0,1,.05,'','existing slider engStrobe',J,{moved:'safety'})]},
 57:{name:'VJ clips',kind:'set',desc:'Plays a clip from the VJ Lab in sync with its song.',colours:['own'],existing:['clip and song pickers'],params:[
@@ -257,27 +256,6 @@ window.VISUAL_PARAMS={
 };
 
 window.SHARED_PARAMS={
- sound:[
-  P('hitSens','Hit sensitivity (kick, snare, hat)','sound',2.2,1.2,4,.1,'×','music.js MUSIC.cfg.onK (2.5) x sens (this slider / 2.2): the one ear for every visual and the Director; vj-runtime ON.K 2.5 is still its own copy',J,{notes:'10-23: Text show and Director now share one threshold; the slider middle (2.2) is the old Director value 2.5'}),
-  P('hitGapKick','Shortest gap between kicks','timing',.2,.05,.4,.01,'s','html advAudio REF[0]; Director onGap[0] .15',J),
-  P('hitGapSnare','Shortest gap between snares','timing',.14,.04,.3,.01,'s','html advAudio REF[1]; Director onGap[1] .08',J),
-  P('hitGapHat','Shortest gap between hats','timing',.07,.03,.2,.01,'s','html advAudio REF[2]; Director onGap[2] .05',J),
-  P('hitGapMel','Shortest gap between melody hits','timing',.12,.05,.3,.01,'s','html advAudio REF[3]',J),
-  P('tempo','Preferred tempo','sound',120,85,175,1,'BPM','html TEMPO tempoEstimate `Math.log2(bpm/120)/.9`; advAudio `Math.log2(b/120)/.8`',J,{notes:'two places; set to 125-128 for house/techno'}),
-  P('dropSens','Drop sensitivity','sound',.5,0,1,.05,'','html S.dropSens (reaches 49/51/53/54 only)',J,{existing:true}),
-  P('dropTunnelSub','Tunnel show drop: sub jump','sound',1.3,1.1,2,.05,'×','html tsStep `sub>1.3*T.dropC.ref`',J),
-  P('dropTunnelLock','Tunnel show drop lockout','timing',4,1,10,.5,'s','html tsStep `t-(A.dropT??-99)>4`',J),
-  P('dropTempoRise','Glitch drop: fast minus slow','sound',.2,.1,.6,.01,'','html tempoTrack `T.fast-T.slow>.2&&T.fast>1.4*T.slow`',J),
-  P('dropTempoCool','Glitch drop cooldown','timing',8,2,30,1,'s','html tempoTrack `t-T.lastDrop>8`',J),
-  P('dropDirDb','Director drop: sub onset','sound',6,3,12,.5,'dB','show-director.js ENG_CFG.dwOnset',J),
-  P('dropDirBack','Director drop: bass back within','sound',5,2,10,.5,'dB','show-director.js ENG_CFG.dwHitDb',J),
-  P('breakdown','Breakdown: sub below','sound',.5,.2,.8,.01,'','html advAudio `A.subS<.5*A.subL`',J,{fmt:'fraction of the groove'}),
-  P('breakdownSteady','Steady bass needed before a breakdown','timing',8,2,20,1,'s','html advAudio `A.subOn>8+ds*8`',J),
-  P('buildRamp','Build ramp up to full','timing',8,2,16,1,'s','html advAudio `(A.armT-1)/8`',J),
-  P('lull','Lull: energy below','sound',.4,.2,.7,.01,'','html advAudio `A.eS<.4*A.eL`',J),
-  P('glitchChance','Glitch chance per type: stutter .6, tear .3, colour .4, twitch .7, blocks .15','fine',.6,0,1,.05,'','html tempoTrack `r()<.6*g` etc.',J,{notes:'only stutter shown; the others are separate literals'}),
-  P('glitchGap','Shortest time between glitches','timing',2.6,.8,6,.1,'s','html tempoTrack `2.6-1.8*g`',J),
-  P('loopRepOn','Director: loop on repeats starts at','sound',.7,.4,1,.05,'','Director ENG_CFG.repOn (off .45)',J)],
  colourDrift:[
   P('d1','Radial spectrum','colours',.04,0,.2,.005,'','1: `m*.75+t*.04`',U),
   P('d2','Tunnel rings','colours',.04,0,.2,.005,'','2: `r*.45+t*.04`',U),

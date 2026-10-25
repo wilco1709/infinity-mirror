@@ -2,7 +2,7 @@
    window.INF_PAD.mount(container, host) -> {refresh(), destroy()}
 
    HOST CONTRACT (everything optional except openGeneral is recommended):
-     host.get(key) / host.set(key, v)   key in 'sensitivity' | 'brightness' | 'calmBusy'; v is always 0..1 (the host maps it to
+     host.get(key) / host.set(key, v)   key in 'sensitivity' | 'brightness' | 'calmBusy' | 'variety'; v is always 0..1 (the host maps it to
                                         its real range; these three live elsewhere: Listen, Light, Conductor).
                                         If get() returns undefined/null the slider is shown disabled ("not connected yet").
      host.defaultOf(key)                optional 0..1 default for double-click; fallback sensitivity .5, brightness 1, calmBusy .5
@@ -49,7 +49,8 @@
     { id: 'dark', name: 'Dark when quiet', feel: 'lullDim', tip: 'In quiet passages the picture goes dark and comes back with the music. 0 leaves it on.' },
     { id: 'sep' },
     { id: 'brightness', name: 'Brightness', host: 'brightness', def: 1, tip: 'Master brightness of every LED. Lower is easier on the eyes and on the power supply.' },
-    { id: 'calmBusy', name: 'Calm ↔ Busy', host: 'calmBusy', def: .5, tip: 'How much and how often things change. Calm: long scenes, few moves. Busy: quick changes, lots of motion.' }
+    { id: 'calmBusy', name: 'Calm ↔ Busy', host: 'calmBusy', def: .5, tip: 'How much and how often things change. Calm: long scenes, few moves. Busy: quick changes, lots of motion.' },
+    { id: 'variety', name: 'Variety', host: 'variety', def: 0, tip: 'How much the changes vary. 0: even scenes, always the best fit for the music. Higher: short and long scenes mixed, and scenes that fit the music less closely also get a turn.' }
   ];
   const AMOUNT_TIP = 'How much of the Feel effects this visual gets. 0 is the plain picture, 100 % the full effect.';
   const TICK_TIP = 'Feel on or off for this visual only. Off: this visual is left exactly as it draws itself.';

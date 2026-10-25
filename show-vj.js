@@ -18,7 +18,7 @@ panel:String.raw`
 code:function(){
 const VJS={pl:null,clip:null,A:null,songName:'',tex:null,N:0,active:false,saved:null,msg:''};
 const vjEsc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-const vjKeys=['engScene','engEnt','engFb','engBright','engHw'];
+const vjKeys=['engScene','vjEnt','engFb','engBright','engHw'];
 function vjClips(){try{return JSON.parse(localStorage.getItem(VJ.CLIPS_KEY)||'[]');}catch(e){return[];}}
 function vjList(){const sel=document.getElementById('vjSel'),L=vjClips();sel.innerHTML='<option value="">'+(L.length?'Pick a clip…':'No clips yet: send one from the VJ Lab')+'</option>'+
   L.map((c,i)=>'<option value="'+i+'">'+vjEsc(c.name)+' · '+vjEsc(c.style&&c.style.name||'')+'</option>').join('');
@@ -40,7 +40,7 @@ function vjStep(N,t,dts){vjActivate();
   if(frameN%8===0&&S.tab==='vj'){const P=VJS.pl,c=VJS.clip,el=document.getElementById('vjLive');
     if(VJS.msg||!P||!VJS.A)el.textContent=VJS.msg||(!c?'Pick a clip first.':'Load its song.');
     else{const s=c.sections[P.sec],g=c.grid,bt=(playerEl.currentTime-g.t0)*g.bpm/60;
-      el.innerHTML='<b>'+vjEsc(c.name)+'</b> · '+vjEsc((c.style&&c.style.name)||'')+' · bar '+(Math.floor(bt/4)+1)+' · '+(s?'<b>'+s.label+'</b>':'')+' · '+'Director'+' · '+vjEsc(P.scene())+
+      el.innerHTML='<b>'+vjEsc(c.name)+'</b> · '+vjEsc((c.style&&c.style.name)||'')+' · bar '+(Math.floor(bt/4)+1)+' · '+(s?'<b>'+s.label+'</b>':'')+' · '+'Epic'+' · '+vjEsc(P.scene())+
         (playerEl.paused?' · paused (play the song)':'')+' · ≈ '+(P.amps||0).toFixed(1)+' A';}}}
 function vjSync(){const g=document.getElementById('vjGo');if(!g)return;g.setAttribute('aria-pressed',String(S.pat===57));g.textContent=S.pat===57?'■ Stop the clip':'▶ Play the clip on the mirror';
   if(S.pat!==57)vjRelease();}

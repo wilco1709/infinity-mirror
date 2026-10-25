@@ -1,17 +1,17 @@
 /* The director: a show for Infinity Mirror Pixel Grid.html (pattern 55, its own tab). The page loads this file with <script src>,
    adds its tab and panel, and runs code() inside its own scope, so everything the page has (gl, S, the audio, TEMPO) can be used here.
    Edit this file, not the page. */
-(window.INF_SHOWS=window.INF_SHOWS||{})["director"]={pat:55,tab:"dir",name:"Director",
+(window.INF_SHOWS=window.INF_SHOWS||{})["director"]={pat:55,tab:"dir",name:"Epic",
 note:"The director from the Advanced visuals tab: eighteen scenes for the mirror chained by a director that listens (builds, drops, breakdowns, loops), with a feedback tunnel under them. It ignores Audio gain, Follow the melody, Speed and the palette.",
-defaults:{engScene:0,engBpm:120,engFb:1,engEnt:0,engStrobe:.7,engHw:0,engIp:'4.3.2.1',engWire:0,engOrigin:0,engDelay:50,engInt:.5,engMix:[],engSet:[],engMark:{}},
+defaults:{engScene:0,engBpm:120,engFb:1,engHw:0,engIp:'4.3.2.1',engWire:0,engOrigin:0,engDelay:50,engMix:[],engSet:[],engMark:{}},
 panel:String.raw`
     <section aria-labelledby="h-dir" data-tab="dir">
-      <h2 id="h-dir">The director</h2>
+      <h2 id="h-dir">Epic</h2>
       <p class="note">A show that is never a playlist. Eighteen scenes in the mirror's own language (thin lines and single sparks on black, outlines that rhyme with the reflections, motion along the edges) and a director that listens, chooses, repeats itself on purpose when the music repeats, and keeps surprising. Every scene starts and ends in a state (dark, a dot, an outline, the frame, light, inverted, chaos); the next one has to start where the last one ended, or a bridge carries it over: an iris that shrinks everything into one LED, a dissolve, or a blackout on the bar.</p>
-      <div class="chips"><button type="button" id="engGo" aria-pressed="false">Play the director on the mirror</button><button type="button" id="engSkip">Next scene (N)</button><button type="button" id="engCyc">Full cycle (C)</button><button type="button" id="engFrz" aria-pressed="false">Freeze (space)</button><button type="button" id="engBlack">Hold for black (B)</button><button type="button" id="engFav">♥ Favourite (H)</button><button type="button" id="engNew">New seed</button></div>
+      <div class="chips"><button type="button" id="engGo" aria-pressed="false">Play Epic on the mirror</button><button type="button" id="engSkip">Next scene (N)</button><button type="button" id="engCyc">Full cycle (C)</button><button type="button" id="engFrz" aria-pressed="false">Freeze (space)</button><button type="button" id="engBlack">Hold for black (B)</button><button type="button" id="engFav">♥ Favourite (H)</button><button type="button" id="engNew">New seed</button></div>
       <select id="engFavs" aria-label="Replay a favourite" style="font:inherit;padding:6px 8px;border-radius:6px;border:1px solid var(--line);background:var(--panel);color:inherit"></select>
       <div class="glabel">Scenes for this set: click the ones you like (it plays at once), click again to take it out; the director only chooses among yours. Auto = all of them</div>
-      <div class="chips" aria-label="Director scenes" id="engScn"></div>
+      <div class="chips" aria-label="Epic scenes" id="engScn"></div>
       <div id="engSetList" style="display:flex;flex-direction:column;gap:6px"></div>
       <div class="glabel">Layers (keys 1-9, the last three by click): click one and it comes underneath with a slider, click again to take it away. None picked = the director's own choice</div>
       <div class="chips" id="engMods"></div>
@@ -38,10 +38,10 @@ panel:String.raw`
       <p class="note"><b>Intensity.</b> One number from 0 to 1 sets how much happens: mostly the loudness (measured like broadcast meters, EBU R128, against the song's own loud level over the last minutes, so a soft passage stays soft instead of being turned up), then how many hits a second, how many bands play and how bright it is. Soft music: slower motion, fewer sparks, smaller hits, a dimmer picture and calmer scenes. Louder, busier, fuller: all of it more. It rises within half a second and settles over a few seconds, as listeners do.</p>
       <p class="note"><b>When it switches.</b> On a drop at once; on a new section (the spectrum's shape or the harmony on the circle of fifths and thirds changes), on the sound falling away (8 LU under the loudest of the last 4 s) and on instruments coming in (three more bands playing within 2 s) at the next bar line. Two of these in one bar make it a big switch; after a switch it waits at least 4 bars.</p>
       <p class="note"><b>Roles.</b> Every scene has a role, shown on its button: <i>drop</i> for the moment a drop hits (inversion, puncture, tunnel rings, core, dynamo, merger, comic merger, supernova), <i>build</i> for loading towards a drop (accumulation, portal, scanner, rain, static, heartbeat, dynamo, tracer, merger, comic merger, supernova, sun dive, celdeling), <i>flow</i> for the music running (rings, ripple, rain, corridor, scanner, portal, puncture, core, tracer, sun dive, celdeling) and <i>calm</i> for breakdowns and soft parts (void, perimeter, heartbeat). On Auto the director reads the phase (an armed drop watch or a build = build; a breakdown, a rest or low intensity = calm; else flow) and picks a scene of that role; a drop always gets a drop scene.</p>
-      <p class="note"><b>Alive.</b> Hits move things on springs, so a beat swells, overshoots once and settles instead of switching on and off (the animators' follow-through). On every kick the tunnel's ghosts duck and come back within a tenth of a second, like sidechain pumping in a mix. In the last beat before a change the director already knows about (a waiting switch, a scene ending on that bar), the picture pulls in and dims, and the change lands on the bar line (anticipation). It remembers every new section and drop with its harmony: when a passage comes back, so does its scene, a little changed. And while it plays, the sound from the player or a video waits 50 ms (the slider), so the light lands on the beat instead of after it; captured computer sound cannot wait.</p>
+      <p class="note"><b>Alive.</b> Hits move things on springs, so a beat swells, overshoots once and settles instead of switching on and off (the animators' follow-through; General > Motion has the spring speed and damping). On every kick the tunnel's ghosts duck and come back, like sidechain pumping in a mix (General > Motion: Echo duck), and the whole picture punches in and flashes on the kick (General > Feel). In the last beat before a change the director already knows about (a waiting switch, a scene ending on that bar), the picture pulls in and dims (General > Motion: Pull-in and Dim before a change), and the change lands on the bar line (anticipation). It remembers every new section and drop with its harmony: when a passage comes back, so does its scene, a little changed. And while it plays, the sound from the player or a video waits 50 ms (the slider), so the light lands on the beat instead of after it; captured computer sound cannot wait.</p>
       <p class="note"><b>Never still.</b> Every half second it counts how many lit LEDs actually changed. A picture that hardly moves for 2.5 s is shaken on the next bar line (the same scene with other settings and a layer flipped); still too still after that, the next scene comes, again on a bar line. Everything the director changes on its own lands on a bar line; only drops (and your N key) cut at once. Black on purpose (held, before or at a drop) does not count.</p>
       <p class="note"><b>Flicker fades.</b> Besides hard cuts and LED-by-LED fades, a scene can flicker in: for one bar whole frames alternate between the old scene and the new one, the new one rare at first and then ever more often, so they never mix. Two scenes far apart in brightness would strobe that way, so they fade LED by LED instead.</p>
-      <p class="note"><b>What you hear is what you see.</b> When the music is sparse (a song's intro, a breakdown, a soft passage) Arrivals takes over and the parts that play make the picture, one solid shape more for every part that comes in, no lines: the melody is a shape in the middle that jumps on every note (a square on its home note, a diamond on the others), a voice that stands out a big pyramid while it sings, the highs small squares lighting in the corners in turn, the lows a heavy disc that swells towards the drop. A new section is shown there, not cut away. The Intensity slider (, and .) sets how bright, how full and how complex everything gets; in the middle it is as the music says. On a drop: BAM, a white square flies out and fills the panel, then (the first drop of a song, half the others) thick squares shoot out on every bass hit.</p>
+      <p class="note"><b>What you hear is what you see.</b> When the music is sparse (a song's intro, a breakdown, a soft passage) Arrivals takes over and the parts that play make the picture, one solid shape more for every part that comes in, no lines: the melody is a shape in the middle that jumps on every note (a square on its home note, a diamond on the others), a voice that stands out a big pyramid while it sings, the highs small squares lighting in the corners in turn, the lows a heavy disc that swells towards the drop. A new section is shown there, not cut away. Calm ↔ Busy (General › Timing, the Pad) sets how bright, how full and how complex everything gets; in the middle it is as the music says. On a drop: BAM, a white square flies out and fills the panel, then (the first drop of a song, half the others) thick squares shoot out on every bass hit.</p>
       <p class="note"><b>Space (after Jon Hopkins).</b> Black is the main element: outside a climax (a build, the first 4 bars after a drop) at least 65 % of the panel stays dark, the dimmest light is gated away first and the brightest, the one hero, stays. Echoes fade to black within a beat. Before a drop the bar before the breakdown's 8-bar phrase ends goes black, so the drop comes out of the dark. One idea at a time: no layers on top by default (a part of the music that plays picks a scene that shows it), mirror and kaleidoscope are rare, and scenes change through black or a white flash on the bar line, or strip down to a dot or to black first; flicker fades only towards a drop. Everyday lines are thin; thick and full is for the big moments.</p>
       <p class="note"><b>White is scarce.</b> A white screen (at least 92 % of the LEDs bright; never a picture with forms in it) only comes while the music builds towards a drop and in the 8 bars after one (the inverted layer is only rolled then, and the white scenes have those roles). Then it strobes to a part of the music: in a build on the snare (or the hats), after a drop on the kick, on the beat when that part is silent; a short white flash with black between, never more than 3 flashes a second. Anywhere else a white picture is dimmed at once and leaves on the next bar line.</p>
       <p class="note">Flash safety: white flashes share the other shows' limit, at most 3 in any second. White is a dramatic moment here, not a state.</p>
@@ -51,7 +51,7 @@ code:function(){
 /* the director's buttons (pattern 55); only DOM and S here, the chips are built with the scenes further down */
 function syncEng(){try{engAudioDelay();}catch(e){}   /* the sound goes back to direct when the director stops */
   const g=document.getElementById('engGo');if(!g)return;let E=null;try{E=ENG;}catch(e){}   /* ENG is made below */
-  g.setAttribute('aria-pressed',String(S.pat===55));g.textContent=S.pat===55?'■ Stop the director':'▶ Play the director on the mirror';
+  g.setAttribute('aria-pressed',String(S.pat===55));g.textContent=S.pat===55?'■ Stop Epic':'▶ Play Epic on the mirror';
   const set=S.engSet||[];document.querySelectorAll('#engScn button').forEach(b=>{const id=b.dataset.id,on=id?set.includes(id):!set.length;b.setAttribute('aria-pressed',String(on));b.textContent=(id&&on?'✓ ':'')+b.dataset.n;});
   const mix=S.engMix||[];
   document.querySelectorAll('#engMods button').forEach((b,i)=>{const x=mix.find(q=>q.m===b.dataset.m);b.setAttribute('aria-pressed',String(!!x));
@@ -69,7 +69,7 @@ function syncEng(){try{engAudioDelay();}catch(e){}   /* the sound goes back to d
 const ENG_CFG={
   barsPerPhrase:16,
   /* AUTO: the level decides (the level itself, the choice, the phrases and the planned changes are conductor.js: CONDUCTOR.cfg / General > Timing).
-     lvIx = how much the level adds to the intensity slider's paths (light, motion, dark, echoes); lvCold = under it the probability params 'cold' are on;
+     lvIx = how much the level adds to the Calm-Busy paths (light, motion, dark, echoes); lvCold = under it the probability params 'cold' are on;
      lvDens = the dice's share in a density parameter's value */
   lvIx:.6,lvCold:.4,lvDens:.3,
   /* ears, the song, new sections, loudness, intensity, springs and the drop watch: all in music.js (MUSIC.cfg, handed through below).
@@ -137,9 +137,9 @@ const ENG_DENS=['n','heads','train','arcs','lamps','spray','burst','parts','crac
 function engRoll(spec,R,lv){const o={};for(const k in spec){const v=spec[k],d=lv!=null&&ENG_DENS.includes(k)&&(Array.isArray(v)||v.int),u=R(),t=d?engClamp(lv+(u-.5)*ENG_CFG.lvDens):u;   /* AUTO: density: v = a + (b-a) × clamp(level + a small dice share) */
   o[k]=Array.isArray(v)?v[0]+(v[1]-v[0])*t:v.pick?v.pick[Math.floor(u*v.pick.length)]:v.int?v.int[0]+Math.min(v.int[1]-v.int[0],Math.floor(t*(v.int[1]-v.int[0]+1))):u<v.p;}return o;}
 const engClamp=v=>v<0?0:v>1?1:v,engEaseOut=LOOK.ease.out;   /* the one easing set is look.js */
-/* the intensity slider, -0.5..+0.5 round its middle (as the music says): light, how full the panel may get, motion, how busy and complex */
-const engIx=()=>(S.engInt==null?.5:S.engInt)-.5;
-const engIxL=()=>engIx()+(ENG.lvl==null?0:ENG_CFG.lvIx*(ENG.lvl-.5));   /* AUTO: the slider plus the song's level (±.3): light, motion, darkness, echoes follow the music */
+/* Calm <-> Busy (General > Timing, the Pad), as -0.4..+0.4 round its middle (0 exactly at .5): light, how full the panel may get, motion, how busy and complex */
+const engIx=()=>CONDUCTOR.ix();
+const engIxL=()=>engIx()+(ENG.lvl==null?0:ENG_CFG.lvIx*(ENG.lvl-.5));   /* AUTO: Calm-Busy plus the song's level (±.3): light, motion, darkness, echoes follow the music */
 function engSeed(seed){const E=ENG,C=ENG_CFG;E.seed=seed;E.R=engRng(seed);E.b0=Math.floor(MUSIC.beat/ENG_CFG.beatsPerBar)*ENG_CFG.beatsPerBar;E.n=0;E.sc=null;E.tr=null;E.ev=null;E.dot=null;E.box=null;E.loop=null;E.canon=-1;
   E.sparks.length=0;E.log.length=0;E.hist.length=0;E.rest=0;E.hiBars=0;E.t0=E.t;E.shock=null;E.secReq=null;E.spz=null;E.mem=[];E.memP=[];E.phr0=E.b0;E.planNext=null;E.planKey=null;if(!E.N)return;
   const R=engRng(seed^0x5bd1e995),n=E.N*E.N;
@@ -1063,58 +1063,137 @@ engScene('sundive',{name:'Sun dive',entry:['dark','dot'],exit:['dark'],bars:[16,
       const tx=-ny,ty=nx;for(let pass=0;pass<2;pass++){const sp2=sp+(pass?0:1),h2=hg+(pass?0:1),cc=pass?(age<.2?C.white:org):red;let lx=0,ly=0;
         for(let k=0;k<=14;k++){const th=k/14*PI,px=ax+tx*sp2*Math.cos(th)+nx*h2*Math.sin(th),py=ay+ty*sp2*Math.cos(th)+ny*h2*Math.sin(th);if(k)engLine(lx,ly,px,py,.85*fd*fade,cc);lx=px;ly=py;}}
       return true;});}});
-/* Celdeling (mitosis): one animal cell dividing, the real sequence in fluorescence-microscope colours (DNA blue, each chromosome painted
-   its own hue, microtubules green, kinetochores pink, the actomyosin ring red, the membrane warm gold, on black), timed by the bar lines:
-   8 phases a division, one bar each (two on a long scene). Interphase (phases 1-2: a round cell, a big nucleus with loose chromatin and a
-   nucleolus, one centrosome with its microtubule network, which duplicates), prophase (3: the chromatin condenses into X-shaped
-   chromosomes, the two centrosomes walk round the nucleus to the poles and their asters grow), prometaphase (4: the nuclear envelope
-   breaks into fragments, kinetochore fibres search, capture and drag the chromosomes to the middle), metaphase (5: lined up on the plate,
-   tugged both ways), anaphase (6, on the bar line: APC/C destroys cyclin B, a Ca2+ wave runs out through the cell, the sister chromatids
-   are pulled apart centromere first with the arms trailing, the poles move apart and the cell stretches), telophase + cytokinesis (7: new
-   envelopes round each set, the chromosomes loosen, the red contractile ring pinches the waist), abscission exactly on the next bar line
-   (a flash at the midbody), then (8) the camera dives into one daughter, which rounds up into the next cell; the next division turns a
-   quarter, as in early embryos.
-   The maths: the membrane is a Cassini oval |x-f1|·|x-f2| = b² whose foci move apart: round, a peanut, a lemniscate at the pinch, then two
-   drops that relax into round daughters; its level sets fill the cytoplasm as soft equal-potential bands drifting inward (streaming), and
-   they split in two round the foci before the cell does. Microtubules show dynamic instability: each grows (a bright GTP cap), suffers a
-   catastrophe and shrinks, is rescued, stalls at the cortex. Cyclin B rises through the cycle (the cytoplasm warms to magenta as CDK1
-   switches on) and crashes at anaphase. Vesicles jitter in Brownian motion. Music: kick = the cell swells and a pulse of fresh tubulin runs
-   out along the asters, snare = a burst of catastrophes and a tug on the chromosomes, hats = vesicles sparkle, bass = the membrane wobbles
-   and thickens, mids = how fast the cytoplasm streams, a drop in prophase..metaphase starts anaphase at once (pinch a bar later) */
+/* Celdeling: a story in three acts (2026-10-23, on Merger's recipe: real maths, the music sets the clock, the climax is the drop, a hand-off).
+   Act 1, one cell (calm): an animal cell dividing (mitosis), the real sequence in fluorescence-microscope colours (DNA blue, each
+   chromosome painted its own hue, microtubules green, kinetochores pink, the actomyosin ring red, the membrane warm gold, on black).
+   Interphase (a round cell, a big nucleus with loose chromatin and a nucleolus, one centrosome with its microtubule network, which
+   duplicates), prophase (the chromatin condenses into X-shaped chromosomes, the two centrosomes walk round the nucleus to the poles and
+   their asters grow), prometaphase (the nuclear envelope breaks into fragments, kinetochore fibres search, capture and drag the
+   chromosomes to the middle), metaphase (lined up on the plate, tugged both ways). There the cell waits, as a real one does at its
+   spindle checkpoint, till the music moves: the next 4-bar line when it is calm, the next bar line in a flow or a build, or when a new
+   section comes in or the beat comes back. Anaphase starts on that bar line (APC/C destroys cyclin B, a Ca2+ wave runs out, the sister
+   chromatids are pulled apart centromere first), telophase + cytokinesis (new envelopes, the red contractile ring pinches the waist),
+   abscission two bars later (one in a build) with a flash at the midbody. The camera pulls back instead of diving in: the two daughters
+   stay, inside the zona pellucida (the embryo's shell).
+   Act 2, the embryo (the build): cleavage, every cell dividing at once in a wave across the embryo (2, 4, 8, 16, 32), each division at
+   right angles to the last, abscissions on bar lines. The music sets the round: 4 bars when calm, 2 in a flow, in a build each round
+   half the last (down to 1 bar: exponential growth you can hear); armed for a drop, the rounds left are fitted so the last one lands a
+   bar before the drop the director expects. The cells push each other into a tight ball (soft discs inside the zona) and a full ball, a
+   morula (Latin for mulberry), compacts and waits, trembling, for the drop (or a new section, the beat coming back, 8 bars of waiting).
+   Act 3, the bloom (the drop): the zona cracks open (hatching) and the cells fly out into Vogel's sunflower: cell i at angle i x 137.508
+   degrees (the golden angle) and radius c sqrt(its age), so new cells born in the middle push the older ones outwards and the spirals
+   of 8, 13, 21 and 34 (Fibonacci numbers) appear by themselves; the colours mark one family of spirals. Eight bars on, on a bar line,
+   Morphology takes over, starting with a neuron.
+   The maths: each cell's membrane is a Cassini oval |x-f1|.|x-f2| = b^2 whose foci move apart: round, a peanut, a lemniscate at the pinch
+   (b = a), then two drops that relax into round daughters (the field blends from the parent's lemniscate into each daughter's circle).
+   The embryo is the smooth union of all those fields (the lowest value wins), with a wall where the two lowest are equal. In the close-up
+   the field's level sets fill the cytoplasm as soft equal-potential bands drifting inward (streaming). Microtubules show dynamic
+   instability (grow with a bright GTP cap, catastrophe, shrink, rescue, stall at the cortex). Cyclin B rises through each cycle (the
+   cytoplasm warms to magenta as CDK1 switches on) and crashes at anaphase. Vesicles jitter in Brownian motion.
+   Music, the Colour fields recipe through MUSIC and FEEL (on the hit's own frame, as hard as the hit, a dim base that pops, Feel's spring
+   after it): kick = the cells swell and bounce like jelly, the membranes light up, fresh tubulin runs out along the asters; in the bloom
+   each kick gives birth to 3-12 new cells (more on a harder hit) and between the kicks it hardly grows. Snare = a burst of microtubule
+   catastrophes and a tug on the chromosomes; in the embryo a springy jolt through the cells; in the bloom a ring running out. Hats =
+   vesicles and cells sparkle. Melody = the chromosomes and nuclei glow; in the bloom a melody note (at most every 2 bars) turns the
+   colours to the next family of spirals, and every other spiral glows with the melody. Bass = the membrane wobbles a little. A drop =
+   the bloom, at once (in act 1 the one cell blooms); another drop in the bloom's first 4 bars is a second burst, a later one cuts to
+   Morphology at once */
 function engCellVes(R){const r=.5+.43*Math.sqrt(R()),a=R()*6.283;return{s:r*Math.cos(a),w:r*Math.sin(a),sp:0,v:R()};}
 function engCellCh(sc){const R=sc.R,n=sc.p.nch,pal=[[.3,.5,1],[.3,.85,1],[.62,.42,1],[.9,.38,1],[.35,.68,1],[.55,.62,1],[.95,.45,.8]];sc.ch=[];
   for(let i=0;i<n;i++){const r=.27*Math.sqrt(R()),a=R()*6.283;sc.ch.push({hs:r*Math.cos(a),hw:r*Math.sin(a),phi:R()*6.283,len:.1+.05*R(),ph:R()*6.283,col:sc.p.paint?pal[(sc.po+i*3)%7]:[.32,.55,1]});}
   sc.ch.sort((x,y)=>x.hw-y.hw).forEach((c,i)=>c.wi=(i-(n-1)/2)/((n-1)/2)*.46);}   /* plate slots in the order they lie, so no paths cross */
-function engCellNext(sc){const R=sc.R,sd=sc.sd,cD=.9,rd=.75,ax0=sc.ax;sc.ax=ax0+(R()<.5?1:-1)*Math.PI/2+(R()-.5)*.4;   /* the daughter becomes the cell: a new frame, a quarter turn */
-  const dA=ax0-sc.ax,c=Math.cos(dA),sn=Math.sin(dA);sc.ca0=(sd>0?0:Math.PI)+dA;
-  for(const m of sc.mt){m.ang+=dA;if((m.k?-1:1)===sd)m.L/=rd;else{m.L=.04;m.g=1;}}
-  for(const v of sc.ves){if(v.s*sd>.1){const s=(v.s-sd*cD)/rd,w=v.w/rd;v.s=s*c-w*sn;v.w=s*sn+w*c;}else Object.assign(v,engCellVes(R));}
-  sc.sd=R()<.5?1:-1;sc.dn++;engCellCh(sc);}
-engScene('celdeling',{name:'Celdeling',entry:['dark','dot'],exit:['dark'],bars:[16,16,32],energy:.45,lit:.6,key:['nch','paint'],
-  params:{nch:{int:[5,7]},paint:{p:.75},slow:{p:.5},fz:[.8,.9],fp:[0,.03],fs:{pick:[.25,.5]}},
-  init(sc,E){delete sc.mods.mirror;delete sc.mods.kaleido;delete sc.mods.rot;const R=sc.R,bp=ENG_CFG.beatsPerBar;   /* never on its side or copied */
-    sc.cyc=sc.bars>=32&&sc.p.slow?16:8;sc.P=(E.beat-Math.round(E.beat/bp)*bp)/bp*8/sc.cyc;   /* the division clock: 8 phases a division, whole phases on the bar lines */
-    sc.ax=R()*6.283;sc.ca0=R()*6.283;sc.sd=R()<.5?1:-1;sc.fast=0;sc.tug=0;sc.tv=0;sc.caT=-99;sc.abT=-99;sc.dr=0;sc.dn=0;sc.sw=[R()*6.28,R()*6.28];sc.po=R()*7|0;sc.buf=null;
-    engCellCh(sc);sc.mt=[];for(let j=0;j<40;j++)sc.mt.push({k:j&1,ang:R()*6.283,L:.1+.4*R(),g:R()<.7?1:0,fl:0,v:R()});
-    sc.ves=[];for(let j=0;j<36;j++)sc.ves.push(engCellVes(R));},
-  say:sc=>'a cell dividing (mitosis) in fluorescence colours, one division every '+(sc.cyc||8)+' bars: chromatin condenses into '+sc.p.nch+' chromosomes, the spindle pulls them apart on the bar line (Ca wave, cyclin crash), the red ring pinches the Cassini-oval membrane and the camera dives into a daughter; kick swells it, snare = microtubule catastrophes + tug, hats = vesicle sparkle, bass = membrane wobble'+(sc.p.paint?', painted chromosomes':''),
-  draw(sc,E,dts,b,tick,db){const C=ENG_CFG,A=EAR,N=E.N,h=(N-1)/2,t=E.t,bpb=C.beatsPerBar,end=sc.b1-sc.b0-bpb,q=engClamp((b-end)/bpb),fade=engEaseOut(Math.min(1,b/2))*(1-q),R=sc.R,cl=engClamp,sm=x=>{x=cl(x);return x*x*(3-2*x);},PI=Math.PI;
-    /* the clock; a drop in prophase..metaphase starts anaphase at once, double speed, so the pinch lands a bar later */
-    if(A.drop&&b>.5){if(sc.P>2.5&&sc.P<5){sc.P=5;sc.fast=1;}sc.caT=t;}
-    const P0=sc.P;sc.P+=cl(db||0)/bpb*8/sc.cyc*(sc.fast?2:1);if(sc.P>=7)sc.fast=0;
-    if(P0<5&&sc.P>=5)sc.caT=t;if(P0<7&&sc.P>=7)sc.abT=t;   /* anaphase onset: the Ca2+ wave; abscission: the flash */
-    if(sc.P>=8){sc.P-=8;engCellNext(sc);}
-    const P=cl(sc.P/8)*8,sd=sc.sd,cD=.9,rd=.75,kick=Math.exp(-(t-A.onT[0])/.15),mtd=Math.min(dts,.05);
+const ENG_CD={GA:Math.PI*(3-Math.sqrt(5)),FIB:[8,13,21,34],FIBm:[5,8,13,21],rd:.75,Z:1.8,NB:400,
+  PAL:[[.28,.48,1],[.3,.85,1],[.25,1,.45],[1,.62,.22],[.95,.45,.8],[.62,.42,1]]};   /* the golden angle, the spiral families, a daughter's radius, the zona's, the most cells in the bloom, its colours */
+const engCdSm=x=>{x=engClamp(x);return x*x*(3-2*x);};
+/* the bar line at or after the scene's beat x (with k: every k bars) */
+const engCdBar=(sc,x,k)=>{const q=ENG_CFG.beatsPerBar*(k||1);return Math.ceil((sc.b0+x-1e-6)/q)*q-sc.b0;};
+/* a thick soft stroke into buffer B (in LEDs, intensity i0 → i1); from a point to itself, a dot */
+function engCdSeg(B,N,x0,y0,x1,y1,rad,i0,i1,c){const e=rad+2,dx=x1-x0,dy=y1-y0,l2=dx*dx+dy*dy||1e-6,G=(rad+1.2)*(rad+1.2);
+  const X0=Math.max(0,Math.floor(Math.min(x0,x1)-e)),X1=Math.min(N-1,Math.ceil(Math.max(x0,x1)+e)),Y0=Math.max(0,Math.floor(Math.min(y0,y1)-e)),Y1=Math.min(N-1,Math.ceil(Math.max(y0,y1)+e));
+  for(let y=Y0;y<=Y1;y++)for(let x=X0;x<=X1;x++){const u=engClamp(((x-x0)*dx+(y-y0)*dy)/l2),ex=x0+dx*u-x,ey=y0+dy*u-y,d2=ex*ex+ey*ey,k=engClamp(rad-Math.sqrt(d2)+.5)+.3*Math.exp(-d2/G);
+    if(k>.01){const v=k*(i0+(i1-i0)*u),j=(y*N+x)*3;B[j]+=v*c[0];B[j+1]+=v*c[1];B[j+2]+=v*c[2];}}}
+const engCdDot=(B,N,x,y,rad,v,c)=>engCdSeg(B,N,x,y,x,y,rad,v,v,c);
+/* the colour of spiral u (0..1 round its family), cycling through the fluorescence colours */
+function engCdPal(u,o){const P=ENG_CD.PAL,n=P.length,x=(u%1+1)%1*n,i=Math.floor(x),f=x-i,a=P[i%n],b=P[(i+1)%n];for(let k=0;k<3;k++)o[k]=a[k]+(b[k]-a[k])*f;return o;}
+/* a cell of the embryo: centre x,y and radius r in units of the first cell's radius (the screen's axes), ax the axis of its next
+   division, par the parent's lemniscate it rounds up from (rel 0 → 1), lag its delay in a cleavage's wave, dx,dy the way the snare jolts it */
+function engCdNew(R,x,y,r,ax,par){return{x,y,r,ax,par,rel:par?0:1,v:R(),lag:0,u:0,a:0,bb:1,dx:1,dy:0,sis:null};}
+/* a division: two daughters in the lemniscate's lobes, each to divide at right angles to this one */
+function engCdSplit(sc,c,out){const R=sc.R,ca=Math.cos(c.ax),sa=Math.sin(c.ax),r=c.r*ENG_CD.rd,par={x:c.x,y:c.y,r:c.r,ax:c.ax},
+    d1=engCdNew(R,c.x+ca*.9*c.r,c.y+sa*.9*c.r,r,c.ax+Math.PI/2+(R()-.5)*.35,par),d2=engCdNew(R,c.x-ca*.9*c.r,c.y-sa*.9*c.r,r,c.ax+Math.PI/2+(R()-.5)*.35,par);
+  d1.sis=d2;d2.sis=d1;out.push(d1,d2);sc.em.mid.push(c.x,c.y);}
+/* the embryo begins: the two daughters of act 1 in the close-up's frame (its axis, its scale), or, on an early drop, the one cell */
+function engCdStart(sc,E,one){const ax=sc.ax,c=Math.cos(ax),s=Math.sin(ax),R=sc.R,P=engClamp(sc.P/8)*8,L=[];
+  sc.em={cells:L,ru:0,rEnd:null,rL:4,pL:4,hold0:null,blAt:null,why:null,pxe:E.N*.35*(P<7?1-.15*engCdSm((P-5)/2):.85),abT:-99,mid:[],spk:[]};
+  if(one){L.push(engCdNew(R,0,0,1,ax,null));return;}
+  const par={x:0,y:0,r:1,ax};for(const g of[1,-1]){const d=engCdNew(R,g*.9*c,g*.9*s,ENG_CD.rd,ax+Math.PI/2+(R()-.5)*.3,par);d.rel=.3;L.push(d);}
+  L[0].sis=L[1];L[1].sis=L[0];engLog('Celdeling: two cells, the camera pulls back: the embryo');}
+/* a cleavage round in bars: 4 when calm, 2 in a flow, in a build half the last (down to 1); armed for a drop, the rounds left are fitted
+   so the last one lands a bar before the drop the director expects */
+function engCdRound(sc,E,ph,armed){const em=sc.em,bpb=ENG_CFG.beatsPerBar;
+  const bd=armed?engMgDropAt(E):null;   /* the beat the drop is expected on (Merger aims at the same one) */
+  if(bd!=null&&isFinite(bd)){const left=Math.max(1,Math.ceil(Math.log2(sc.p.cap/em.cells.length)));return Math.max(1,Math.min(4,Math.floor(((bd-E.beat)/bpb-1)/left)));}
+  return ph==='calm'?4:ph==='build'?Math.max(1,em.pL/2):2;}
+function engCdDivide(sc,E){const em=sc.em,out=[];em.mid.length=0;for(const c of em.cells)engCdSplit(sc,c,out);em.cells=out;em.ru=0;em.pL=em.rL;em.rEnd=null;em.abT=E.t;}
+/* act 3 begins: the embryo hatches and blooms; Morphology (a neuron first) takes over 8 bars on, on a bar line */
+function engCdBloom0(sc,E,b,why){const em=sc.em,D=ENG_CD,N=E.N,h=(N-1)/2,R=sc.R,bpb=ENG_CFG.beatsPerBar,out=[];
+  for(const c of em.cells)if(c.u>.72)engCdSplit(sc,c,out);else out.push(c);em.cells=out;   /* a division under way finishes at once */
+  const n0=Math.min(out.length,D.NB),th0=R()*6.2832,ang=a=>(a%6.2832+6.2832)%6.2832,
+    cs=out.slice(0,n0).map(c=>({x:h+c.x*em.pxe,y:h+c.y*em.pxe,r:c.r*em.pxe,a:ang(Math.atan2(c.y,c.x))})).sort((p,q)=>p.a-q.a),
+    sl=cs.map((_,i)=>({i,a:ang(i*D.GA+th0)})).sort((p,q)=>p.a-q.a);   /* each cell flies to the slot at its own angle, so no paths cross */
+  const bl=sc.bl={t0:E.t,b0:b,n0,n:n0,nT:n0+10,fi:0,fp:0,fT:E.t-9,th0,burst:E.t,za:R()*6.2832,Zp:D.Z*em.pxe,ix:new Float32Array(n0),iy:new Float32Array(n0),ir:new Float32Array(n0),
+    born:new Float64Array(D.NB),sp:new Float32Array(D.NB),waves:[]};
+  sl.forEach((s,j)=>{bl.ix[s.i]=cs[j].x;bl.iy[s.i]=cs[j].y;bl.ir[s.i]=cs[j].r;});bl.born.fill(E.t-9,0,n0);
+  sc.act='bloom';sc.b1=sc.b0+engCdBar(sc,b+8*bpb);ENG.mpPos=ENG_MP.length-1;   /* Morphology starts on its first form, the neuron */
+  sc.then={id:'morphology',mods:{},bars:24,from:'dark',tag:'after the bloom'};
+  engLog('Celdeling: '+why+' → '+n0+(n0>1?' cells hatch':' cell')+' and bloom (Vogel: 137.5°, r ∝ √age); Morphology takes over in '+((sc.b1-sc.b0-b)/bpb).toFixed(1)+' bars');}
+/* the story's clock, every frame before the drawing: the music sets the pace (see the header) */
+function engCdPace(sc,E,b,db,dts){const C=ENG_CFG,A=EAR,W=A.dw,M=MUSIC,bpb=C.beatsPerBar,ph=engPhase(),armed=W.st==='breakdown'&&W.armed,t=E.t;
+  let why=sc.trig;sc.trig=null;if(!why&&sc.brk&&!A.brk)why='the beat is back';sc.brk=A.brk;
+  const drop=sc.dropT;sc.dropT=false;
+  /* the snare's jolt: one spring (3.5 Hz, damping .4), each cell a new way on each hit */
+  if(M.snare.on&&b>.5){sc.sv+=6*(.4+.6*M.snare.str);if(sc.em)for(const c of sc.em.cells){const a=sc.R()*6.2832;c.dx=Math.cos(a);c.dy=Math.sin(a);}}
+  {const w=22,z=.4,d=Math.min(dts,.05)/4;for(let k=0;k<4;k++){sc.sv+=(-w*w*sc.ss-2*z*w*sc.sv)*d;sc.ss+=sc.sv*d;}}
+  if(sc.act==='one'){
+    if(drop){if(!sc.em)engCdStart(sc,E,true);sc.act='emb';engCdBloom0(sc,E,b,'the drop');return;}   /* the drop is the bloom, at once */
+    if(sc.P<4.98){const pace=ph==='calm'?.6:ph==='build'||armed?1.5:1;sc.P=Math.min(4.98,sc.P+db*pace/bpb);   /* a phase a bar, slower when calm, faster in a build */
+      if(sc.P>=4.98)engLog('Celdeling: metaphase, the chromosomes on the plate: the checkpoint waits for the music');}
+    else if(sc.P<5){const nb=why||armed||ph!=='calm'?engCdBar(sc,b):engCdBar(sc,b,4);   /* the spindle checkpoint */
+      if(sc.rb==null||nb<sc.rb){sc.rb=nb;engLog('Celdeling: '+(why||ph)+' → anaphase in '+(nb-b).toFixed(1)+' beats');}
+      if(b>=sc.rb){sc.P=5;sc.caT=t;sc.rP=2/((ph==='build'||armed?1:2)*bpb);}}
+    else{const P0=sc.P;sc.P+=db*(sc.P<7?sc.rP:1/bpb);if(P0<7&&sc.P>=7)sc.abT=t;}   /* anaphase to abscission in 2 bars (1 in a build), then they round up */
+    if(sc.P>=7.35&&!sc.em)engCdStart(sc,E,false);
+    if(sc.P>=7.9)sc.act='emb';
+    return;}
+  const em=sc.em;if(sc.act!=='emb')return;
+  if(drop){engCdBloom0(sc,E,b,'the drop');return;}
+  const n=em.cells.length;
+  if(n<sc.p.cap){const L=engCdRound(sc,E,ph,armed);
+    if(em.rEnd==null){em.rL=L;em.rEnd=engCdBar(sc,b+(L-.5)*bpb);em.ru=0;   /* the nearest bar line L bars on (a slow frame may start it a little late) */const wa=sc.R()*6.2832,wc=Math.cos(wa),ws=Math.sin(wa);
+      for(const c of em.cells)c.lag=.05*(1+Math.max(-1,Math.min(1,(c.x*wc+c.y*ws)/1.6)));   /* the division runs across the embryo as a wave */
+      engLog('Celdeling: '+n+' → '+2*n+' cells, on the bar line in '+((em.rEnd-b)/bpb).toFixed(1)+' bars ('+(armed?'fitted to the drop':ph)+')');}
+    else{const e2=engCdBar(sc,b+((1-em.ru)*L-.5)*bpb);if(e2<em.rEnd-.01)em.rEnd=e2;   /* a build shortens the round, never the other way */
+      if(why){em.rEnd=Math.min(em.rEnd,engCdBar(sc,b+1));engLog('Celdeling: '+why+' → they divide on the next bar line');}}
+    const rem=em.rEnd-(b-db);em.ru=Math.min(1,em.ru+(1-em.ru)*Math.min(1,db/Math.max(1e-3,rem)));   /* the round's clock reaches 1 on its bar line */
+    if(b>=em.rEnd-1e-6)engCdDivide(sc,E);}
+  else{if(em.hold0==null){em.hold0=b;engLog('Celdeling: '+n+' cells, a morula: it waits for the drop');}
+    if(why&&em.blAt==null){em.blAt=engCdBar(sc,b+.01);em.why=why;}
+    if(em.blAt==null&&!armed&&b-em.hold0>=8*bpb){em.blAt=engCdBar(sc,b,4);em.why='the wait';}}
+  if(em.blAt==null&&b>=64*bpb){em.blAt=engCdBar(sc,b,4);em.why='the story ran long';}
+  if(em.blAt!=null&&b>=em.blAt)engCdBloom0(sc,E,b,em.why);}
+/* act 1: the close-up of the first division, drawn at fade (it crossfades into the embryo); its clock is engCdPace */
+function engCdOne(sc,E,dts,b,fade){const C=ENG_CFG,A=EAR,M=MUSIC,N=E.N,h=(N-1)/2,t=E.t,bpb=C.beatsPerBar,R=sc.R,cl=engClamp,sm=engCdSm,PI=Math.PI;
+    const P=cl(sc.P/8)*8,cD=.9,rd=.75,kick=M.kick.pulse,fsp=window.FEEL?FEEL.spring:kick,mel=window.FEEL?FEEL.mel:M.mel.pulse,mtd=Math.min(dts,.05);   /* the kick's hit-latched pulse (as hard as the hit), Feel's spring, the melody */
     /* the membrane: a Cassini oval (foci ±a, product b²), then relaxing (rl) into two round daughters of radius rd at ±cD */
     let a=0,bb=1,rl=0;
     if(P>7){const e=P-7;a=1+.05*sm(e*2);bb=1-.03*engEaseOut(Math.min(1,e*5));rl=sm((e-.05)/.8);}
     else if(P>6){const e=sm(P-6);a=.62+.38*e;bb=1.04-.04*e;}   /* the furrow: a lemniscate (b = a) exactly on the bar line */
     else if(P>5){const e=sm(P-5);a=.62*e;bb=1+.04*e;}   /* anaphase B: the cell stretches */
-    const dv=sm((P-7.1)/.85),zm=P<7?1-.15*sm((P-5)/2):.85+(1/rd-.85)*dv,cs=sd*cD*dv,pxu=N*.35*zm,ax=sc.ax,ca=Math.cos(ax),sa=Math.sin(ax);   /* the camera: back a little as it stretches, then into a daughter */
-    const sw=.045*Math.max(0,A.spr[0])+.025*A.env[0],wb=.012+.035*A.env[0]*(.5+A.I),w0=sc.sw[0],w1=sc.sw[1];
+    const zm=P<7?1-.15*sm((P-5)/2):.85,cs=0,pxu=N*.35*zm,ax=sc.ax,ca=Math.cos(ax),sa=Math.sin(ax);   /* the camera: back a little as it stretches; with the two daughters the embryo takes over */
+    const sw=.16*kick+.07*fsp,wb=.01+.02*A.env[0],w0=sc.sw[0],w1=sc.sw[1];
     const phi=(s,w)=>{const d1=Math.hypot(s-a,w),d2=Math.hypot(s+a,w);let f=Math.sqrt(d1*d2)/bb;
       if(rl>0){const fd=Math.min(Math.hypot(s-cD,w),Math.hypot(s+cD,w))/rd;f+=(fd-f)*rl;}
-      const an=Math.atan2(w,s-rl*(s<0?-cD:cD))+ax;return f/(1+sw+wb*(Math.sin(3*an+t*1.3+w0)+.6*Math.sin(5*an-t*.9+w1)));};   /* bass: wobble, kick: swell */
+      const an=Math.atan2(w,s-rl*(s<0?-cD:cD))+ax;return f/(1+sw+wb*(Math.sin(3*an+t*1.3+w0)+.6*Math.sin(5*an-t*.9+w1)));};   /* the kick swells it (Feel's spring after it), the bass wobbles it a little */
     const NN=N*N;if(!sc.buf||sc.buf.length!==NN*3){sc.buf=new Float32Array(NN*3);sc.F=new Float32Array(NN);sc.S=new Float32Array(NN);sc.W=new Float32Array(NN);}
     const B=sc.buf,F=sc.F,SS=sc.S,WW=sc.W;B.fill(0);
     for(let y=0;y<N;y++)for(let x=0;x<N;x++){const X=(x-h)/pxu,Y=(y-h)/pxu,s=X*ca+Y*sa+cs,w=-X*sa+Y*ca,i=y*N+x;SS[i]=s;WW[i]=w;F[i]=phi(s,w);}
@@ -1123,13 +1202,13 @@ engScene('celdeling',{name:'Celdeling',entry:['dark','dot'],exit:['dark'],bars:[
     const nu=[];if(P<3.7)nu.push({s:0,w:0,r:.42,fr:1.3*sm((P-3)/.6),cd:1-sm((P-2)/.8),no:1-sm((P-1.9)/.5)});   /* the nucleus; its envelope breaks up in prometaphase */
     if(P>6.2){const e=sm((P-6.2)/1.8),r=.17+(.42*rd-.17)*e,c=.78+.12*e;for(const g of[1,-1])nu.push({s:g*c,w:0,r,fr:1.3*(1-sm((P-6.25)/.7)),cd:sm((P-6.7)/.8),no:sm((P-7.2)/.6)});}   /* two new ones */
     sc.dr+=mtd*(.12+.7*A.env[2])*E.mot;
-    const mw=1.2+1.6*A.env[0]+.9*Math.max(0,A.spr[0]),act=sm((P-5.5)/.7)*(1-sm((P-7)/.12)),abF=Math.exp(-(t-sc.abT)/.35),caU=(t-sc.caT)/(bpb*60/E.bpm),
-      mb=.7+.3*kick+.2*A.I+.8*abF,gold=[1,.62,.22],red=[1,.2,.06],cyt=[.2,.1,.5],mag=[.75,.12,.6],caC=[.5,1,.85],lam=[.5,.78,1],dna=[.28,.48,1],nuc=[.7,.9,1],mc=[0,0,0],bc=[0,0,0];
+    const mw=1.1+.8*A.env[0]+1.2*kick,act=sm((P-5.5)/.7)*(1-sm((P-7)/.12)),abF=Math.exp(-(t-sc.abT)/.35),caU=(t-sc.caT)/(bpb*60/E.bpm),
+      mb=.42+.58*kick+.8*abF,ck=.7+.6*kick,gold=[1,.62,.22],red=[1,.2,.06],cyt=[.2,.1,.5],mag=[.75,.12,.6],caC=[.5,1,.85],lam=[.5,.78,1],dna=[.28,.48,1],nuc=[.7,.9,1],mc=[0,0,0],bc=[0,0,0];
     for(let y=0;y<N;y++)for(let x=0;x<N;x++){const i=y*N+x,f=F[i],g=Math.max(1e-4,.5*Math.hypot(F[x<N-1?i+1:i]-F[x>0?i-1:i],F[y<N-1?i+N:i]-F[y>0?i-N:i])),dm=(f-1)/g;
       if(dm>14)continue;const s=SS[i],w=WW[i],j=i*3;let r=0,gr=0,bl=0;const ad=(v,c)=>{r+=v*c[0];gr+=v*c[1];bl+=v*c[2];};
       const ae=act*Math.exp(-s*s/.03),mx=Math.min(1,ae*1.5);for(let k=0;k<3;k++)mc[k]=gold[k]+(red[k]-gold[k])*mx;   /* the cortex turns red at the furrow */
       ad((cl((mw-Math.abs(dm))/1.1+.5)*.62*(1+.6*ae)+(dm>0?.3*Math.exp(-dm/1.8):.28*Math.exp(dm/2.4)))*mb,mc);   /* the membrane: a thick soft line, a halo out, a glow in */
-      if(f<1){const z=Math.sqrt(Math.max(0,1-f*f));ad(.16+.1*z,cyt);ad(cdk*(.1+.12*z),mag);   /* cytoplasm, warming with CDK1 */
+      if(f<1){const z=Math.sqrt(Math.max(0,1-f*f));ad((.16+.1*z)*ck,cyt);ad(cdk*(.1+.12*z)*ck,mag);   /* cytoplasm, warming with CDK1; dim, lit up by the kick */
         if(f<.985){const lp=-Math.log(Math.max(f,1e-3)),u=lp*5-sc.dr,fr=u-Math.floor(u),sp=f/(5*g),rg=cl(1.05-Math.min(fr,1-fr)*sp)*cl((sp-1.8)/1.6)*cl((.985-f)/.08);   /* bands of equal potential, faded where they crowd */
           if(rg>0){const k=Math.floor(u)*.13+t*.015;bc[0]=.5+.4*Math.cos(6.283*k);bc[1]=.35+.3*Math.cos(6.283*(k+.33));bc[2]=.8+.2*Math.cos(6.283*(k+.67));ad(rg*(.16+.14*A.env[2]),bc);}}
         if(caU>=0&&caU<1){const dc=(f-caU*1.15)/.1;ad(.55*(1-caU)*Math.exp(-dc*dc),caC);}}   /* the Ca2+ wave */
@@ -1149,8 +1228,8 @@ engScene('celdeling',{name:'Celdeling',entry:['dark','dot'],exit:['dark'],bars:[
     const dvc=sm((P-.8)/.6),poles=[0,1].map(k=>{if(P<3.2){const a0=sc.ca0+(k?.15*dvc:0);let d=(k?PI:0)-a0;d-=6.283*Math.round(d/6.283);const e=sm((P-2)/1.2),an=a0+d*e,r0=.5+.12*e;return[r0*Math.cos(an),r0*Math.sin(an)];}
       const ps=P<5?.62:P<6.2?.62+.38*sm((P-5)/1.2):1+.275*sm((P-6.2)/1.8);return[(k?-1:1)*ps,0];});
     /* astral microtubules, dynamic instability: grow, catastrophe, shrink, rescue, stall at the cortex */
-    const aI=(P<6.5?.38+.4*sm((P-1.5)/1.5):.78-.4*sm(P-6.5))*(.8+.4*A.I),vg=(.35+.45*A.I)*E.mot,kd=(t-A.onT[0])*1.6,kf=Math.exp(-(t-A.onT[0])/.6);
-    if(A.on[1]&&b>.5){for(const m of sc.mt)if(m.g&&R()<.45){m.g=0;m.fl=1;}sc.tv+=1.2;}   /* snare: a burst of catastrophes, and a tug on the chromosomes */
+    const aI=(P<6.5?.38+.4*sm((P-1.5)/1.5):.78-.4*sm(P-6.5))*(.8+.4*A.I),vg=(.35+.45*A.I)*E.mot,kd=(t-A.onT[0])*1.6,kf=Math.exp(-(t-A.onT[0])/.6)*(.4+.6*M.kick.str);
+    if(M.snare.on&&b>.5){const st=M.snare.str;for(const m of sc.mt)if(m.g&&R()<.2+.5*st){m.g=0;m.fl=1;}sc.tv+=.5+1.4*st;}   /* snare: a burst of catastrophes, and a tug on the chromosomes, as hard as the hit */
     for(const m of sc.mt){const pl=poles[m.k],dx=Math.cos(m.ang),dy=Math.sin(m.ang);m.fl=Math.max(0,m.fl-mtd*4);
       if(m.g){m.L+=mtd*vg*(.7+.6*m.v);if(R()<mtd*.25)m.g=0;}else{m.L-=mtd*1.4;if(m.L<.04){m.L=.04;m.g=1;}else if(R()<mtd*.7)m.g=1;}
       for(let l=.04;l<m.L;l+=1/pxu){const xi=Math.round(tx(pl[0]+dx*l,pl[1]+dy*l)),yi=Math.round(ty(pl[0]+dx*l,pl[1]+dy*l));
@@ -1167,7 +1246,7 @@ engScene('celdeling',{name:'Celdeling',entry:['dark','dot'],exit:['dark'],bars:[
         ms=c.hs*(1-e3)+jit*Math.sin(t*3.1+c.ph)+osc,mw2=c.hw*(1-e3)+c.wi*e3+jit*Math.cos(t*2.3+c.ph),ph=(c.phi+t*.08)*(1-e3),cf=Math.cos(ph),sf=Math.sin(ph),cap=sm((P-3.05-.08*i)/.4);
       for(const g of[1,-1]){const ox=g*.022,cx=ms+ox*cf+g*(.78*e5+.12*e6),cw=mw2*(1-.5*e5)*(1-.4*e6)+ox*sf;
         if(kfv*cap>0){const pl=poles[g>0?0:1];seg(pl[0],pl[1],pl[0]+(cx-pl[0])*cap,pl[1]+(cw-pl[1])*cap,.6,.55*kfv,.7*kfv,mtC);}   /* the kinetochore fibre */
-        if(cc>0){for(const k of[1,-1]){const ux=g*Math.sin(bt),uy=k*Math.cos(bt);seg(cx,cw,cx+(ux*cf-uy*sf)*c.len,cw+(ux*sf+uy*cf)*c.len,.045*pxu,.75*cc,.6*cc,c.col);}
+        if(cc>0){for(const k of[1,-1]){const ux=g*Math.sin(bt),uy=k*Math.cos(bt);seg(cx,cw,cx+(ux*cf-uy*sf)*c.len,cw+(ux*sf+uy*cf)*c.len,.045*pxu,.75*cc*(1+.6*mel),.6*cc*(1+.6*mel),c.col);}
           dot(cx,cw,.7,.45*cc*kfv,[1,.35,.75]);}}});   /* the kinetochore */
     const nw=Math.sqrt(Math.max(0,bb*bb-a*a));   /* the contractile ring: seen a little tilted, the front half brighter */
     if(act>0&&nw>.01){let ls=0,lw=nw;for(let k=1;k<=24;k++){const th=k/24*6.283,s2=.16*nw*Math.sin(th),w2=nw*Math.cos(th),v=.5*act*(.6+.4*Math.sin(th))*(1+.6*kick);seg(ls,lw,s2,w2,1.2,v,v,red);ls=s2;lw=w2;}}
@@ -1175,13 +1254,102 @@ engScene('celdeling',{name:'Celdeling',entry:['dark','dot'],exit:['dark'],bars:[
     if(abF>.02)dot(0,0,1+6*abF,1.4*abF,[1,.95,.9]);   /* abscission */
     for(let k=0;k<2;k++)dot(poles[k][0],poles[k][1],1.3+.7*kick,(k?dvc:1)*(.75+.5*kick)*.9,[1,.92,.55]);
     /* vesicles: Brownian jitter, carried round by the streaming, kept inside; the hats make them sparkle */
-    const fl=(.05+.25*A.env[2])*E.mot,bro=.09*Math.sqrt(mtd);if(A.on[2])for(let j=0;j<5;j++)sc.ves[R()*sc.ves.length|0].sp=1;
+    const fl=(.05+.25*A.env[2])*E.mot,bro=.09*Math.sqrt(mtd);if(M.hat.on)for(let j=0,n=2+Math.round(6*M.hat.str);j<n;j++)sc.ves[R()*sc.ves.length|0].sp=1;
     for(const v of sc.ves){v.sp*=Math.exp(-mtd/.15);const c0=rl>.3?(v.s<0?-cD:cD):P>5?Math.sign(v.s)*Math.min(a,.6):0;
       v.s+=(R()-.5)*2*bro-v.w*fl*mtd;v.w+=(R()-.5)*2*bro+(v.s-c0)*fl*mtd;if(phi(v.s,v.w)>.92){v.s+=(c0-v.s)*.1;v.w*=.9;}
       dot(v.s,v.w,.6,(.2+.8*v.sp)*(.5+.5*v.v)*(.6+.6*A.env[4]),[1,.85,.55]);}
-    const sib=1-sm((P-7.35)/.5),o=[0,0,0];   /* out: soft-clipped; the other daughter fades as the camera dives */
-    for(let i=0;i<NN;i++){let k=fade;if(P>7.3&&SS[i]*sd<0)k*=sib;if(k<=0)continue;const j=i*3;
-      o[0]=Math.min(.92,1-Math.exp(-1.2*B[j]));o[1]=Math.min(.92,1-Math.exp(-1.2*B[j+1]));o[2]=Math.min(.92,1-Math.exp(-1.2*B[j+2]));if(o[0]+o[1]+o[2]>.005)engPut(i,k,o);}}});
+    const o=[0,0,0];   /* out: soft-clipped */
+    if(fade>0)for(let i=0;i<NN;i++){const k=fade,j=i*3;
+      o[0]=Math.min(.92,1-Math.exp(-1.2*B[j]));o[1]=Math.min(.92,1-Math.exp(-1.2*B[j+1]));o[2]=Math.min(.92,1-Math.exp(-1.2*B[j+2]));if(o[0]+o[1]+o[2]>.005)engPut(i,k,o);}}
+/* act 2: the embryo. Every frame the cells round up, push each other into a ball inside the zona and jolt on the snare; then the smooth
+   union of their Cassini fields is drawn (membranes, a wall where two fields meet, cytoplasm, nuclei, spindles, the furrow), at k */
+function engCdEmb(sc,E,dts,b,k){const D=ENG_CD,M=MUSIC,em=sc.em,L=em.cells,n=L.length,N=E.N,h=(N-1)/2,t=E.t,cl=engClamp,sm=engCdSm,bpb=ENG_CFG.beatsPerBar,bar=bpb*60/E.bpm,
+    kick=M.kick.pulse,spr=window.FEEL?FEEL.spring:kick,mel=window.FEEL?FEEL.mel:M.mel.pulse,dt=Math.min(dts,.05),live=sc.act==='emb';
+  if(live)em.pxe+=(N*.235-em.pxe)*(1-Math.exp(-dt/1.2));   /* the camera pulls back onto the whole zona */
+  const pxe=em.pxe,comp=em.hold0==null?0:sm((b-em.hold0)/(2*bpb)),grow=1+.1*comp,sw=.2*kick+.08*spr,J=.5*sc.ss;   /* a morula compacts: the cells press flat */
+  for(const c of L){c.u=em.hold0!=null||!live?0:cl((em.ru-c.lag)/(1-c.lag));const u=c.u;c.a=0;c.bb=1;
+    if(u>.86){const e=sm((u-.86)/.14);c.a=.62+.38*e;c.bb=1.04-.04*e;}else if(u>.72){const e=sm((u-.72)/.14);c.a=.62*e;c.bb=1+.04*e;}   /* the close-up's schedule: stretch, then the furrow to a lemniscate */
+    if(c.rel<1)c.rel=Math.min(1,c.rel+dt/(.6*bar));}
+  /* the packing: soft discs (a dividing cell longer along its axis), a gentle pull to the middle, the zona round them all */
+  {const kk=Math.min(1,dt*8),pull=live?Math.min(.5,dt*1.2):0;for(const c of L){c.x*=1-pull;c.y*=1-pull;}
+    for(let it=0;it<3;it++)for(let i=0;i<n;i++){const A=L[i],xa=Math.cos(A.ax),ya=Math.sin(A.ax);for(let j=i+1;j<n;j++){const Bc=L[j];let dx=Bc.x-A.x,dy=Bc.y-A.y;const d=Math.sqrt(dx*dx+dy*dy)||1e-4;dx/=d;dy/=d;
+      const m=(A.r*(1+.45*A.a*Math.abs(dx*xa+dy*ya))+Bc.r*(1+.45*Bc.a*Math.abs(dx*Math.cos(Bc.ax)+dy*Math.sin(Bc.ax))))*.94*grow-d;
+      if(m>0){const s=m*.5*kk;A.x-=dx*s;A.y-=dy*s;Bc.x+=dx*s;Bc.y+=dy*s;}}}
+    for(const c of L){const d=Math.sqrt(c.x*c.x+c.y*c.y),m=d+c.r*grow-D.Z;if(m>0&&d>1e-4){c.x-=c.x/d*m;c.y-=c.y/d*m;}}}
+  /* each cell's field this frame: the kick swells it (Feel's spring after it), the snare's spring jolts it */
+  const G=L.map(c=>{const R0=c.r*(1+sw)*grow,o={c,R:R0,x:c.x+c.dx*J*c.r,y:c.y+c.dy*J*c.r,ca:Math.cos(c.ax),sa:Math.sin(c.ax),bd:R0*(c.rel<1?3.4:2.1)+.3,rk:sm(c.rel),p:c.par};
+    if(c.rel<1){o.pR=c.par.r*(1+sw)*grow;o.pca=Math.cos(c.par.ax);o.psa=Math.sin(c.par.ax);}return o;});
+  const F=sc.eF,F2=sc.eF2,I=sc.eI,I2=sc.eJ,B=sc.eb;B.fill(0);
+  for(let y=0;y<N;y++)for(let x=0;x<N;x++){const X=(x-h)/pxe,Y=(y-h)/pxe;let f1=99,f2=99,i1=-1,i2=-1;
+    for(let j=0;j<n;j++){const o=G[j],c=o.c,dx=X-o.x,dy=Y-o.y;let f;
+      if(dx>o.bd||dx<-o.bd||dy>o.bd||dy<-o.bd)f=Math.sqrt(dx*dx+dy*dy)/o.R;   /* far off: its distance is enough, and keeps the field smooth */
+      else{const s=dx*o.ca+dy*o.sa,w=-dx*o.sa+dy*o.ca,w2=w*w,aR=c.a*o.R;f=c.a>0?Math.sqrt(Math.sqrt(((s-aR)*(s-aR)+w2)*((s+aR)*(s+aR)+w2)))/(c.bb*o.R):Math.sqrt(s*s+w2)/o.R;   /* the Cassini oval: sqrt(|x-f1|.|x-f2|)/b */
+        if(c.rel<1){const qx=X-o.p.x,qy=Y-o.p.y,ps=qx*o.pca+qy*o.psa,pw=-qx*o.psa+qy*o.pca,p2=pw*pw,fp=Math.sqrt(Math.sqrt(((ps-o.pR)*(ps-o.pR)+p2)*((ps+o.pR)*(ps+o.pR)+p2)))/o.pR;f=fp+(f-fp)*o.rk;}}   /* rounding up from the parent's lemniscate */
+      if(f<f1){f2=f1;i2=i1;f1=f;i1=j;}else if(f<f2){f2=f;i2=j;}}
+    const i=y*N+x;F[i]=f1;F2[i]=f2;I[i]=i1;I2[i]=i2;}
+  const gold=[1,.62,.22],cyt=[.2,.1,.5],mag=[.75,.12,.6],abF=Math.exp(-(t-em.abT)/.35),mb=(.5+.5*kick)*(1+.4*comp*Math.max(0,spr))+.5*abF,ck=.8+.6*kick,mw=1+1.1*kick;   /* dim between the hits, lit by the kick */
+  for(const c of L){const u=c.u,cyc=u<.72?.08+.92*Math.pow(u/.72,1.6):.05+.95*Math.exp(-(u-.72)*40);c.cdk=1/(1+Math.exp(-(cyc-.55)*12));}   /* cyclin B builds up, CDK1 switches on, APC/C destroys it at anaphase */
+  for(let y=0;y<N;y++)for(let x=0;x<N;x++){const i=y*N+x,f=F[i],gx=F[x<N-1?i+1:i]-F[x>0?i-1:i],gy=F[y<N-1?i+N:i]-F[y>0?i-N:i],g=Math.max(1e-4,.5*Math.sqrt(gx*gx+gy*gy)),dm=(f-1)/g;if(dm>14)continue;
+    let gm=(cl((mw-Math.abs(dm))/1.1+.5)*.62+(dm>0?.28*Math.exp(-dm/1.6):.2*Math.exp(dm/2.2)))*mb,cy=0,cm=0;   /* the membranes: a thick soft line, a halo out, a glow in */
+    if(f<1){const z=Math.sqrt(1-f*f),c=L[I[i]];cy=(.12+.08*z)*ck;cm=c.cdk*(.08+.1*z)*ck;   /* cytoplasm, a dome; it warms to magenta as CDK1 switches on */
+      if(I2[i]>=0&&F2[i]<1.3){const c2=L[I2[i]],ws=c2===c.sis?Math.min(c.rel,c2.rel):1,wv=cl(1.1-(F2[i]-f)/(2.2*g))*sm(ws);if(wv>0)gm+=.6*wv*mb;}}   /* a wall where two cells meet (between sisters it closes as they round up) */
+    const j=i*3;B[j]=gm*gold[0]+cy*cyt[0]+cm*mag[0];B[j+1]=gm*gold[1]+cy*cyt[1]+cm*mag[1];B[j+2]=gm*gold[2]+cy*cyt[2]+cm*mag[2];}
+  const dna=[.28+.3*mel,.48,1],nucC=[.7,.9,1],mtC=[.25,1,.4],red=[1,.2,.06],pole=[1,.92,.55];
+  for(const o of G){const c=o.c,u=c.u,px=h+o.x*pxe,py=h+o.y*pxe,Rp=o.R*pxe,ca=o.ca,sa=o.sa,nv=(.5+.5*mel)*(1+.3*kick);   /* the melody lights the DNA */
+    if(u<.6){const e=sm((u-.45)/.15),rr=Rp*(.4-.12*e)*(.55+.45*o.rk);engCdDot(B,N,px,py,rr,(.32+.25*e)*nv,dna);if(e<.5&&rr>1.5)engCdDot(B,N,px+rr*.35,py-rr*.3,rr*.3,.35*(1-2*e),nucC);}   /* the nucleus (and its nucleolus), condensing */
+    else if(u<.86){const e=sm((u-.72)/.14),ln=Rp*(u<.72?.28:.22),off=Rp*.6*e;for(const g of u<.72?[0]:[1,-1]){const qx=px+ca*off*g,qy=py+sa*off*g;engCdSeg(B,N,qx-sa*ln,qy+ca*ln,qx+sa*ln,qy-ca*ln,.6,.7*nv,.7*nv,dna);}}   /* the plate, then the two sets pulled apart */
+    else{const e=sm((u-.86)/.14),off=Rp*(.6+.15*e);for(const g of[1,-1])engCdDot(B,N,px+ca*off*g,py+sa*off*g,Rp*.2*(1+e),.55*nv,dna);}   /* two new nuclei */
+    if(u>.55&&u<.95){const e=sm((u-.55)/.2)*(1-sm((u-.88)/.07)),pl=Rp*(.55+.35*sm((u-.72)/.2));engCdSeg(B,N,px-ca*pl,py-sa*pl,px+ca*pl,py+sa*pl,.45,.35*e,.35*e,mtC);
+      for(const g of[1,-1])engCdDot(B,N,px+ca*pl*g,py+sa*pl*g,.7+.5*kick,.6*e*(.75+.5*kick),pole);}   /* the spindle and its poles */
+    if(u>.8){const nw=Math.sqrt(Math.max(0,c.bb*c.bb-c.a*c.a))*Rp,v=.6*sm((u-.8)/.06)*(1+.6*kick);for(const g of[1,-1])engCdDot(B,N,px-sa*nw*g,py+ca*nw*g,.9,v,red);}}   /* the contractile ring, pinching the waist */
+  if(M.hat.on&&live)for(let j=0,m=1+Math.round(4*M.hat.str);j<m;j++){const o=G[Math.floor(sc.R()*n)],a=sc.R()*6.2832,rr=Math.sqrt(sc.R())*.7*o.R;em.spk.push({x:o.x+Math.cos(a)*rr,y:o.y+Math.sin(a)*rr,t0:t});}   /* hats: sparkles in the cells */
+  em.spk=em.spk.filter(s=>t-s.t0<.4);for(const s of em.spk)engCdDot(B,N,h+s.x*pxe,h+s.y*pxe,.5,1.1*Math.exp(-(t-s.t0)/.07),[1,.85,.55]);
+  if(abF>.02)for(let q=0;q<em.mid.length;q+=2)engCdDot(B,N,h+em.mid[q]*pxe,h+em.mid[q+1]*pxe,.8+2*abF,1.2*abF,[1,.95,.9]);   /* abscission: a flash at each midbody */
+  {const Zp=D.Z*pxe,v=(.14+.18*kick)*(live?1:sm((sc.P-7.35)/.5));for(let q=0,m=Math.ceil(Zp*6.3);q<m;q++){const a=q/m*6.2832;engCdDot(B,N,h+Math.cos(a)*Zp,h+Math.sin(a)*Zp,.45,v,[.5,.72,.85]);}}   /* the zona pellucida */
+  const o=[0,0,0];if(k>0)for(let i=0;i<N*N;i++){const j=i*3;o[0]=Math.min(.92,1-Math.exp(-1.2*B[j]));o[1]=Math.min(.92,1-Math.exp(-1.2*B[j+1]));o[2]=Math.min(.92,1-Math.exp(-1.2*B[j+2]));if(o[0]+o[1]+o[2]>.005)engPut(i,k,o);}}
+/* act 3: the bloom. Vogel's model: cell i at angle i x the golden angle, radius cb sqrt(n - i); n grows on the kicks */
+function engCdBloom(sc,E,dts,b,k){const D=ENG_CD,M=MUSIC,bl=sc.bl,N=E.N,h=(N-1)/2,t=E.t,sm=engCdSm,R=sc.R,B=sc.eb,bar=ENG_CFG.beatsPerBar*60/E.bpm,
+    kick=M.kick.pulse,spr=window.FEEL?FEEL.spring:kick,mel=window.FEEL?FEEL.mel:M.mel.pulse;
+  if(M.kick.on&&t-bl.t0>.05)bl.nT=Math.min(D.NB,bl.nT+3+9*M.kick.str);   /* the kick: new cells in the middle, more on a harder hit */
+  bl.n+=(bl.nT-bl.n)*(1-Math.exp(-dts/.07));const nn=Math.min(D.NB,Math.ceil(bl.n));
+  if(M.snare.on)bl.waves.push({t0:t,s:.4+.6*M.snare.str});bl.waves=bl.waves.filter(w=>t-w.t0<.7);   /* the snare: a ring running out */
+  for(let i=0;i<nn;i++)bl.sp[i]*=Math.exp(-dts/.06);if(M.hat.on)for(let j=0,m=2+Math.round(5*M.hat.str);j<m;j++)bl.sp[Math.floor(R()*nn)]=1;   /* hats: a twinkle */
+  if(M.mel.on&&M.mel.str>.35&&t-bl.fT>2*bar){bl.fp=bl.fi;bl.fi=(bl.fi+1)%D.FIB.length;bl.fT=t;}   /* a melody note: the next family of spirals */
+  /* the spiral a cell sits on in a family of F: i mod F; side by side those differ by the Fibonacci number before F (Fm), and as Fm x Fm = ±1
+     mod F (Cassini's identity), (i mod F) x Fm mod F counts the spirals in the order they lie; the colours run round them q times (about
+     one colour a spiral, a whole number of rounds so it closes) */
+  const wf=sm((t-bl.fT)/.3),F0=D.FIB[bl.fp],F1=D.FIB[bl.fi],m0=D.FIBm[bl.fp],m1=D.FIBm[bl.fi],q0=Math.max(1,Math.round(F0/7)),q1=Math.max(1,Math.round(F1/7)),cb=N*.03*(1+.1*spr+.05*kick),rho=N*.017,fo=sm((t-bl.t0)/(.6*bar)),base=.45+.55*kick,c=[0,0,0],c0=[0,0,0];   /* Feel's spring breathes the whole flower */
+  B.fill(0);
+  for(let i=0;i<nn;i++){if(!bl.born[i])bl.born[i]=t;const kk=Math.max(0,bl.n-i),r0=cb*Math.sqrt(kk),th=i*D.GA+bl.th0;
+    let x=h+Math.cos(th)*r0,y=h+Math.sin(th)*r0,rad=rho*Math.min(1,.4+.3*kk);
+    if(i<bl.n0){x=bl.ix[i]+(x-bl.ix[i])*fo;y=bl.iy[i]+(y-bl.iy[i])*fo;rad=bl.ir[i]+(rad-bl.ir[i])*fo;}   /* the embryo's cells fly out to their places */
+    const rr=Math.sqrt((x-h)*(x-h)+(y-h)*(y-h));if(rr-rad>N*.72)continue;
+    let wv=0;for(const w of bl.waves){const d=rr-(t-w.t0)*N*1.1;wv+=w.s*Math.exp(-d*d/3)*(1-(t-w.t0)/.7);}
+    const s1=i%F1*m1%F1;engCdPal(s1*q1/F1,c);if(wf<1){engCdPal(i%F0*m0%F0*q0/F0,c0);for(let q=0;q<3;q++)c[q]=c0[q]+(c[q]-c0[q])*wf;}   /* the colour marks the spiral it sits on */
+    const hot=Math.exp(-(t-bl.born[i])/.25),arm=s1%2?0:1,wh=Math.min(1,.85*hot+.5*(bl.sp[i]+wv));for(let q=0;q<3;q++)c[q]+=(1-c[q])*wh;   /* newborn white-hot */
+    engCdDot(B,N,x,y,rad*(1+.3*wv),base*(.75+.5*mel*arm)+.9*wv+bl.sp[i]+.6*hot,c);}
+  const za=t-bl.t0;if(za<.9)for(let j=0;j<7;j++){const a0=bl.za+j*.8976+za*.5*(j%2?1:-1),Rz=bl.Zp+za*N*(.45+.12*(j%3)),m=Math.ceil(Rz*.69),v=.55*Math.exp(-za/.4);
+    for(let q=0;q<=m;q++){const a=a0+q/m*.69;engCdDot(B,N,h+Math.cos(a)*Rz,h+Math.sin(a)*Rz,.45,v,[.55,.78,.9]);}}   /* hatching: the zona cracks into arcs that fly off */
+  const ba=t-bl.burst;if(ba<.45)engCdDot(B,N,h,h,N*.04+ba*N*.5,1.1*Math.exp(-ba/.12),[1,1,1]);   /* the burst */
+  const o=[0,0,0];if(k>0)for(let i=0;i<N*N;i++){const j=i*3;o[0]=Math.min(.92,1-Math.exp(-1.2*B[j]));o[1]=Math.min(.92,1-Math.exp(-1.2*B[j+1]));o[2]=Math.min(.92,1-Math.exp(-1.2*B[j+2]));if(o[0]+o[1]+o[2]>.005)engPut(i,k,o);}}
+engScene('celdeling',{name:'Celdeling',entry:['dark','dot'],exit:['dark'],bars:[16,16,32],energy:.35,lit:.6,key:['nch','paint','cap'],noLoop:true,keepFall:true,
+  params:{nch:{int:[5,7]},paint:{p:.75},cap:{pick:[16,32,32]},fz:[.8,.9],fp:[0,.03],fs:{pick:[.25,.5]}},
+  init(sc,E){delete sc.mods.mirror;delete sc.mods.kaleido;delete sc.mods.rot;const R=sc.R;   /* never on its side or copied */
+    sc.act='one';sc.P=0;sc.rP=0;sc.rb=null;sc.em=null;sc.bl=null;sc.trig=sc.then=null;sc.dropT=false;sc.brk=EAR.brk;sc.ss=0;sc.sv=0;
+    sc.ax=R()*6.283;sc.ca0=R()*6.283;sc.tug=0;sc.tv=0;sc.caT=-99;sc.abT=-99;sc.dr=0;sc.sw=[R()*6.28,R()*6.28];sc.po=R()*7|0;sc.buf=null;
+    engCellCh(sc);sc.mt=[];for(let j=0;j<40;j++)sc.mt.push({k:j&1,ang:R()*6.283,L:.1+.4*R(),g:R()<.7?1:0,fl:0,v:R()});
+    sc.ves=[];for(let j=0;j<36;j++)sc.ves.push(engCellVes(R));},
+  hold(sc,E,s){if(s&&!sc.bl&&s.kind==='in')sc.trig='a new section';return!!s||!sc.then;},   /* the story holds through new sections (one coming in moves it on) and breakdowns, till the hand-over */
+  ownDrop(sc,E){if(!sc.bl){sc.dropT=true;return true;}   /* the drop is the bloom */
+    if(E.beat-sc.b0-sc.bl.b0<4*ENG_CFG.beatsPerBar){sc.bl.nT=Math.min(ENG_CD.NB,sc.bl.nT+40);sc.bl.burst=E.t;return true;}   /* another drop soon after: a second burst */
+    if(sc.then){sc.then.style='cut';sc.b1=E.beat;return true;}return false;},   /* later: Morphology at once */
+  say:sc=>'one cell dividing in fluorescence colours, waiting at its checkpoint for the music, then the embryo: 2, 4, 8 … '+sc.p.cap+' cells (Cassini ovals), faster on a build, a morula waiting for the drop; on the drop it hatches and blooms into Vogel\'s sunflower of cells (golden angle) that grows on the kicks, then Morphology; kick = swell + light, snare = catastrophes / a jolt / a ring, hats = sparkles, melody = DNA glow and the spirals'+(sc.p.paint?', painted chromosomes':''),
+  draw(sc,E,dts,b,tick,db){const bpb=ENG_CFG.beatsPerBar,N=E.N,NN=N*N,fade=engEaseOut(Math.min(1,b/2))*(sc.noHold&&!sc.then?1-engClamp((b-(sc.b1-sc.b0-bpb))/bpb):1);   /* in from the dark; out only when it is ended early */
+    engCdPace(sc,E,b,db||0,dts);
+    if(!sc.eb||sc.eb.length!==NN*3){sc.eb=new Float32Array(NN*3);sc.eF=new Float32Array(NN);sc.eF2=new Float32Array(NN);sc.eI=new Int16Array(NN);sc.eJ=new Int16Array(NN);}
+    const x=sc.act==='one'?(sc.em?engCdSm((sc.P-7.35)/.5):0):1;   /* the close-up crossfades into the embryo as the daughters round up */
+    if(sc.act==='one')engCdOne(sc,E,dts,b,fade*(1-x));
+    if(sc.bl)engCdBloom(sc,E,dts,b,fade);else if(sc.em)engCdEmb(sc,E,dts,b,fade*x);}});
 /* ---------- Comic merger (engTm…), after Wilco's 4×4 storyboard (2026-10-22) ----------
    The merger once more, told as a comic: flat bold colours, thick tapered brush strokes, hard edges, a black ground, a small palette
    (orange/yellow/white heat, teal/blue/purple field lines, magenta/cyan waves). Only the painting is new; the motion borrows the real
@@ -1574,7 +1742,7 @@ const ENG_ORDER=Object.keys(ENG_SCENE);
    calm = breakdowns and soft passages. A scene can have more than one */
 const ENG_ROLE={void:['calm'],portal:['build','flow'],inversion:['drop'],accumulation:['build'],puncture:['drop','build'],perimeter:['calm'],
   tracer:['flow','build'],rings:['flow','drop'],ripple:['flow'],rain:['flow','build'],scanner:['build','flow'],shatter:['flow','build'],heartbeat:['calm','build'],
-  static:['build'],corridor:['flow'],core:['flow','drop'],dynamo:['build','drop'],figures:['calm','flow'],arrivals:['calm','build'],merger:['calm','build'],toonmerger:['build','drop'],blackhole:['calm','flow'],supernova:['build','drop'],sundive:['build','flow'],celdeling:['flow','build'],morphology:['calm','flow']};
+  static:['build'],corridor:['flow'],core:['flow','drop'],dynamo:['build','drop'],figures:['calm','flow'],arrivals:['calm','build'],merger:['calm','build'],toonmerger:['build','drop'],blackhole:['calm','flow'],supernova:['build','drop'],sundive:['build','flow'],celdeling:['calm','build'],morphology:['calm','flow']};
 for(const id of ENG_ORDER)ENG_SCENE[id].role=ENG_ROLE[id]||['flow'];
 /* which parts of the music each scene shows; a part that plays but is not shown gets its voice on top (bass waves, a mid figure, high sparks) */
 const ENG_COVER={void:['highs'],portal:['mids','highs'],inversion:['highs'],accumulation:['highs'],puncture:['bass','mids'],perimeter:['highs'],tracer:['bass'],
@@ -1643,7 +1811,7 @@ function engClimax(){const E=ENG,A=EAR,C=ENG_CFG;return engPhase()==='build'||E.
 const engParts=()=>CONDUCTOR.parts(EAR);
 /* negative space (Jon Hopkins): black is the main element. Outside a climax at least House › Darkness of the LEDs stay dark (LOOK.darkness does it: the dimmest light is gated
    away until that holds, softly and smoothed over time; the brightest, the hero, stays). The Director only says how dark (the desk's darkness wins while it is on) and when the gate waits */
-function engVoidTarget(){const E=ENG,V=E.dkVoid||{};return engClamp((engClimax()?(V.climax!=null?V.climax:HOUSE.val.darknessClimax):(V.black!=null?V.black:HOUSE.val.darkness))-.5*engIxL());}   /* the intensity slider moves how much must stay dark */
+function engVoidTarget(){const E=ENG,V=E.dkVoid||{};return engClamp((engClimax()?(V.climax!=null?V.climax:HOUSE.val.darknessClimax):(V.black!=null?V.black:HOUSE.val.darkness))-.5*engIxL());}   /* Calm-Busy moves how much must stay dark */
 const engVoidSkip=()=>!!(ENG.bam||ENG.vflash);   /* BAM and Void's white halves fill on purpose *//* white is scarce: a (nearly) white picture only while the music builds towards a drop, in the bars after a drop, or in the cycle (C) */
 function engWhiteOk(){const E=ENG,A=EAR,C=ENG_CFG;return engPhase()==='build'||E.beat-A.lastDrop<C.whiteDrop*C.beatsPerBar||E.canon>=0||!!(E.sc&&E.sc.tag==='drop');}
 /* on the picture that goes out: is it all white or nearly (at least whiteFrac of the LEDs over whiteLed)? Allowed: it strobes on the beat (a short white flash, black between, never more than
@@ -1658,11 +1826,11 @@ function engWhite(W,t){const E=ENG,C=ENG_CFG,N=E.N,bpb=C.beatsPerBar;let s=0,br=
     if(sc&&E.wLeft!==sc.n){E.wLeft=sc.n;if(sc.mods.invert)delete sc.mods.invert;
       if(C.spLight.includes(sc.def.id)&&!sc.def.untilDone)sc.b1=Math.min(sc.b1,(Math.floor(E.beat/bpb)+1)*bpb);
       engLog('a white screen outside a build or drop: dimmed, gone on the bar');}return;}
-  if(S.engStrobe<.01){E.wMode='dimmed';dim(C.whiteDim);return;}
+  if(FEEL.get('flash')<.01){E.wMode='dimmed';dim(C.whiteDim);return;}
   /* it strobes to a part of the music: in a build the snare (else the hats), after a drop the kick; that part silent for 2 beats: the beat */
   const A=EAR,part=engPhase()==='build'?(t-A.onT[1]<2?1:2):0,beat=60/E.bpm;let hit=A.on[part],name=['kick','snare','hats'][part];
   if(t-A.onT[part]>2*beat){const d=E.bpm<=90?.5:E.bpm<=180?1:2,slot=Math.floor(E.beat/d);hit=slot!==E.wSlot;E.wSlot=slot;name='beat';}
-  if(hit&&t-(E.wT||-9)>=1/3&&engFlash(t,1))E.wT=t;   /* never more than 3 flashes a second */
+  if(hit&&t-(E.wT||-9)>=1/HOUSE.val.flashMax&&engFlash(t,1))E.wT=t;   /* spaced evenly by House's flashes-per-second (General > Light), on top of the shared gate */
   E.wMode='strobe on the '+name;if(t-(E.wT||-9)>Math.min(C.whiteOn,beat*HOUSE.val.whiteDuty))dim(C.whiteOff);}/* how thick a bass gesture is: by the sub band and the intensity (s scales it for scenes that draw many of them) */
 function engBassLw(s){const C=ENG_CFG,A=EAR;return Math.max(1,Math.round((1+(C.bassLw[1]-1)*Math.pow(engClamp(A.band[0]*A.I*1.2),2))*(s||1)));}   /* thin on an everyday kick, thick only when it is heavy and loud */
 function engLine(x0,y0,x1,y1,v,c){const n=Math.ceil(Math.hypot(x1-x0,y1-y0)*1.5)+1;for(let k=0;k<=n;k++){const u=k/n;engPutXY(x0+(x1-x0)*u,y0+(y1-y0)*u,v,c);}}
@@ -1721,7 +1889,7 @@ function engMids(dts){const E=ENG,A=EAR,C=ENG_CFG,sc=E.sc,N=E.N,h=(N-1)/2;E.mlOn
 function engFigure(gk,m,dts,base,grow,v0){const E=ENG,A=EAR,N=E.N,h=(N-1)/2,C=ENG_CFG;
   let pc=0;if(A.cF)for(let c=1;c<12;c++)if(A.cF[c]>A.cF[pc])pc=c;const tg=pc/12*2*Math.PI;E.ma=E.ma||0;
   let d=tg-E.ma;d-=2*Math.PI*Math.round(d/(2*Math.PI));E.ma+=d*(1-Math.exp(-dts/.25))+dts*(.3+1.5*Math.max(0,A.spr[2]));   /* follows the melody, drifts with the mids */
-  const dm=m+.6*engIx(),g=engGlyph(gk,dm>.7?2:dm>.4?1:0),   /* the intensity slider sets the detail too */up=ENG_UPRIGHT.includes(gk),a=up?.25*Math.sin(E.ma):E.ma,ca=Math.cos(a),sa=Math.sin(a);
+  const dm=m+.6*engIx(),g=engGlyph(gk,dm>.7?2:dm>.4?1:0),   /* Calm-Busy sets the detail too */up=ENG_UPRIGHT.includes(gk),a=up?.25*Math.sin(E.ma):E.ma,ca=Math.cos(a),sa=Math.sin(a);
   const S=Math.min(N*.47,N*(base+grow*m)*(1+.1*Math.max(0,A.spr[2]))),v=v0*(engPhase()==='calm'?.7:1);
   E.gp=((E.gp||0)+dts*(.12+.6*Math.max(0,A.spr[2])))%1;const win=(.35+.65*m)*g.tot,off=E.gp*g.tot;   /* the pen: how much is drawn, where it is */
   let pos=0;for(const o of g.L)for(let k=2;k<o.length;k+=2){const x0=o[k-2],y0=o[k-1],x1=o[k],y1=o[k+1],sl=Math.hypot(x1-x0,y1-y0),w=((pos-off)%g.tot+g.tot)%g.tot;pos+=sl;
@@ -1775,7 +1943,7 @@ function engOutMods(W){const E=ENG,C=ENG_CFG,A=EAR,N=E.N,R=E.R,f=E.force.glitch!
     if(R()<g*.3){const w=6+Math.floor(R()*14),h=3+Math.floor(R()*8),x0=Math.floor(R()*(N-w)),y0=Math.floor(R()*(N-h)),dx=(R()<.5?-1:1)*(2+Math.floor(R()*6));T.set(W);
       for(let y=y0;y<y0+h;y++)for(let x=x0;x<x0+w;x++){const sx=Math.max(0,Math.min(N-1,x+dx)),j=(y*N+x)*3,a=(y*N+sx)*3;W[j]=T[a];W[j+1]=T[a+1];W[j+2]=T[a+2];}}}   /* block tear */
   const ev=E.ev;let inv=engModOn('invert');
-  if(ev){if(ev.type==='strobe'){if(ev.f===0)W.fill(Math.max(.4,S.engStrobe));else if(ev.f===1)W.fill(0);if(++ev.f>1)E.ev=null;}
+  if(ev){if(ev.type==='strobe'){if(ev.f===0)W.fill(Math.max(.4,FEEL.get('flash')));else if(ev.f===1)W.fill(0);if(++ev.f>1)E.ev=null;}
     else if(ev.type==='invert'){inv=!inv;if(E.beat>=ev.b1)E.ev=null;}
     else if(ev.type==='screen'){W.fill(ev.v);if(E.beat>=ev.b1)E.ev=null;}}   /* the drop: the whole panel white or black, then the scene */
   if(inv)for(let j=0;j<W.length;j+=3){W[j]=C.light*C.white[0]-W[j];W[j+1]=C.light*C.white[1]-W[j+1];W[j+2]=C.light*C.white[2]-W[j+2];}
@@ -1801,8 +1969,8 @@ const engMarked=k=>engSet().filter(id=>((S.engMark||{})[id]||{})[k]);   /* the o
 const engPool=()=>{if(ENG_LOCK)return [ENG_LOCK];if(ENG_POOL)return ENG_POOL;const f=ENG_ORDER[S.engScene-1];if(f)return [f];const s=engSet(),mk=S.engMark||{},free=s.filter(id=>!(mk[id]&&(mk[id].intro||mk[id].drop)));
   return free.length?free:s.length?s:engDeskPool(ENG_ORDER);};   /* a marked scene waits for its moment, unless nothing else is left */   /* S.engScene: one scene steered from outside (the VJ Lab); DESK hook: your scenes always play, even ones the desk (or its style) switches off: the click is the clearest wish */   /* DESK hook: scenes the desk never wants (weight 0) stay out of every choice */
 for(const id of ENG_QUIET)if(ENG_SCENE[id])ENG_SCENE[id].quiet=true;   /* the conductor's 'soft' fallback */
-/* what the conductor needs to know about the music and this show this frame (the intensity slider picks busier or quieter scenes) */
-const engIn=()=>{const A=EAR,E=ENG;return{gen:A.gen,arc:E.arc,I:A.I,energy:A.energy,build:A.build,drop:A.drop,dropReq:E.dropReq,brk:A.brk,rest:E.rest,ix:engIx(),plan:!!E.planRef};};
+/* what the conductor needs to know about the music and this show this frame (Calm-Busy picks busier or quieter scenes) */
+const engIn=()=>{const A=EAR,E=ENG;return{gen:A.gen,arc:E.arc,I:A.I,energy:A.energy,build:A.build,drop:A.drop,dropReq:E.dropReq,brk:A.brk,rest:E.rest,plan:!!E.planRef};};
 const engTarget=()=>CONDUCTOR.target(engIn());
 const engVp=(k,d)=>{try{const v=window.vpGet&&window.vpGet(55,k);return typeof v==='number'&&isFinite(v)?v:d;}catch(e){return d;}};   /* live slider value (Director = pattern 55) */
 function engBarsScale(b){const f=engVp('bars',8)/8;if(f===1)return b;const g=b%4===0?4:b%2===0?2:1;return Math.max(g,Math.round(b*f/g)*g);}   /* 'Scene length' slider: whole bars on the original 4/2/1 granularity */
@@ -1850,7 +2018,8 @@ function engBegin(sc){const E=ENG,C=ENG_CFG,def=sc.def;sc.n=++E.n;sc.b0=E.beat;s
   if(nv!==E.novel){E.novel=nv;if(nv)engLog('predictable lately: rare scenes and layers get a boost');}}
 /* weighted choice among the scenes that can follow state st (directly, or over a bridge) */
 function engChoose(st,filter){const E=ENG,A=EAR,ph=engPhase();   /* the choice itself is CONDUCTOR.choose; here only what the scenes are and how a bridge is made */
-  const pool=engPool().map(id=>{const d=ENG_SCENE[id];return{key:id,energy:d.energy,role:d.role,w:d.w,wx:engDeskW(id),cover:d.cover,sparse:id==='arrivals'?[6,.15]:null,def:d};});   /* DESK hook: favour ×2.5, ♥ ×2 */
+  const pool=engPool().map(id=>{const d=ENG_SCENE[id],c=window.INF_SCENES&&INF_SCENES.local(55,id),b=c?INF_SCENES.cand(c,{local:true}):{key:id,energy:d.energy,role:d.role,w:d.w,cover:d.cover};   /* the candidate is the scene's card (scenes.js) */
+    return Object.assign(b,{wx:engDeskW(id),sparse:id==='arrivals'?[6,.15]:null,def:d});});   /* DESK hook: favour ×2.5, ♥ ×2 */
   const o=CONDUCTOR.choose(pool,{target:engWant(),recent:E.hist.slice(-3).map(h=>h.id),phase:ph,parts:engParts(),sparse:engSparse(),novel:E.novel,rng:E.R,filter:filter&&(c=>filter(c.def)),
     bridge:(c,R)=>{const def=c.def;if(def.entry.includes(st))return;let via;if(def.entry.includes('dot'))via='iris';else if(def.entry.includes('dark'))via=R()<.6?'dissolve':'blackout';else return null;return{via,mul:ENG_CFG.bridgeW};}});
   return o&&{id:o.key,w:o.w,via:o.via};}/* how to cut between two scenes that fit: hard on kicks and drops, softer when it is calm */
@@ -1910,7 +2079,7 @@ function engBam(){const E=ENG,C=ENG_CFG,B=E.bam;if(!B)return;const N=E.N,c=Math.
   if(B.flash){if(age>=.14){E.bam=null;return;}engFill(0,0,N-1,N-1,1-age/.14*.5,C.white);return;}   /* DESK hook: "white flash" = one short full-panel white frame, no flying square */
   if(f>=1){E.bam=null;return;}
   if(a<1)engSq(c,c,Math.round(c*1.05*engEaseOut(a)),1,1,1,true);else engFill(0,0,N-1,N-1,Math.pow(1-f,2),C.white);}
-function engFlash(t,s,drop){if(S.engStrobe<.01||window.DESK&&!engDeskFlash(drop))return false;   /* DESK hook: the flashes master */return typeof tsGate==='function'?tsGate(t):true;}
+function engFlash(t,s,drop){if(FEEL.get('flash')<.01||window.DESK&&!engDeskFlash(drop))return false;   /* DESK hook: the flashes master */return typeof tsGate==='function'?tsGate(t):true;}
 /* a drop: a global event on the downbeat, then a hard cut to a high-energy scene */
 function engDrop(){const E=ENG,C=ENG_CFG,A=EAR,R=E.R;
   MUSIC.snapDownbeat();   /* the drop is the new downbeat (the ear already did it for its own drops) */
@@ -1963,7 +2132,7 @@ function engBar(E){const A=EAR,C=ENG_CFG;const bar=Math.floor(E.beat/C.beatsPerB
   if(E.memP&&A.cM)E.memP=E.memP.filter(q=>{if(E.beat<q.beat)return true;q.m.sig=Float32Array.from(A.cM);return false;});   /* the passage's harmony, two bars in */
   E.dropKick*=.6;
   const sc=E.sc;if(!sc)return;
-  if(!E.tr&&!E.frozen&&sc.tag!=='locked'&&sc.tag!=='drop'&&!engPool().includes(sc.def.id)&&sc.b1-E.beat>C.beatsPerBar){sc.then=null;sc.noHold=true;sc.b1=Math.ceil(E.beat/C.beatsPerBar)*C.beatsPerBar;engLog('desk: '+sc.def.name+' is switched off, it ends at the bar line');}   /* DESK hook: switching the playing scene off ends it, a story's hold too (Merger holds till they merge) */
+  if(!E.tr&&!E.frozen&&sc.tag!=='locked'&&sc.tag!=='drop'&&!/^after the /.test(sc.tag)&&!engPool().includes(sc.def.id)&&sc.b1-E.beat>C.beatsPerBar){sc.then=null;sc.noHold=true;sc.b1=Math.ceil(E.beat/C.beatsPerBar)*C.beatsPerBar;engLog('desk: '+sc.def.name+' is switched off, it ends at the bar line');}   /* DESK hook: switching the playing scene off ends it, a story's hold too (Merger holds till they merge); a story's next part (tag 'after the …': Black hole, Morphology) is not in your pick but stays */
   E.hiBars=A.energy>.6&&sc.def.energy>.55?E.hiBars+1:Math.max(0,E.hiBars-1);
   if(E.hiBars>=C.restBars&&!E.rest){E.rest=C.restLen;E.hiBars=0;engLog('long loud stretch: a rest, whatever the music does');sc.b1=Math.min(sc.b1,E.beat+C.beatsPerBar);}
   if(E.loop&&!A.gen&&(A.rep<C.repOff||A.brk!==E.loop.brk)){E.loop=null;engLog('the music changed: the loop breaks');if(!E.tr)sc.b1=E.beat;}
@@ -2088,7 +2257,7 @@ function engStep(N,t,dts){const E=ENG,A=EAR,C=ENG_CFG;if(E.N!==N)engInit(N);E.t=
   if(window.DESK)engDeskTap(t);   /* DESK hook: live phase, config, strip gains on the ears, song-map signals (undone in the next engEars) */
   const kr=1-Math.exp(-dts/.5);E.restr+=((A.brk?1:0)-E.restr)*kr;E.mot=(1-.9*E.restr)*(C.iMot[0]+C.iMot[1]*(E.lvl==null?A.I:.5*A.I+.5*E.lvl))*(1+.8*engIxL());   /* soft music: less motion, fewer sparks, always */
   const tgt=A.gen?.6*E.arc:engClamp(A.build*.8+Math.min(1,A.dens/3)*.25+E.dropKick*.5);
-  E.ent+=(engClamp(tgt*(.4+.6*A.I)+S.engEnt+.5*engIxL()+(E.dkEo||0))*(1-.8*E.restr)-E.ent)*(1-Math.exp(-dts/2));   /* DESK hook: the energy master offsets the entropy */
+  E.ent+=(engClamp(tgt*(.4+.6*A.I)+(S.vjEnt||0)+.5*engIxL()+(E.dkEo||0))*(1-.8*E.restr)-E.ent)*(1-Math.exp(-dts/2));   /* DESK hook: the energy master offsets the entropy; S.vjEnt = a VJ clip's own chaos (no slider) */
   if(!E.sc){engNext('start');if(!E.sc&&E.tr)engTrEnd();}   /* a bridge from nothing: the first scene starts at once */
   if(E.arrive&&E.sc){E.arrive=false;const mi=ENG_LOCK?[]:engMarked('intro');
     if(!E.frozen&&mi.length){const id=mi[Math.floor(E.R()*mi.length)];E.tr=null;E.loop=null;E.canon=-1;engGo(engMake(id,{from:ENG_SCENE[id].entry[0],tag:'intro'}),'cut');engLog('the song starts: your intro, '+ENG_SCENE[id].name);}   /* your intro scene */
@@ -2101,9 +2270,9 @@ function engStep(N,t,dts){const E=ENG,A=EAR,C=ENG_CFG;if(E.N!==N)engInit(N);E.t=
     if(E.dropReq){E.dropReq=false;if(!E.frozen&&!ENG_LOCK){A.drop=true;A.lastDrop=E.beat;dsk=true;if(E.dkSong){E.dkSongB=E.beat;}}E.dkSong=false;}
     else if(A.drop&&E.dkSongB!=null&&E.beat-E.dkSongB<8&&E.beat>=E.dkSongB){A.drop=false;}   /* the Director's own detector, a moment after the song map's drop: one drop only */
     else if(A.drop&&(engDeskRule()||{}).notDrop){A.drop=false;engLog('desk: marked as not a drop, ignored');}}
-  if(A.drop&&!E.frozen&&!ENG_LOCK){const sc=E.sc,bpb=C.beatsPerBar;   /* a scene with a story of its own (Merger) can take the drop itself */
+  if(A.drop&&!E.frozen&&(!ENG_LOCK||E.sc&&E.sc.def.id===ENG_LOCK&&E.sc.def.ownDrop)){const sc=E.sc,bpb=C.beatsPerBar;   /* a scene with a story of its own (Merger, Celdeling) can take the drop itself, locked too (the Stories list): that switches nothing */
     if(sc&&sc.def.ownDrop&&!dsk&&!E.tr&&!engDeskOff(sc.def.id)&&sc.def.ownDrop(sc,E)){   /* DESK hook: a switched-off story does not take the drop */MUSIC.snapDownbeat();E.loop=null;E.canon=-1;E.dropKick=1;E.rest=0;E.lastSw=E.beat;E.phr0=E.beat;engLog('DROP → '+sc.def.name+' takes it');}
-    else engDrop();E.secReq=null;}
+    else if(!ENG_LOCK)engDrop();E.secReq=null;}
   if(A.drop&&!E.frozen){E.mixTone=false;engMixTick('drop');}   /* your mix: its drop layers (a drop is more than a tonal change) */
   if(E.secReq&&barTick&&!(A.dw.st==='breakdown'&&A.dw.armed&&E.secReq.kind!=='out'&&t-E.secReq.at<1)){const s=E.secReq;E.secReq=null;
     if(E.sc.def.hold&&(s.kind!=='fall'||E.sc.def.keepFall)&&E.sc.def.hold(E.sc,E,s)){E.sc.rethink=true;engLog('new section ('+(s.what||s.kind)+'): '+(E.sc.def.keepFall?E.sc.def.name+' keeps its story':'Arrivals shows it')+', no cut');}else engSection(s);}   /* a part coming in is what Arrivals draws */   /* armed, a change may be the drop itself: it waits a second */
@@ -2223,21 +2392,15 @@ function engSetRows(){const box=document.getElementById('engSetList');if(!box)re
    b.addEventListener('click',()=>{S[k]=i;save();syncEng();});el.appendChild(b);});};
  seg('engWireSeg','engWire',['Serpentine','Progressive']);seg('engOriginSeg','engOrigin',['Starts top left','Top right','Bottom left','Bottom right']);
  const KEYS={n:()=>{ENG.skip=true;},c:()=>document.getElementById('engCyc').click(),' ':()=>fr.click(),h:engFav,o:()=>hw.click(),
-   '[':()=>{S.engEnt=Math.max(-.5,+(S.engEnt-.1).toFixed(2));},']':()=>{S.engEnt=Math.min(.5,+(S.engEnt+.1).toFixed(2));},
-   ',':()=>{S.engInt=Math.max(0,+((S.engInt??.5)-.05).toFixed(2));},'.':()=>{S.engInt=Math.min(1,+((S.engInt??.5)+.05).toFixed(2));}};
+   };
  ENG_MODS.forEach(([m],i)=>KEYS[String(i+1)]=()=>engMixToggle(m));
  document.addEventListener('keydown',e=>{if(S.pat!==55||e.ctrlKey||e.metaKey||e.altKey)return;if(e.target.closest&&e.target.closest('input,textarea,select,[contenteditable]'))return;
-   const k=e.key.toLowerCase();if(k==='b'){ENG.black=true;e.preventDefault();return;}const fn=KEYS[k];if(!fn)return;e.preventDefault();fn();save();syncEng();
-   for(const q of['engEnt','engInt'])if(outs[q]){outs[q].inp.value=S[q];outs[q].out.textContent=outs[q].c.f(S[q]);}});
+   const k=e.key.toLowerCase();if(k==='b'){ENG.black=true;e.preventDefault();return;}const fn=KEYS[k];if(!fn)return;e.preventDefault();fn();save();syncEng();});
  document.addEventListener('keyup',e=>{if(e.key.toLowerCase()==='b')ENG.black=false;});}
-buildCtl('engCtl',[{k:'engEnt',l:'Entropy ([ and ])',min:-.5,max:.5,step:.05,f:v=>Math.abs(v)<.01?'as the music says':(v>0?'+':'')+Math.round(v*100)+' % on top of the music'},
-  {k:'engInt',l:'Intensity (, and .)',min:0,max:1,step:.05,f:v=>Math.abs(v-.5)<.01?'as the music says':v<.5?Math.round((.5-v)*200)+' % calmer: dimmer, emptier, simpler':Math.round((v-.5)*200)+' % wilder: brighter, fuller, more complex'},
-  {k:'engStrobe',l:'White flashes',min:0,max:1,step:.05,f:v=>v<.01?'off':Math.round(v*100)+' %, at most 3 per second'},
-  {k:'engFb',l:'Feedback tunnel',min:0,max:1,step:.05,f:v=>v<.01?'off, no ghosts':Math.round(v*100)+' % of the rolled trail'},
-  {k:'engBpm',l:'Own clock, without music',min:60,max:180,step:1,f:v=>v+' BPM'},
+buildCtl('engCtl',[{k:'engFb',l:'Feedback tunnel',min:0,max:1,step:.05,f:v=>v<.01?'off, no ghosts':Math.round(v*100)+' % of the rolled trail'},
   {k:'engDelay',l:'Sound waits for the light',min:0,max:150,step:5,f:v=>v<1?'off, the sound plays at once':v+' ms, so the light lands on the beat (player and video only)'}]);
 syncEng();
-const engList=()=>({scenes:ENG_ORDER.filter(id=>!ENG_STORIES.includes(id)).map(id=>({id,name:ENG_SCENE[id].name})),stories:ENG_STORIES.filter(id=>ENG_SCENE[id]).map(id=>({id,name:ENG_SCENE[id].name+(id==='merger'?' (then Black hole)':'')}))});
+const engList=()=>({scenes:ENG_ORDER.filter(id=>!ENG_STORIES.includes(id)).map(id=>({id,name:ENG_SCENE[id].name})),stories:ENG_STORIES.filter(id=>ENG_SCENE[id]).map(id=>({id,name:ENG_SCENE[id].name+(id==='merger'?' (then Black hole)':id==='celdeling'?' (then Morphology)':'')}))});
 const engLock=id=>{if(id==null||!ENG_SCENE[id]){ENG_LOCK=null;return null;}ENG_LOCK=id;const E=ENG;
   if(E.N&&E.sc&&E.sc.def.id!==id){E.tr=null;E.loop=null;E.canon=-1;E.secReq=null;engGo(engMake(id,{from:ENG_SCENE[id].entry[0],tag:'locked'}),'cut');}
   return id;};
@@ -2250,6 +2413,7 @@ ENG.forceDrop=()=>{ENG.dropReq=true;};   /* Drop!: a drop on the next frame (ign
 ENG.forceCalm=bars=>{const E=ENG,bp=ENG_CFG.beatsPerBar;if(!E.sc)return;E.rest=Math.max(1,E.rest||0);E.hiBars=0;E.calmBars=Math.max(1,Math.round(bars||8));E.loop=null;E.canon=-1;
   E.sc.noHold=true;E.sc.then=null;if(E.sc.def.untilDone)E.sc.done=true;   /* a story's hold() must not keep it, and no hand-over follows */
   if(!E.tr)E.sc.b1=Math.min(E.sc.b1,Math.ceil(E.beat/bp)*bp);};   /* Calm: the scene ends on the bar line, the next one is a quiet one that lasts `bars` bars */
-return {step:engStep,sync:syncEng,lookCtx:engLookCtx,ENG,EAR,ENG_ORDER,ENG_SCENE,ENG_CFG,ENG_ROLE,ENG_COVER,ENG_ON,ENG_MODS,list:engList,lock:engLock,pool:engSetPool,now:engNow,
+/* window.INF_DIR: the same hooks for tests and the console (tests/celdeling-story.js) */
+return window.INF_DIR={step:engStep,sync:syncEng,lookCtx:engLookCtx,ENG,EAR,ENG_ORDER,ENG_SCENE,ENG_CFG,ENG_ROLE,ENG_COVER,ENG_ON,ENG_MODS,list:engList,lock:engLock,pool:engSetPool,now:engNow,
   pinned:()=>{const f=ENG_ORDER[S.engScene-1];return f||(engSet().length===1?engSet()[0]:null);},picked:()=>{const f=ENG_ORDER[S.engScene-1];return f?[f]:engSet();},unpin:engSetAuto,
   modOn:engModOn,seed:engSeed};}};   /* DESK hook: the scenes picked in the Director tab (they beat the desk's scene choices), and back to Auto */   /* DESK hook: ENG_CFG, ENG_ROLE, ENG_COVER, ENG_ON, ENG_MODS exposed */

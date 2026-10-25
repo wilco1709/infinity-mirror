@@ -64,6 +64,20 @@
   const RANGE = { flash: [0, 1], flashThr: [0, 1], contrast: [0, 1], zoom: [0, .15], glitch: [0, 1], lullDim: [0, 1], scan: [0, 1], amount: [0, 1] };
   const PALETTE_WASH = [1, .45, .85];   /* flashColour 'palette' until the Colour layer supplies input.paletteCol */
 
+  /* General > Feel: every FEEL.cfg value as a slider (the Pad has the first five). id = the cfg name; max/min/step are in the cfg's own units; pct = shown as a percentage of max */
+  const P = (id, label, tip, extra) => Object.assign({ id, label, tip, def: DEFAULTS[id], min: (RANGE[id] || [0, 1])[0], max: (RANGE[id] || [0, 1])[1], step: .01, pct: true }, extra || {});
+  const PARAMS = [
+    P('flash', 'Kick flash', 'White wash over the whole picture on a kick. 0 is off: then no visual flashes white on its own either. It is rate limited by the flash gate (General > Light), so it stays safe.', { step: .05 }),
+    P('flashThr', 'Flash threshold', 'How hard a kick has to be for the wash. Low: most kicks flash. High: only the strongest ones do (a kick that may not flash cuts to cyan instead).', { step: .05 }),
+    P('flashColour', 'Flash colour', 'The colour of the kick wash: white, cyan or the palette colour.', { options: ['white', 'cyan', 'palette'] }),
+    P('contrast', 'Hit contrast', 'Dim between the hits, then pop to full on the hit. Higher: darker between hits, bigger pop.', { step: .05 }),
+    P('zoom', 'Kick zoom', 'The whole picture punches in on every kick and settles back. 0 is off.', { step: .005, pct: false, unit: '%', scale: 100 }),
+    P('glitch', 'Glitch on highs', 'Rows of the picture tear sideways on hats and gritty highs. 0 is off.', { step: .05 }),
+    P('lullDim', 'Dark when quiet', 'In quiet passages the picture goes dark and comes back with the music. 0 leaves it on.', { step: .05 }),
+    P('scan', 'Scan band', 'A light band that sweeps over the picture once a beat, on the tempo clock. 0 is off.', { step: .05 }),
+    P('amount', 'Feel amount (every visual)', 'How much of all the Feel effects every visual gets. 0 is the plain picture. The Pad has a tick and an amount for each visual on top of this.', { step: .05 })
+  ];
+
   /* integer hash shared with the GLSL (exact on both sides: uint32 maths) */
   function hash(a, b) {
     let x = (Math.imul(a >>> 0, 747796405) + Math.imul(b >>> 0, 2891336453) + 1) >>> 0;
@@ -148,7 +162,7 @@ vec3 feelColour(vec3 col,vec2 uv){
     let visual = null;
     const listeners = [];
     let st = { strobe: 0, cut: 0, p: { kick: 0, snare: 0, hat: 0, mel: 0 }, sp: 0, sv: 0, str: 0, flashes: [], out: null };
-    F.defaults = DEFAULTS; F.range = RANGE; F.CYA = CYA; F.GLSL = GLSL; F.hash = hash; F.scaled = scaled;
+    F.params = PARAMS; F.defaults = DEFAULTS; F.range = RANGE; F.CYA = CYA; F.GLSL = GLSL; F.hash = hash; F.scaled = scaled;
     F.warp = warp; F.colour = colour;
     F.cfg = cfg;
     F.storage = (function () { try { return root.localStorage || null; } catch (e) { return null; } })();

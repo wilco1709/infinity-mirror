@@ -4,8 +4,8 @@
  * Exposes window.INF_LIBRARY.
  */
 (function (root, factory) {
-  root.INF_LIBRARY = factory(root.INF_LIB_CORE);
-})(typeof window !== 'undefined' ? window : this, function (coreModule) {
+  root.INF_LIBRARY = factory(root.INF_LIB_CORE, root);
+})(typeof window !== 'undefined' ? window : this, function (coreModule, root) {
   'use strict';
 
   let core = null;
@@ -816,6 +816,17 @@
     const userSets = core.getSets();
     const runningInfo = core.running();
 
+    // 0. New set: the builder (set-builder.js): pick scenes from the scene registry, a style preset, save
+    const newRow = document.createElement('div');
+    newRow.className = 'lib-actions';
+    newRow.style.margin = '0 0 8px';
+    newRow.innerHTML = '<button type="button" class="lib-newset">＋ New set</button>';
+    newRow.querySelector('.lib-newset').onclick = () => {
+      if (root.INF_SETBUILDER) root.INF_SETBUILDER.open({ core, host, onSaved: () => { renderAll(); }, esc });
+      else if (host.toast) host.toast('The set builder did not load');
+    };
+    mount.appendChild(newRow);
+
     // 1. Built-in Sets section
     const foldBuiltIn = mkFold('Built-in sets', builtInSets.length);
     const fbBuiltIn = foldBuiltIn.querySelector('.fb');
@@ -855,7 +866,7 @@
         const row = document.createElement('div');
         row.className = 'lib-row' + (isThisRunning ? ' lib-running' : '');
 
-        let statusText = `${st.pool.length} items · ${st.rules.order}`;
+        let statusText = `${st.pool.length} items · ${st.rules.order}` + (st.style ? ' · style' : '');
         if (isThisRunning) {
           statusText = `playing · bar ${runningInfo.barInStep}/${runningInfo.barsInStep}`;
         }

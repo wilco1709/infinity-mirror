@@ -263,7 +263,7 @@ VJ.Player=function(env){const PL={clip:null,style:null,A:null,N:0,sec:-1,lastT:-
   function pickScene(list,R,cur){const d=D(),CD=window.CONDUCTOR;
     const rnd=()=>list[Math.floor(R()*list.length)];if(!CD||!d.ENG_SCENE)return rnd();
     const A=(window.MUSIC&&MUSIC.ear)||{},E=d.ENG||{},arc=E.arc!=null?E.arc:.5;
-    const pool=list.map(id=>{const e=d.ENG_SCENE[id]||{};return{key:id,energy:e.energy,role:e.role,w:e.w,cover:e.cover};});
+    const IS=window.INF_SCENES,pool=list.map(id=>{const e=d.ENG_SCENE[id]||{},c=IS&&IS.local(55,id);return c?IS.cand(c,{local:true}):{key:id,energy:e.energy,role:e.role,w:e.w,cover:e.cover};});   /* the scene's card (scenes.js) */
     const tgt=CD.want({plan:false,rest:0,brk:false,ix:0,I:A.I!=null?A.I:.5,energy:A.energy!=null?A.energy:.5,build:A.build||0,gen:!!A.gen,arc});
     const o=CD.choose(pool,{target:tgt,recent:cur?[cur]:[],phase:CD.phase(A,arc,0),parts:[],sparse:false,rng:R,filter:c=>list.length<2||c.key!==cur});
     return o?o.key:rnd();}
@@ -343,7 +343,7 @@ VJ.Player=function(env){const PL={clip:null,style:null,A:null,N:0,sec:-1,lastT:-
     /* scene changes asked by the matrix land on the next bar line (beat, if the style says so), like the Director's own */
     if(tv.next>.5&&!PL.nextOn)PL.nextReq=true;PL.nextOn=tv.next>.5;
     if(PL.nextReq&&(PL.style.quantize==='beat'?Math.floor(pb)!==Math.floor(PL.beat):barTick)){PL.nextReq=false;skip();}
-    S.engEnt=Math.max(-.5,Math.min(.5,tv.entropy/2));S.engFb=Math.min(1,tv.ghosts);S.engHw=0;
+    S.vjEnt=Math.max(-.5,Math.min(.5,tv.entropy/2));S.engFb=Math.min(1,tv.ghosts);S.engHw=0;
     D().ENG.rawOut=true;D().step(N,t,dts);   /* the Director draws and echoes; the one finishing chain (LOOK.post) is run below, with the clip's looks in front of it */
     const W=PL.W;W.set(D().ENG.out);
     post(W,N,dts,tv,t,songT);return W;};

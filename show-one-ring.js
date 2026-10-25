@@ -7,7 +7,7 @@
    texture (branch 36, unit 7). The page loads this file with <script src>; code() runs inside the page's scope. Edit this file, not the page. */
 (window.INF_SHOWS=window.INF_SHOWS||{})['one-ring']={pat:58,tab:'ring',name:'The One Ring',home:'hand',
 note:"The PUDE logo goes Lord of the Rings, after the films: the ring turns in the dark while its inscription glows like hot metal, the cube sticks out its index finger and the ring falls onto it in slow motion, the cube vanishes, the wraith world with white winds round its ghost and the Eye on the tower far away, the Eye finds it, and the cube is pulled across the land into the fire. 27 seconds on a loop, on its own clock (it does not listen to the music).",
-defaults:{orLoop:1,orBri:.85,orSpeed:1},
+defaults:{orLoop:1,orSpeed:1},
 panel:String.raw`
     <div data-tab="ring" style="display:flex;flex-direction:column;gap:12px">
       <div class="glabel">The One Ring</div>
@@ -334,9 +334,9 @@ function orRender(T,dts){const R=OR.R,x=OR.sx,m=OR.mx;
 
 /* M (R x R) -> N x N LEDs: duty from the picture's sRGB, brightness, the current limit (12 mA per channel), then the page's gamma */
 function orOut(N){const s=OR.smx;s.imageSmoothingEnabled=true;s.imageSmoothingQuality='high';s.clearRect(0,0,N,N);s.drawImage(OR.M,0,0,N,N);
-  const d=s.getImageData(0,0,N,N).data,U=OR.U,lut=OR.lut,br=S.orBri??.85;let sum=0;
+  const d=s.getImageData(0,0,N,N).data,U=OR.U,lut=OR.lut,br=.85;let sum=0;   /* br: the film's own tone (a look constant); the brightness the person sets is General > Light (the master) */
   for(let i=0;i<N*N*4;i+=4)sum+=(lut[d[i]]+lut[d[i+1]]+lut[d[i+2]])*br;
-  const amps=sum*.012,lim=(S.engAmps||40),f=amps>lim?lim/amps:1,gs=1/(S.cgam||2.2);OR.amps=amps*f;
+  const amps=sum*.012,lim=HOUSE.val.supplyA*HOUSE.val.powerLimit,f=amps>lim?lim/amps:1,gs=1/(S.cgam||2.2);OR.amps=amps*f;
   for(let y=0;y<N;y++){const r0=(N-1-y)*N;for(let x=0;x<N;x++){const i=(y*N+x)*4,u=(r0+x)*4;
     U[u]=Math.pow(lut[d[i]]*br*f,gs);U[u+1]=Math.pow(lut[d[i+1]]*br*f,gs);U[u+2]=Math.pow(lut[d[i+2]]*br*f,gs);U[u+3]=1;}}
   gl.activeTexture(gl.TEXTURE7);gl.bindTexture(gl.TEXTURE_2D,OR.tex);gl.texSubImage2D(gl.TEXTURE_2D,0,0,0,N,N,gl.RGBA,gl.FLOAT,U);gl.activeTexture(gl.TEXTURE0);}
@@ -358,8 +358,7 @@ function orSync(){const g=document.getElementById('orGo');if(!g)return;g.setAttr
  document.getElementById('orPause').addEventListener('click',()=>{OR.pause=!OR.pause;orSync();});
  document.getElementById('orLoopB').addEventListener('click',()=>{S.orLoop=S.orLoop?0:1;save();orSync();});
  document.getElementById('orTime').addEventListener('input',e=>{OR.T=+e.target.value;OR.pause=true;orSync();});
- buildCtl('orCtl',[{k:'orBri',l:'Brightness',min:.2,max:1,step:.05,f:v=>Math.round(v*100)+' %',tip:'How bright the whole story plays. The current limit of the mirror still applies on top.'},
-   {k:'orSpeed',l:'Speed',min:.5,max:1.5,step:.05,f:v=>Math.abs(v-1)<.01?'as filmed (27 s)':Math.round(v*100)+' % ('+(27/v).toFixed(0)+' s)',tip:'Slower stretches the slow motion; 100 % = 27 seconds.'}]);}
+ buildCtl('orCtl',[{k:'orSpeed',l:'Speed',min:.5,max:1.5,step:.05,f:v=>Math.abs(v-1)<.01?'as filmed (27 s)':Math.round(v*100)+' % ('+(27/v).toFixed(0)+' s)',tip:'Slower stretches the slow motion; 100 % = 27 seconds.'}]);}
 return {step:orStep,sync:orSync,OR};}};
 
 /* PUDE_logo.svg (Documents) flattened: per path [matrix to SVG user space, fill, opacity, evenodd, d]. 0-8 the cube, 9-14 its waving hand. */

@@ -358,7 +358,7 @@ ul.checks .wn{color:var(--accent);font-weight:600}
 <div class="fold" data-fold="st-power" data-shut="1"><button type="button" class="sh" aria-expanded="false"><span>Power</span><span class="cnt"></span></button><div class="fb">
     <section aria-label="Power">
       <div id="powerCtl" style="display:flex;flex-direction:column;gap:12px"></div>
-      <p class="note">Power supply: what your LED power supply can deliver at 5 V, in amps. Power limit: how much of it the picture may use; past that the Director dims the whole picture, so the supply is never overloaded. One setting for all shows (it replaces the two Power supply sliders inside them).</p>
+      <p class="note">Power supply: what your LED power supply can deliver at 5 V, in amps. Power limit: how much of it the picture may use; past that Epic dims the whole picture, so the supply is never overloaded. One setting for all shows (it replaces the two Power supply sliders inside them).</p>
     </section>
 </div></div>
 <div class="fold" data-fold="st-woofer" data-shut="1"><button type="button" class="sh" aria-expanded="false"><span>Woofer LEDs</span><span class="cnt"></span></button><div class="fb">
@@ -447,7 +447,7 @@ ul.checks .wn{color:var(--accent);font-weight:600}
     <section aria-label="Shopping list">
       <div class="chips"><button type="button" id="shopSave">Save</button><button type="button" id="shopBuy" disabled>Buy</button><button type="button" id="shopSuggest" title="Put the suggested 1 m stack on the cart: deepest tunnel, brightest LEDs, 10 mm pitch, within the power supply">Suggested</button></div>
       <p class="note" id="shopLive"></p>
-      <p class="note" id="shopSug" hidden><b>Suggested stack, 1 m:</b> 36 WS2812B 16 × 16 matrices (96 × 96 at 10 mm), Pilkington MirroView in front and at the back, 50 mm air between them, 2 × Mean Well LRS-350-5 (120 A, limit 85 %). The deepest tunnel of all the parts (0.70 × 0.70 = 0.49 per copy) with the brightest and cheapest 1 m LEDs; the Director keeps it under about 510 W, so one ordinary 16 A socket is plenty. Save, then Buy, for the full list.</p>
+      <p class="note" id="shopSug" hidden><b>Suggested stack, 1 m:</b> 36 WS2812B 16 × 16 matrices (96 × 96 at 10 mm), Pilkington MirroView in front and at the back, 50 mm air between them, 2 × Mean Well LRS-350-5 (120 A, limit 85 %). The deepest tunnel of all the parts (0.70 × 0.70 = 0.49 per copy) with the brightest and cheapest 1 m LEDs; Epic keeps it under about 510 W, so one ordinary 16 A socket is plenty. Save, then Buy, for the full list.</p>
       <div id="shopSaved" style="display:flex;flex-direction:column;gap:8px"></div>
       <p class="note">Save keeps this whole build: panel size, LEDs, films, glass or acrylic and the gap, the controller settings, the power supply and the woofer LEDs. Buy opens the full shopping list for the saved build in a new tab: every part down to the spacer frames, cables, fuses and controllers, with the power and wire sizes worked out. Tick off what you have, print it or save it as CSV. Load puts a saved build back on the stage.</p>
     </section>
@@ -467,24 +467,10 @@ ul.checks .wn{color:var(--accent);font-weight:600}
 </div></div>
 <div class="fold" data-fold="sn-tempo"><button type="button" class="sh" aria-expanded="true"><span>Tempo</span><span class="cnt"></span></button><div class="fb">
       <div class="chips"><button type="button" id="tempoBtn" aria-pressed="false">Match speed and tempo of the song</button></div>
-      <div id="prefCtl" style="display:flex;flex-direction:column;gap:10px"></div>
-      <p class="note">Preferred tempo: where the tempo search looks first. Set it to 125 to 128 for house and techno, so it does not pick half or double the tempo. Used by the tunnel patterns and by every show.</p>
       <div id="tempoBox" style="display:flex;flex-direction:column;gap:10px">
         <p class="note" id="tempoLive" style="font-family:var(--mono)"></p>
         <p class="note">Finds the tempo of the song (60 to 200 BPM) from its rhythm and locks the Infinity tunnel patterns to it: rings go out on every beat, the chase laps once a bar (twice or four times when the bass gets heavy), polygons, stars and the spiral move with a push on each beat, and the whole tunnel runs faster for a fast song. The beat keeps going through a break. Glitches follow the song: a snare tears a few rows sideways, a drum fill makes the motion stutter, a drop makes the tunnel jump one mirror copy with a colour shift, a big leap in the melody shifts the colours, and every 8 bars the picture twitches. Glitches move or recolour the light but never flash it, so they stay inside the 3 flashes a second limit. Only the Infinity tunnel patterns follow it.</p>
       </div>
-</div></div>
-<div class="fold" data-fold="sn-drop"><button type="button" class="sh" aria-expanded="true"><span>Hits and drops</span><span class="cnt"></span></button><div class="fb">
-      <div id="hitCtl" style="display:flex;flex-direction:column;gap:12px"></div>
-      <p class="note">Hit sensitivity: how far above its recent average a kick, snare or hat has to jump to count as a hit. Lower = more hits. Used by the live show, the tunnel show and the PUDE shows. (The Director and VJ clips still use their own copy of this value.)</p>
-      <div id="dropCtl" style="display:flex;flex-direction:column;gap:12px"></div>
-      <div class="chips"><button type="button" id="dropTest">Drop now</button></div>
-      <p class="note" id="dropLive" style="font-family:var(--mono)"></p>
-      <p class="note">How a drop is found: first a breakdown, the sub bass falling away for a while after it has been steady; then the drop is a kick whose sub jumps back clearly more than the high crack band (a snare roll or noise riser lifts both), or the sub plainly back for good. The bar count restarts on it, so everything locked to bars lands with the drop. More sensitive: a shorter breakdown is enough and a weaker sub return counts. The same ears drive the live show in Text show, and drop sensitivity reaches the tunnel show and the Director too.</p>
-</div></div>
-<div class="fold" data-fold="sn-safe"><button type="button" class="sh" aria-expanded="true"><span>Safety</span><span class="cnt"></span></button><div class="fb">
-      <div id="safeCtl" style="display:flex;flex-direction:column;gap:12px"></div>
-      <p class="note">One flash gate for every white flash: the live show, the tunnel show, the PUDE shows and the Director's white screens. At least 0.15 s between two flashes, and never more than this many in any second. 3 a second is the photosensitive-epilepsy limit (WCAG 2.3.1); a flash that the gate refuses is shown as a cut or dim instead. The Director also keeps its own 3-a-second timer on top, and VJ clips have their own 3-a-second strobe.</p>
 </div></div>
     </div>
     </div>
@@ -619,7 +605,7 @@ ul.checks .wn{color:var(--accent);font-weight:600}
         <button type="button" class="pick-row" data-pick="50">Mandelbrot dive<span class="val">12 stops, circle of fifths</span></button>
       </div>
 </div></div>
-<div class="fold" data-fold="sr-dir"><button type="button" class="sh" aria-expanded="true"><span>From the Director</span><span class="cnt"></span></button><div class="fb"><div class="plist2" id="dirStories"></div></div></div>
+<div class="fold" data-fold="sr-dir"><button type="button" class="sh" aria-expanded="true"><span>From Epic</span><span class="cnt"></span></button><div class="fb"><div class="plist2" id="dirStories"></div></div></div>
 <div id="libStories"></div>
       <div class="selv">
       <p class="note" id="storyNote"></p>
@@ -671,7 +657,6 @@ ul.checks .wn{color:var(--accent);font-weight:600}
       <div class="chips"><button type="button" id="advGo" aria-pressed="false">Play the show on the mirror</button><button type="button" id="advDrop">Drop now</button></div>
       <div class="glabel">Scene</div>
       <div class="chips" role="radiogroup" aria-label="Scene" id="advScene"></div>
-      <div id="advCtl" style="display:flex;flex-direction:column;gap:12px"></div>
       <div class="row"><label for="advTxt">Text in the rings scene</label><input type="text" id="advTxt" maxlength="24" spellcheck="false" style="grid-column:1/-1;font:inherit;padding:6px 8px;border-radius:6px;border:1px solid var(--line);background:transparent;color:inherit;letter-spacing:.12em"></div>
       <p class="note" id="advLive" style="font-family:var(--mono)"></p>
       <p class="note">Its own ears: it reads the raw sound before Audio gain and ignores Follow the melody. Every detector is levelled against its own recent peak, so quiet and loud tracks hit the same. Kick, snare and hats are sudden rises in their own frequency band (sub below 110 Hz, snare body 150–400 Hz plus crack 1.5–5 kHz, hats above 7 kHz); the tempo comes from the time between kicks; a breakdown is the sub falling away, a drop is the sub slamming back on a kick, and the bar count restarts on it. In Auto it changes scene on the phrase, picking what fits: hard kicks for the colour fields, filter sweeps for the rings, busy hats and builds for the particles, pads and broken beats for the plexus.</p>
@@ -699,7 +684,30 @@ ul.checks .wn{color:var(--accent);font-weight:600}
     </div>
     <div class="dpane" data-dpane="general">
       <p class="note dnote">Speed, Trail, Softness and Brightness live in the master strip of the music bar, always in view.</p>
-<div class="fold" data-fold="ge-col"><button type="button" class="sh" aria-expanded="true"><span>Colours for every visual</span><span class="cnt"></span></button><div class="fb">
+<div class="fold" data-fold="ge-listen"><button type="button" class="sh" aria-expanded="true"><span>Listen</span><span class="cnt"></span></button><div class="fb">
+      <p class="note">How the music is heard. One ear and one clock for every visual, set and clip: these are its tunables. Hover the (i) for what each does, double-click a slider to put it back.</p>
+      <div id="hitCtl" style="display:flex;flex-direction:column;gap:12px"></div>
+      <p class="note">Hit sensitivity: how far above its recent average a kick, snare or hat has to jump to count as a hit. Lower = more hits. One ear for every visual, set and clip.</p>
+      <div id="dropCtl" style="display:flex;flex-direction:column;gap:12px"></div>
+      <div class="chips"><button type="button" id="dropTest">Drop now</button></div>
+      <p class="note" id="dropLive" style="font-family:var(--mono)"></p>
+      <div id="prefCtl" style="display:flex;flex-direction:column;gap:10px"></div>
+      <p class="note">Preferred tempo: where the tempo search looks first. Set it to 125 to 128 for house and techno, so it does not pick half or double the tempo. Used by the tunnel patterns and by every show. (The Sound tab has the switch that matches the speed to the song.)</p>
+      <div id="bpmCtl" style="display:flex;flex-direction:column;gap:10px"></div>
+      <div id="music-params" style="display:flex;flex-direction:column;gap:12px"></div>
+      <div class="glabel">Follow the melody</div>
+      <div id="pitchCtl"></div>
+      <p class="note" id="pitchLive" style="font-family:var(--mono)"></p>
+      <p class="note">The visuals follow the melody: the note of the loudest instrument or synth (110 Hz to 1.4 kHz, so the bass and kick stay out). The note sets the colour, round the circle of fifths so related keys get related colours; how high or low it is drives each infinity-tunnel pattern in its own way, and every new note can send a ring.</p>
+      <p class="note">How a drop is found: first a breakdown, the sub bass falling away for a while after it has been steady; then the drop is a kick whose sub jumps back clearly more than the high crack band (a snare roll or noise riser lifts both), or the sub plainly back for good. The bar count restarts on it, so everything locked to bars lands with the drop. More sensitive: a shorter breakdown is enough and a weaker sub return counts. The same ears drive every show.</p>
+</div></div>
+<div class="fold" data-fold="ge-feel"><button type="button" class="sh" aria-expanded="true"><span>Feel</span><span class="cnt"></span></button><div class="fb">
+      <p class="note">The "Colour fields" recipe, as one layer over every visual: the kick wash, the dim between hits, the zoom, the glitch, the dark when quiet. The Pad has the first five; the Feel tick and amount for one visual are on the Pad too.</p>
+      <div id="feel-params" style="display:flex;flex-direction:column;gap:12px"></div>
+</div></div>
+<div class="fold" data-fold="ge-timing"><button type="button" class="sh" aria-expanded="true"><span>Timing</span><span class="cnt"></span></button><div class="fb" id="house-Timing"></div></div>
+<div class="fold" data-fold="ge-light"><button type="button" class="sh" aria-expanded="true"><span>Light</span><span class="cnt"></span></button><div class="fb" id="house-Light"></div></div>
+<div class="fold" data-fold="ge-colour"><button type="button" class="sh" aria-expanded="true"><span>Colour</span><span class="cnt"></span></button><div class="fb">
       <div class="seg" id="colModeSeg" role="radiogroup" aria-label="Colour mode for every visual"></div>
       <p class="note" id="colModeNote"></p>
       <div class="glabel" id="palLabel">Palette</div>
@@ -707,18 +715,11 @@ ul.checks .wn{color:var(--accent);font-weight:600}
       <div class="chips" id="solidChips" role="radiogroup" aria-label="Single LED colour" hidden></div>
       <p class="note" id="solidNote" hidden>Each colour is the most saturated version this LED type can make in that direction, solved from its own red, green and blue. Hover a chip for its CIE x, y.</p>
       <div id="geSw" class="vcol"></div>
+      <div id="house-Colour" style="display:flex;flex-direction:column;gap:12px"></div>
 </div></div>
-<div class="fold" data-fold="ge-timing"><button type="button" class="sh" aria-expanded="true"><span>Timing</span><span class="cnt"></span></button><div class="fb" id="house-Timing"></div></div>
-<div class="fold" data-fold="ge-light"><button type="button" class="sh" aria-expanded="true"><span>Light</span><span class="cnt"></span></button><div class="fb" id="house-Light"></div></div>
-<div class="fold" data-fold="ge-colour"><button type="button" class="sh" aria-expanded="true"><span>Colour</span><span class="cnt"></span></button><div class="fb" id="house-Colour"></div></div>
-<div class="fold" data-fold="ge-motion"><button type="button" class="sh" aria-expanded="true"><span>Motion</span><span class="cnt"></span></button><div class="fb" id="house-Motion"></div></div>
-<div class="fold" data-fold="ge-trans"><button type="button" class="sh" aria-expanded="true"><span>Transitions</span><span class="cnt"></span></button><div class="fb" id="house-Transitions"></div></div>
-<div class="fold shut" data-fold="ge-melody"><button type="button" class="sh" aria-expanded="false"><span>Follow the melody</span><span class="cnt"></span></button><div class="fb">
-      <div id="pitchCtl"></div>
-      <p class="note" id="pitchLive" style="font-family:var(--mono)"></p>
-      <p class="note">The visuals follow the melody: the note of the loudest instrument or synth (110 Hz to 1.4 kHz, so the bass and kick stay out). The note sets the colour, round the circle of fifths so related keys get related colours; how high or low it is drives each infinity-tunnel pattern in its own way, and every new note can send a ring.</p>
-</div></div>
-<div class="fold" data-fold="ge-over"><button type="button" class="sh" aria-expanded="true"><span>Over every visual</span><span class="cnt"></span></button><div class="fb">
+<div class="fold" data-fold="ge-motion"><button type="button" class="sh" aria-expanded="true"><span>Motion</span><span class="cnt"></span></button><div class="fb">
+      <div id="house-Motion" style="display:flex;flex-direction:column;gap:12px"></div>
+      <div class="glabel">Over every visual</div>
       <div class="glabel">Electric frame</div>
       <div id="ovlCtl" style="display:flex;flex-direction:column;gap:10px"></div>
       <div class="seg" role="radiogroup" aria-label="Frame shape" style="margin-top:2px">
@@ -743,6 +744,7 @@ ul.checks .wn{color:var(--accent);font-weight:600}
       <div id="glitchCtl" style="display:flex;flex-direction:column;gap:10px"></div>
       <p class="note">Glitches follow the song in the Infinity tunnel visuals while Match speed and tempo is on (Stage drawer › Sound › Tempo).</p>
 </div></div>
+<div class="fold" data-fold="ge-trans"><button type="button" class="sh" aria-expanded="true"><span>Transitions</span><span class="cnt"></span></button><div class="fb" id="house-Transitions"></div></div>
 <div class="fold" data-fold="ge-yours"><button type="button" class="sh" aria-expanded="true"><span>Your settings</span><span class="cnt"></span></button><div class="fb">
       <div class="yset"><button type="button" id="yExport">Export</button><button type="button" id="yImport">Import</button><button type="button" id="yReset">Reset everything</button></div>
       <input type="file" id="yFile" accept=".json,application/json" hidden>
@@ -821,6 +823,7 @@ ul.checks .wn{color:var(--accent);font-weight:600}
 <script src="look.js"></script>
 <script src="music.js"></script>
 <script src="conductor.js"></script>
+<script src="scenes.js"></script>
 <script src="feel.js"></script>
 <script src="pad.js"></script>
 <script src="show-director.js"></script>
@@ -829,6 +832,7 @@ ul.checks .wn{color:var(--accent);font-weight:600}
 <script src="show-one-ring.js"></script>
 <script src="library-core.js"></script>
 <script src="library-ui.js"></script>
+<script src="set-builder.js"></script>
 <script src="desk-presets.js"></script>
 <script src="desk-core.js"></script>
 <script src="desk-songmap.js"></script>
@@ -841,7 +845,7 @@ ul.checks .wn{color:var(--accent);font-weight:600}
 /* the shows in their own files: each one becomes a card under Visuals › Sets, with its panel below the cards (their code runs further down);
    a show with home:'hand' is a scene of Hand and Cube instead: a chip in its Scenes, its panel under them (built with the scene chips) */
 const INF_SHOWS=window.INF_SHOWS||{};
-{const SET_DESC={55:'the VJ engine: eighteen scenes chained by a director that listens',57:'song-specific clips made in the VJ Lab'};
+{const SET_DESC={55:'26 scenes chained by a director that listens: builds, drops, breakdowns',57:'song-specific clips made in the VJ Lab'};
  const list=document.getElementById('setList'),host=document.getElementById('setPanels');
  for(const k in INF_SHOWS){const s=INF_SHOWS[k];if(s.home==='hand')continue;const b=document.createElement('button');b.type='button';b.className='card';b.dataset.pick=s.pat;
    b.innerHTML='<strong></strong><span class="desc"></span>';b.firstChild.textContent=s.name;b.lastChild.textContent=SET_DESC[s.pat]||'';list.appendChild(b);
@@ -1042,8 +1046,8 @@ const FACES=['north','north-east','east','south-east','south','south-west','west
 
 /* ---------- state ---------- */
 const DEF={pat:38,pal:0,solid:0,speed:1,gain:1.4,react:1,autoLvl:1,prefBpm:120,hitSens:2.2,calmBusy:.5,flashMax:3,supplyA:40,pwrLimit:.85,trail:0,soft:0,ovl:0,ovlC:0,frW:2,frIn:0,frMode:1,frRate:2,fit:0,vContrast:1.15,vSat:1.1,vGamma:1,loop:'all',
-  led:0,bal:0,bright:.8,cgam:2.2,house:{},conductor:{},front:1,back:4,gap:9,dist:2,yaw:0,pitch:0,eyeH:1.65,amb:0,clock:21.5,face:6,prtM:0,prtB:1,prtS:0.6,prtF:0.12,prtD:30,prtW:0,
-  tab:'view',advSub:'text',look:0,wedge:0,pitchAmt:.7,tempo:0,glitch:.5,advSc:0,advStrobe:.8,advTxt:'INFINITY',puG:0,puC:0,puFaith:.15,puEvery:1,puBars:1,puMid:1,puShape:'',puCombo:0,coRoll:0,coBroken:1,coGlitch:.7,puFxMask:1,puFxRings:1,puFxSparks:1,puFxEdge:1,puFxColours:1,puFxLetters:1,puFxGlitch:1,puTop:0,dropSens:.5,puOnDrop:0,tsShape:0,tsStrobe:.6,tsGlitch:.7,tsDepth:.8,tsCalm:.9,tsDrift:.7,bdLook:0,bdDance:.7,bdEvery:1,bdDesk:1,brLay:0,brTrip:0,brPsy:.7,brSpeed:1,brWarp:.7,brEvery:1,djP:0,djH:30,djR:0,djStat:180,djShow:1,
+  led:0,bal:0,bright:.8,cgam:2.2,house:{},conductor:{},listen:{},front:1,back:4,gap:9,dist:2,yaw:0,pitch:0,eyeH:1.65,amb:0,clock:21.5,face:6,prtM:0,prtB:1,prtS:0.6,prtF:0.12,prtD:30,prtW:0,
+  tab:'view',advSub:'text',look:0,wedge:0,pitchAmt:.7,tempo:0,glitch:.5,advSc:0,advTxt:'INFINITY',puG:0,puC:0,puFaith:.15,puMid:1,puShape:'',puCombo:0,coRoll:0,coBroken:1,coGlitch:.7,puFxMask:1,puFxRings:1,puFxSparks:1,puFxEdge:1,puFxColours:1,puFxLetters:1,puFxGlitch:1,puTop:0,dropSens:.5,puOnDrop:0,tsShape:0,tsGlitch:.7,tsDepth:.8,tsCalm:.9,tsDrift:.7,bdLook:0,bdDance:.7,bdDesk:1,brLay:0,brTrip:0,brPsy:.7,brSpeed:1,brWarp:.7,djP:0,djH:30,djR:0,djStat:180,djShow:1,
   bMix:1,bMixPos:3,bMixRow:0,bSet:1,bSetPos:3,bSetRow:0,bLap:1,bLapPos:1,bLapRow:1,bVj:1,bVjPos:5,bVjRow:0,fogM:0,fogOut:.7,fogLen:3,fogInt:30,fogAch:2,blbW:2,blbP:0,blbM:1,blbS:1,blbSens:0.6,blbF:0.08,blbC:[255,230,200,170,140,110,80,60,40,20],
   vp:{},colMode:{},colOv:{},colModeAll:'palette',trailLock:1,softLock:1};   /* vp = per-visual slider values, colMode/colOv = per-visual colour mode and own swatches */
 for(const k in INF_SHOWS)Object.assign(DEF,INF_SHOWS[k].defaults);   /* each show brings its own settings */
@@ -1057,15 +1061,15 @@ try{const j=JSON.parse(localStorage.getItem(KEY)||'null');if(j&&typeof j==='obje
  S.blbW=Math.max(0,Math.min(3,Math.round(S.blbW)||0));
  for(const[k,mx]of [['bMix',1],['bSet',5],['bLap',1],['bVj',3],['bMixPos',6],['bSetPos',6],['bLapPos',6],['bVjPos',6],['bMixRow',1],['bSetRow',1],['bLapRow',1],['bVjRow',1]])S[k]=Math.max(0,Math.min(mx,Math.round(S[k])||0));S.prtW=Math.max(0,Math.min(3,Math.round(S.prtW)||0));
  S.advSc=Math.max(0,Math.min(4,Math.round(S.advSc)||0));S.advTxt=String(S.advTxt).slice(0,24);
- S.puG=Math.max(0,Math.min(31,Math.round(S.puG)||0));S.puC=Math.max(0,Math.min(16,Math.round(S.puC)||0));S.puEvery=Math.max(0,Math.min(2,Math.round(S.puEvery)||0));S.puBars=Math.max(0,Math.min(3,Math.round(S.puBars)||0));S.puMid=S.puMid?1:0;
+ S.puG=Math.max(0,Math.min(31,Math.round(S.puG)||0));S.puC=Math.max(0,Math.min(16,Math.round(S.puC)||0));S.puMid=S.puMid?1:0;
  for(const k of['puFxMask','puFxRings','puFxSparks','puFxEdge','puFxColours','puFxLetters','puFxGlitch'])S[k]=S[k]?1:0;
  S.puTop=Math.max(0,Math.min(2,Math.round(S.puTop)||0));S.puOnDrop=Math.max(0,Math.min(2,Math.round(S.puOnDrop)||0));S.dropSens=Math.max(0,Math.min(1,isFinite(+S.dropSens)?+S.dropSens:.5));
  for(const[k,lo,hi]of[['react',0,2],['prefBpm',80,160],['hitSens',1.2,4],['calmBusy',0,1],['supplyA',5,150],['pwrLimit',.5,1]])S[k]=Math.max(lo,Math.min(hi,isFinite(+S[k])?+S[k]:DEF[k]));
  S.autoLvl=S.autoLvl?1:0;S.flashMax=Math.max(1,Math.min(6,Math.round(S.flashMax)||3));S.gain=Math.max(.2,Math.min(4,isFinite(+S.gain)?+S.gain:1.4));
- S.bdLook=Math.max(0,Math.min(12,Math.round(S.bdLook)||0));S.bdEvery=Math.max(0,Math.min(3,Math.round(S.bdEvery)||0));S.bdDesk=S.bdDesk?1:0;S.bdDance=Math.max(0,Math.min(1,isFinite(+S.bdDance)?+S.bdDance:.7));
- S.brLay=Math.max(0,Math.min(4,Math.round(S.brLay)||0));S.brTrip=Math.max(0,Math.min(2,Math.round(S.brTrip)||0));S.brEvery=Math.max(0,Math.min(3,Math.round(S.brEvery)||0));
+ S.bdLook=Math.max(0,Math.min(12,Math.round(S.bdLook)||0));S.bdDesk=S.bdDesk?1:0;S.bdDance=Math.max(0,Math.min(1,isFinite(+S.bdDance)?+S.bdDance:.7));
+ S.brLay=Math.max(0,Math.min(4,Math.round(S.brLay)||0));S.brTrip=Math.max(0,Math.min(2,Math.round(S.brTrip)||0));
  for(const[k,mx]of[['brPsy',1],['brWarp',1],['brSpeed',3]])S[k]=Math.max(0,Math.min(mx,isFinite(+S[k])?+S[k]:DEF[k]));
- S.tsShape=Math.max(0,Math.min(4,Math.round(S.tsShape)||0));for(const k of['tsStrobe','tsGlitch','tsDepth','tsCalm','tsDrift'])S[k]=Math.max(0,Math.min(1,isFinite(+S[k])?+S[k]:DEF[k]));
+ S.tsShape=Math.max(0,Math.min(4,Math.round(S.tsShape)||0));for(const k of['tsGlitch','tsDepth','tsCalm','tsDrift'])S[k]=Math.max(0,Math.min(1,isFinite(+S[k])?+S[k]:DEF[k]));
  S.puCombo=Math.max(0,Math.min(6,Math.round(S.puCombo)||0));S.coRoll=Math.max(0,Math.min(2,Math.round(S.coRoll)||0));S.coBroken=Math.max(0,Math.min(2,Math.round(S.coBroken)||0));S.blbP=Math.max(0,Math.min(6,Math.round(S.blbP)||0));}
 /* per-visual values (S.vp), colour modes and swatch overrides: plain objects only, numbers clamped to the schema in visual-params.js */
 const COL_MODES=['general','own','palette','single','music'];
@@ -1208,11 +1212,11 @@ function buildCtl(host,list,cb){
     inp.value=c.inv?c.inv(S[c.k]):S[c.k];out.textContent=c.f(+S[c.k]);
     outs[c.k]={inp,out,c};
     inp.addEventListener('input',()=>{S[c.k]=c.map?c.map(+inp.value):+inp.value;out.textContent=c.f(S[c.k]);save();if(cb)cb(c.k);});
+    inp.addEventListener('dblclick',()=>{const d=DEF[c.k];if(typeof d!=='number')return;inp.value=c.inv?c.inv(d):d;inp.dispatchEvent(new Event('input',{bubbles:true}));});   /* double-click = back to the default */
   }
 }
 buildCtl('mReact',[{k:'react',l:'Reactivity',min:0,max:2,step:.05,f:v=>Math.round(v*100)+' %'}]);buildCtl('prefCtl',[{k:'prefBpm',l:'Preferred tempo',min:80,max:160,step:1,f:v=>v+' BPM'}]);
-buildCtl('hitCtl',[{k:'hitSens',l:'Hit sensitivity (kick, snare, hats)',min:1.2,max:4,step:.1,f:v=>v.toFixed(1)+'×'+(Math.abs(v-2.2)<.05?' (normal)':v<2.2?' (more hits)':' (fewer hits)')}]);
-buildCtl('safeCtl',[{k:'flashMax',l:'Max white flashes per second',min:1,max:6,step:1,f:v=>v+' / s'+(v>3?' (above the 3 / s safe limit)':'')}]);
+buildCtl('bpmCtl',[{k:'engBpm',l:'Own clock, without music',min:60,max:180,step:1,f:v=>v+' BPM'}]);buildCtl('hitCtl',[{k:'hitSens',l:'Hit sensitivity (kick, snare, hats)',min:1.2,max:4,step:.1,f:v=>v.toFixed(1)+'×'+(Math.abs(v-2.2)<.05?' (normal)':v<2.2?' (more hits)':' (fewer hits)')}]);
 buildCtl('powerCtl',[{k:'supplyA',l:'Power supply',min:5,max:150,step:1,f:v=>v+' A at 5 V'},{k:'pwrLimit',l:'Power limit',min:.5,max:1,step:.01,f:v=>Math.round(v*100)+' % of the supply ('+Math.round(v*S.supplyA)+' A)'}],()=>{outs.pwrLimit.out.textContent=outs.pwrLimit.c.f(S.pwrLimit);});
 buildCtl('mSpeed',[CT.pat[0]]);buildCtl('gainCtl',[CT.pat[1]]);buildCtl('mTrail',[CT.pat[2]]);buildCtl('mSoft',[CT.pat[3]]);buildCtl('ovlCtl',[CT.pat[4]]);   /* masters in the music bar, gain in Sound, frame in General */
 buildCtl('vidCtl',CT.vid);buildCtl('mBright',[CT.led[0]],()=>onLight());buildCtl('ledCtl2',[CT.led[1]],()=>onLight());buildCtl('viewCtl',CT.view,()=>onView());buildCtl('sunCtl',CT.sun,()=>onView());buildCtl('frCtl',CT.frame);let prtDT=0;
@@ -1249,7 +1253,7 @@ syncOvl();
 function setCtl(k,v){S[k]=v;const o=outs[k];if(o){o.inp.value=o.c.inv?o.c.inv(v):v;o.out.textContent=o.c.f(v);}}
 
 /* ---------- HOUSE (house-style.js): the shared look numbers are the General drawer's Light / Colour / Motion / Transitions. A few of them were already sliders elsewhere
-   (master strip Brightness / Trail / Softness, Stage > Power, Sound > Safety): HOUSE points at that state, so there is one value with two doors ---------- */
+   (master strip Brightness / Trail / Softness, Stage > Power): HOUSE points at that state, so there is one value with two doors ---------- */
 {const B={brightness:['bright',onLight],trails:['trail'],softness:['soft'],supplyA:['supplyA'],powerLimit:['pwrLimit'],flashMax:['flashMax']};
  try{HOUSE.load(S.house);}catch(e){}
  for(const id in B){const k=B[id][0],after=B[id][1];HOUSE.bind(id,{get:()=>S[k],set:v=>{setCtl(k,v);if(after)after();if(k==='supplyA'||k==='pwrLimit')try{outs.pwrLimit.out.textContent=outs.pwrLimit.c.f(S.pwrLimit);}catch(e){}save();}});}
@@ -1291,6 +1295,28 @@ function setCtl(k,v){S[k]=v;const o=outs[k];if(o){o.inp.value=o.c.inv?o.c.inv(v)
   try{for(const f of PAD_G.chg.slice())f();}catch(e){}};   /* the Pad's Calm-Busy follows */
  CONDUCTOR.on(id=>{S.conductor=CONDUCTOR.dump();save();sync();});CONDUCTOR.listen('seed',sync);
  sync();window.CONDUCTOR_SYNC=sync;}
+/* ---------- General > Listen (MUSIC.params; Hit sensitivity and Drop sensitivity above them are S.hitSens / S.dropSens) and General > Feel (FEEL.params, all of FEEL.cfg).
+   Same builder for both: every slider has the (i) tip, shows its value, double-click = back to the default. MUSIC's are kept in S.listen (only what differs); FEEL keeps its own. ---------- */
+{try{MUSIC.loadParams(S.listen);}catch(e){}
+ const fmt=(p,v)=>p.scale?Math.round(v*p.scale)+' '+(p.unit||''):p.pct?Math.round(v/p.max*100)+' %':p.unit==='s'?(+v).toFixed(2)+' s':p.max<=1&&p.step<=.05?Math.round(v*100)+' %':(+v).toFixed(2);
+ function build(hostId,list,api,prefix){const host=document.getElementById(hostId);if(!host)return()=>{};const rows={};
+  for(const p of list){const row=document.createElement('div');row.className='row';row.dataset[prefix]=p.id;
+   if(p.options){row.innerHTML='<label>'+p.label+'</label><output></output><div class="seg" role="radiogroup" aria-label="'+p.label+'" style="grid-column:1/-1"></div>';
+    const seg=row.querySelector('.seg');for(const o of p.options){const b=document.createElement('button');b.type='button';b.setAttribute('role','radio');b.textContent=o;b.dataset.v=o;b.addEventListener('click',()=>api.set(p.id,o));seg.appendChild(b);}
+    seg.addEventListener('dblclick',()=>api.reset(p.id));
+    addTip(row.querySelector('label'),p.tip);host.appendChild(row);rows[p.id]={p,row,out:row.querySelector('output'),seg};continue;}
+   row.innerHTML='<label for="'+prefix+'-'+p.id+'">'+p.label+'</label><output></output><input type="range" id="'+prefix+'-'+p.id+'" min="'+p.min+'" max="'+p.max+'" step="'+p.step+'">';
+   addTip(row.querySelector('label'),p.tip);host.appendChild(row);
+   const inp=row.querySelector('input'),out=row.querySelector('output');rows[p.id]={p,inp,out};
+   inp.addEventListener('input',()=>api.set(p.id,+inp.value));
+   inp.addEventListener('dblclick',()=>api.reset(p.id));}   /* double-click = back to the default */
+  const sync=()=>{for(const id in rows){const r=rows[id],v=api.get(id);
+   if(r.seg){r.seg.querySelectorAll('button').forEach(b=>b.setAttribute('aria-checked',String(b.dataset.v===v)));r.out.textContent=v;}
+   else{if(document.activeElement!==r.inp)r.inp.value=v;r.out.textContent=fmt(r.p,v);}}};
+  sync();return sync;}
+ const lSync=build('music-params',MUSIC.params,{get:id=>MUSIC.paramById[id].get(),set:(id,v)=>{MUSIC.setParam(id,v);S.listen=MUSIC.dumpParams();save();lSync();},reset:id=>{MUSIC.resetParam(id);S.listen=MUSIC.dumpParams();save();lSync();}},'ls');
+ const fSync=build('feel-params',FEEL.params,{get:id=>FEEL.get(id),set:(id,v)=>FEEL.set(id,v),reset:id=>FEEL.reset(id)},'fl');
+ FEEL.onChange(()=>{fSync();});window.LISTEN_SYNC=lSync;window.FEEL_SYNC=fSync;}
 /* ---------- STEP 4 (UI side): per-visual panels, colour modes + swatch grid, master lock/marks, your settings ---------- */
 const VPS_SECS=[['main','Main'],['timing','Timing'],['sound','Sound'],['colours','Colours'],['fine','Fine tuning']];
 const VPS_MODE_LABEL={general:'As in General',own:'Own',palette:'Palette',single:'Single colour',music:'Follow the music'};
@@ -1531,18 +1557,20 @@ function syncBlb(){document.querySelectorAll('#blbW button').forEach(b=>b.setAtt
 syncBlb();
 /* the old settings tabs are gone: every block lives in a drawer now (see the drawers near the top of the script) */
 /* Advanced visuals tab: the live show is pattern 49, with its own scene picker, strobe and text */
-const ADV_SCN=['Colour fields','Rings + text','Particles','Plexus'],ADV_BARS=[4,8,16,32];   /* ADV_BARS now only the PUDE cube look's choice */
+const ADV_SCN=['Colour fields','Rings + text','Particles','Plexus'];
 /* the Text show's four scenes as the conductor's pool: how much each one has going on (energy) and the musical moments it fits (role). Colour fields: dense, drop-ish, the strobe
    scene; Rings: mid, steady, good in calm; Particles: mid-high, bursts on hits and drops; Plexus: builds and drops. The conductor picks by the level, on phrase lines (General > Timing) */
-const ADV_POOL=[{key:'0',name:'Colour fields',energy:.8,role:'flow drop',bars:[8,16],w:1},{key:'1',name:'Rings + text',energy:.45,role:'flow calm',bars:[8,16],w:1},
-  {key:'2',name:'Particles',energy:.65,role:'flow build drop',bars:[8,16],w:1},{key:'3',name:'Plexus',energy:.6,role:'build drop flow',bars:[8,16],w:1}];
+/* the Text show's four scenes are cards in the one registry (scenes.js); the conductor's pool for them is read back from there (local ids '0'..'3') */
+INF_SCENES.addAll([['0','Colour fields',.8,'flow drop',['FEEL.kick','FEEL.snare','FEEL.hat','FEEL.spring']],['1','Rings + text',.45,'flow calm',['FEEL.kick','MUSIC.melody']],
+  ['2','Particles',.65,'flow build drop',['FEEL.kick','FEEL.hat']],['3','Plexus',.6,'build drop flow',['FEEL.kick','FEEL.mel','FEEL.hat']]].map(([id,name,energy,role,hooks])=>({key:'scene:49:'+id,id,name,kind:'scene',energy,role,bars:[8,16],hooks,
+  params:[],source:'Infinity Mirror Pixel Grid.html (Text show)',ref:{pat:49,adv:+id},group:'Text show',desc:'scene',estimated:true,estimatedFields:['hooks']})));
+const ADV_POOL=()=>INF_SCENES.pool(c=>c.ref.pat===49&&c.ref.adv!=null,{local:true});
 {const box=document.getElementById('advScene');['Auto'].concat(ADV_SCN).forEach((n,i)=>{const b=document.createElement('button');b.type='button';b.setAttribute('role','radio');b.textContent=n;b.dataset.i=i;
    b.addEventListener('click',()=>{S.advSc=i;if(S.pat!==49){S.pat=49;syncPat();}save();syncAdv();});box.appendChild(b);});
  const go=document.getElementById('advGo');let before=DEF.pat;go.addEventListener('click',()=>{if(S.pat===49)S.pat=before;else{before=S.pat;S.pat=49;}save();syncPat();});
  document.getElementById('advDrop').addEventListener('click',()=>{if(S.pat!==49){S.pat=49;syncPat();}advDropNow=true;});
  const tx=document.getElementById('advTxt');tx.value=S.advTxt;tx.addEventListener('input',()=>{S.advTxt=tx.value.slice(0,24);save();});}
 var advDropNow=false;
-buildCtl('advCtl',[{k:'advStrobe',l:'White strobes',min:0,max:1,step:.05,f:v=>v<.01?'off, cuts to cyan':Math.round(v*100)+' %, at most 3 per second'}]);   /* how often Auto changes scene: General > Timing */
 function syncAdv(){document.querySelectorAll('#advScene button').forEach(b=>b.setAttribute('aria-checked',String(+b.dataset.i===S.advSc)));
   const g=document.getElementById('advGo');g.setAttribute('aria-pressed',String(S.pat===49));g.textContent=S.pat===49?'■ Stop the show':'▶ Play the show on the mirror';syncPude();syncTs();syncBd();syncBr();syncShows();}
 /* the shows in their own files keep their buttons right themselves */
@@ -1564,16 +1592,14 @@ function syncTs(){const g=document.getElementById('tsGo');if(!g)return;
 syncAdv();
 /* PUDE logo show (pattern 51): pick a hand gesture and a cube look, or leave both on Auto */
 const PU_GN=['Logo hand','Wave','Rave hand','Fist pump','Fist bump','Middle finger','Point at the crowd','Come here','OK sign','Countdown','Peace','Horns','Thumbs up','Finger guns','Shaka','Jazz hands','Snap','Finger drums','Stomp','Talking hand','Grab a letter','Spider walk','Hide and peek','Spin','Clap','Crowd','Raise the roof','Rock paper scissors','Conductor','Pinch the cube','Come here, all fingers'];
-const PU_CN=['Logo','Tumble','Explode','Lid','Unfold','Tunnel','Letter belt','Glitch','Wireframe','Melt','Stomp','Split','Letters pop','Ghost','Mirror','Jelly'],PU_EVERY=[1,2,4];
+const PU_CN=['Logo','Tumble','Explode','Lid','Unfold','Tunnel','Letter belt','Glitch','Wireframe','Melt','Stomp','Split','Letters pop','Ghost','Mirror','Jelly'];
 {const mk=(id,names,k)=>{const box=document.getElementById(id);['Auto'].concat(names).forEach((n,i)=>{const b=document.createElement('button');b.type='button';b.setAttribute('role','radio');b.textContent=n;b.dataset.i=i;
    b.addEventListener('click',()=>{S[k]=i;if(S.pat!==51){S.pat=51;syncPat();}save();syncPude();});box.appendChild(b);});};
  mk('puG',PU_GN,'puG');mk('puC',PU_CN,'puC');
  const go=document.getElementById('puGo');let before=DEF.pat;go.addEventListener('click',()=>{if(S.pat===51)S.pat=before;else{before=S.pat;S.pat=51;}save();syncPat();});
  document.getElementById('puCount').addEventListener('click',()=>{if(S.pat!==51){S.pat=51;syncPat();}PUDE.force=1;});
  document.getElementById('puDrop').addEventListener('click',()=>{if(S.pat!==51){S.pat=51;syncPat();}advDropNow=true;});}
-buildCtl('puCtl',[{k:'puFaith',l:'Faithful to the logo',min:0,max:1,step:.05,f:v=>v<.01?'never':Math.round(v*100)+' %'},
-  {k:'puEvery',l:'Auto: new gesture every',min:0,max:2,step:1,f:v=>PU_EVERY[v]+(v?' bars':' bar')+', on the downbeat'},
-  {k:'puBars',l:'Auto: new cube look every',min:0,max:3,step:1,f:v=>ADV_BARS[v]+' bars, or on a drop'},
+buildCtl('puCtl',[{k:'puFaith',l:'Faithful to the logo',min:0,max:1,step:.05,f:v=>v<.01?'never':Math.round(v*100)+' %'},   /* how often a new gesture / cube look comes: the conductor's phrase (General > Timing) */
   {k:'puMid',l:'Middle finger',min:0,max:1,step:1,f:v=>v?'allowed':'never'}]);
 function syncPude(){const gb=document.getElementById('puGo');if(!gb)return;
   document.querySelectorAll('#puG button').forEach(b=>b.setAttribute('aria-checked',String(+b.dataset.i===S.puG)));
@@ -1607,7 +1633,7 @@ const PU_FX=[['puFxMask','Shadows over the logo','moving masks: a scanning band,
    if(S.puCombo===1||S.puCombo>2||(i===0&&S.puCombo===2)){S.puCombo=0;save();syncCombo();}   /* a running scene would take the drop over */
    puListen();if(i===1)puThrowStart(ADV.beatN+1);else advDropNow=true;}));   /* the throw in full: count, grab, wind up, throw, hit */
  document.getElementById('dropTest').addEventListener('click',()=>{puListen();advDropNow=true;});}
-buildCtl('dropCtl',[{k:'dropSens',l:'Sensitivity',min:0,max:1,step:.05,f:v=>Math.abs(v-.5)<.01?'normal':v<.5?'stricter, '+Math.round(v*100)+' %':'more sensitive, '+Math.round(v*100)+' %'}]);
+buildCtl('dropCtl',[{k:'dropSens',l:'Drop sensitivity',min:0,max:1,step:.05,f:v=>Math.abs(v-.5)<.01?'normal':v<.5?'stricter, '+Math.round(v*100)+' %':'more sensitive, '+Math.round(v*100)+' %'}]);
 function syncPuMix(){const box=document.getElementById('puFx');if(!box)return;
   box.querySelectorAll('button').forEach(b=>{const on=!!S[b.dataset.k];b.setAttribute('aria-pressed',String(on));b.textContent=(on?'✓ ':'✕ ')+PU_FX.find(f=>f[0]===b.dataset.k)[1];});
   document.querySelectorAll('#puTopSeg button').forEach(b=>b.setAttribute('aria-checked',String(+b.dataset.i===S.puTop)));
@@ -1637,25 +1663,23 @@ const TS_SHAPES=['Auto','Square','Round','Square into round','Square and round']
    b.addEventListener('click',()=>{S.tsShape=i;if(S.pat!==52){S.pat=52;syncPat();}save();syncTs();});box.appendChild(b);});
  const go=document.getElementById('tsGo');let before=DEF.pat;go.addEventListener('click',()=>{if(S.pat===52)S.pat=before;else{before=S.pat;S.pat=52;}save();syncPat();});
  document.getElementById('tsDrop').addEventListener('click',()=>{if(S.pat!==52){S.pat=52;syncPat();}advDropNow=true;});}
-buildCtl('tsCtl',[{k:'tsStrobe',l:'White flashes',min:0,max:1,step:.05,f:v=>v<.01?'off':Math.round(v*100)+' %, at most 3 per second'},
-  {k:'tsGlitch',l:'Glitch on distortion',min:0,max:1,step:.05,f:v=>v<.01?'off, always clean':Math.round(v*100)+' %'},
+buildCtl('tsCtl',[{k:'tsGlitch',l:'Glitch on distortion',min:0,max:1,step:.05,f:v=>v<.01?'off, always clean':Math.round(v*100)+' %'},
   {k:'tsDepth',l:'Depth from reverb',min:0,max:1,step:.05,f:v=>v<.01?'off, fixed depth':Math.round(v*100)+' %'},
   {k:'tsCalm',l:'Restraint in breakdowns',min:0,max:1,step:.05,f:v=>v<.01?'off, keeps moving':Math.round(v*100)+' % of the motion goes'},
   {k:'tsDrift',l:'Turn and twist from stereo',min:0,max:1,step:.05,f:v=>v<.01?'off':Math.round(v*100)+' %'}]);
 syncTs();
 /* Body (pattern 53): costume picker, play and drop buttons, sliders */
-const BD_LOOKS=['Skeleton','Pirate','Astronaut','8-bit hero','Blocky','Robot','Disco','Hairy ballerina','Chicken','Socks and sandals','Octopus in a tux','Neon'],BD_EVERY=[4,8,16,32];
+const BD_LOOKS=['Skeleton','Pirate','Astronaut','8-bit hero','Blocky','Robot','Disco','Hairy ballerina','Chicken','Socks and sandals','Octopus in a tux','Neon'];
 {const box=document.getElementById('bdLook');['Auto'].concat(BD_LOOKS).forEach((n,i)=>{const b=document.createElement('button');b.type='button';b.setAttribute('role','radio');b.textContent=n;b.dataset.i=i;
    b.addEventListener('click',()=>{S.bdLook=i;if(S.pat!==53){S.pat=53;syncPat();}save();syncBd();});box.appendChild(b);});
  const ds=document.getElementById('bdDeskSeg');['Only the DJ','With the desk and decks in front'].forEach((n,i)=>{const b=document.createElement('button');b.type='button';b.setAttribute('role','radio');b.textContent=n;b.dataset.i=i;
    b.addEventListener('click',()=>{S.bdDesk=i;save();syncBd();});ds.appendChild(b);});
  const go=document.getElementById('bdGo');let before=DEF.pat;go.addEventListener('click',()=>{if(S.pat===53)S.pat=before;else{before=S.pat;S.pat=53;}save();syncPat();});
  document.getElementById('bdDrop').addEventListener('click',()=>{if(S.pat!==53){S.pat=53;syncPat();}advDropNow=true;});}
-buildCtl('bdCtl',[{k:'bdDance',l:'How much the DJ dances',min:0,max:1,step:.05,f:v=>v<.01?'stands still':Math.round(v*100)+' %'},
-  {k:'bdEvery',l:'Auto: new costume every',min:0,max:3,step:1,f:v=>BD_EVERY[v]+' bars, or on a drop'}]);
+buildCtl('bdCtl',[{k:'bdDance',l:'How much the DJ dances',min:0,max:1,step:.05,f:v=>v<.01?'stands still':Math.round(v*100)+' %'}]);   /* a new costume comes on the conductor's phrase */
 syncBd();
 /* Bear metamorphosis (pattern 54): layout picker, play and roar buttons, sliders */
-const BR_LAYS=['Single bear','Kaleidoscope','Vortex','Grid'],BR_EVERY=[4,8,16,32];
+const BR_LAYS=['Single bear','Kaleidoscope','Vortex','Grid'];
 {const box=document.getElementById('brLay');['Auto'].concat(BR_LAYS).forEach((n,i)=>{const b=document.createElement('button');b.type='button';b.setAttribute('role','radio');b.textContent=n;b.dataset.i=i;
    b.addEventListener('click',()=>{S.brLay=i;if(S.pat!==54){S.pat=54;syncPat();}save();syncBr();});box.appendChild(b);});
  const go=document.getElementById('brGo');let before=DEF.pat;go.addEventListener('click',()=>{if(S.pat===54)S.pat=before;else{before=S.pat;S.pat=54;}save();syncPat();});
@@ -1664,8 +1688,7 @@ const BR_LAYS=['Single bear','Kaleidoscope','Vortex','Grid'],BR_EVERY=[4,8,16,32
    b.addEventListener('click',()=>{S.brTrip=i;save();syncBr();});ts.appendChild(b);});}
 buildCtl('brCtl',[{k:'brPsy',l:'How psychedelic at its strongest',min:0,max:1,step:.05,f:v=>v<.01?'off, the drawing\'s own colours':Math.round(v*100)+' %'},
   {k:'brSpeed',l:'Speed through the stages',min:0,max:3,step:.05,f:v=>v<.01?'only the music\'s pull':v.toFixed(2)+' ×'},
-  {k:'brWarp',l:'Bending, swirling, ripples',min:0,max:1,step:.05,f:v=>v<.01?'off, the plain drawing':Math.round(v*100)+' %'},
-  {k:'brEvery',l:'Auto: new layout every',min:0,max:3,step:1,f:v=>BR_EVERY[v]+' bars, or on a drop'}]);
+  {k:'brWarp',l:'Bending, swirling, ripples',min:0,max:1,step:.05,f:v=>v<.01?'off, the plain drawing':Math.round(v*100)+' %'}]);   /* a new layout comes on the conductor's phrase */
 syncBr();
 buildCtl('pitchCtl',[{k:'pitchAmt',l:'Follow the melody',min:0,max:1,step:.05,f:v=>v<.01?'off':Math.round(v*100)+' %'}]);
 buildCtl('wedgeCtl',[{k:'wedge',l:'Wedge between the films',min:0,max:1.5,step:.05,f:v=>v<.01?'parallel':v.toFixed(2)+'° · '+(Math.tan(v*D2R)*600).toFixed(1)+' mm more gap on one side'}]);
@@ -3264,7 +3287,7 @@ const vao=gl.createVertexArray();gl.bindVertexArray(vao);
 function tex(unit,minF,magF){const t=gl.createTexture();gl.activeTexture(gl.TEXTURE0+unit);gl.bindTexture(gl.TEXTURE_2D,t);
   gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,minF);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,magF);
   gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_S,gl.CLAMP_TO_EDGE);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_T,gl.CLAMP_TO_EDGE);return t;}
-let readBuf=null,dutyF=null,dutyTex=null,cur=0,gridN=0;window.INF_PROBE={leds:()=>readBuf,n:()=>gridN};   /* read-only peek at the LED duties of the last frame (tests/browser-smoke.js) */const gridTex=[null,null],fbos=[gl.createFramebuffer(),gl.createFramebuffer()];
+let readBuf=null,dutyF=null,dutyTex=null,cur=0,gridN=0;window.INF_PROBE={leds:()=>readBuf,n:()=>gridN,S:()=>S};   /* read-only peek at the LED duties of the last frame and the page state (tests/browser-smoke.js) */const gridTex=[null,null],fbos=[gl.createFramebuffer(),gl.createFramebuffer()];
 function makeGrid(n){
   for(let i=0;i<2;i++){
     if(gridTex[i])gl.deleteTexture(gridTex[i]);
@@ -3492,7 +3515,6 @@ function lvlGain(){return (S.autoLvl?AGC.g:S.gain)*S.react;}
 let demoOn=true;
 function updateAudio(t){
   let live=false;const adt=Math.min(.1,t-(updateAudio.lt||t));
-  S.engAmps=S.supplyA*S.pwrLimit/.85;   /* kept for One Ring's own limit; the Director and the clips read House supply x limit */
   if(srcLive()){bandsFromAnalyser(raw);live=true;}
   else if(audioSrc==='demo'){if(demoOn)demoBands(t,raw);else raw.fill(0);live=true;}
   else raw.fill(0);
@@ -4403,18 +4425,19 @@ function tunnelUniforms(){const T=TUN,P=PITCH,a=pitchEff();   /* call while the 
 const ADV_G=[[0,10],[14,24],[39,51],[55,63],[22,42],[44,53]];   /* bands: sub <110 Hz, snare body, snare crack, hats >7 kHz, mids, grit 2.5-6 kHz */
 const ADV={pk:[.2,.2,.2,.2,.2,.2],last:[-9,-9,-9,-9],env:[0,0,0,0],rate:[0,0,0,0],
   N:[0,0,0,0,0,0],lastK:-9,bpm:120,ph:0,beatN:0,beat0:0,phrase0:0,subS:.3,subL:.3,eS:.3,eL:.3,armT:0,build:0,drop:0,lull:0,cent:.4,centP:.4,sweep:0,
-  flashes:[],strobe:0,cut:0,scene:0,dip:0,ar:new Float32Array(8).fill(-1),ari:0,ringPh:0,scan:0,prism:[0,0],pk2:0,
+  strobe:0,cut:0,scene:0,dip:0,ar:new Float32Array(8).fill(-1),ari:0,ringPh:0,scan:0,prism:[0,0],pk2:0,
   P:[],emit:0,nodes:null,edges:null,facets:null,rot:[.3,0,0],shat:0,txtA:0,txtT:0,
   data:new Float32Array(128*7*4),n:[0,0,0,0],U:new Float32Array(32),txt:null,txtN:0,txtAsp:.7,dTex:null,tTex:null,wpk:.1,seen:false};
 window.ADV=ADV;
 /* ONE flash gate for every white flash (advFlash, tsGate, puGate, Feel, the Director, the clips): LOOK.flashGate (look.js), House sets the maximum per second and the gap. window.INF_FLASH points to it */
 const flashGate=LOOK.flashGate;
-function advFlash(t,s){const A=ADV;
-  if(S.advStrobe<.01||!flashGate(t))return false;
-  A.strobe=Math.max(A.strobe,Math.min(1,s)*S.advStrobe);return true;}
+const flashK=()=>FEEL.get('flash');   /* how strong every show's white flashes are: General > Feel > Flash (0 = off, then nothing flashes) */
+function advFlash(t,s){const A=ADV,k=flashK();
+  if(k<.01||!flashGate(t))return false;
+  A.strobe=Math.max(A.strobe,Math.min(1,s)*k);return true;}
 function advCut(s){const A=ADV;if(s===A.scene)return;A.scene=s;A.beat0=A.beatN;A.dip=1;A.txtA=0;A.txtT=0;if(s===3&&!A.nodes)advPlexus();}
 /* Auto: the conductor (conductor.js) picks the scene from ADV_POOL by the level and the musical moment, changes on phrase lines and drops; Calm-Busy and Timing steer it */
-const ADV_RUN=CONDUCTOR.runner({pool:()=>ADV_POOL,play:key=>advCut(+key)},{});
+const ADV_RUN=CONDUCTOR.runner({pool:ADV_POOL,play:key=>advCut(+key)},{});
 function advBeat(dt){const A=ADV;if(S.pat!==49||S.advSc){ADV_RUN.stop();return;}
   if(!ADV_RUN.cur)ADV_RUN.adopt(String(A.scene));
   ADV_RUN.step(dt);}
@@ -4561,7 +4584,7 @@ const TS={seen:false,tau:[.22,.16,.05,.25],tail:[.2,.2,.1,.25],dm:[null,null,nul
   U:new Float32Array(44),R:new Float32Array(48),PP:new Float32Array(128),PB:new Float32Array(32)};
 window.TS=TS;
 function tsGate(t){return flashGate(t);}   /* the shared flash gate */
-function tsFlash(t,s){if(S.tsStrobe<.01||!tsGate(t))return false;TS.wh=Math.max(TS.wh,Math.min(1,s)*S.tsStrobe);return true;}
+function tsFlash(t,s){const k=flashK();if(k<.01||!tsGate(t))return false;TS.wh=Math.max(TS.wh,Math.min(1,s)*k);return true;}
 function tsDrop(t){const T=TS;T.drops=(T.drops||0)+1;T.blast=1;T.tens=0;T.lastKick=t;T.calm=0;T.black=0;T.storm=4;T.dir=-T.dir;tsFlash(t,1);T.phr=null;
   for(let i=0;i<24;i++)tsSpark(.6+1.4*Math.random(),1,T.core*.5);}
 function tsSpark(v,b,r0){const T=TS;if(T.P.length>=32)T.P.shift();T.P.push({a:Math.random()*6.2832,r:r0??(T.core+.04+.3*Math.random()),v,b});}
@@ -4659,7 +4682,7 @@ function tsStep(t,dts,ons,beatTick){const T=TS,A=ADV,X=Math.exp;
   T.P=T.P.filter(p=>p.r-Math.min(.25,.03+p.v*.08)<1.1&&p.b>.02);
   /* the sub: the frame flashes white on a kick (through the flash gate), a white-out on the first kick of a phrase */
   T.edge*=X(-dts/Math.max(.05,T.tau[0]*.7));T.wh*=X(-dts/Math.min(.2,Math.max(.04,T.tau[0]*.6)));
-  if(kick&&live>.5){if(nb%32===0&&bld<.2&&live>.8&&kick>.5)tsFlash(t,vpGet(52,'whiteOut'));else if(kick>.35&&S.tsStrobe>.01&&tsGate(t))T.edge=Math.max(T.edge,S.tsStrobe);}
+  if(kick&&live>.5){if(nb%32===0&&bld<.2&&live>.8&&kick>.5)tsFlash(t,vpGet(52,'whiteOut'));else if(kick>.35&&flashK()>.01&&tsGate(t))T.edge=Math.max(T.edge,flashK());}
   /* the inhale: in a build, the last beat of the phrase (where the drop should land next) goes black */
   const inh=vpGet(52,'inhale')>.5&&bld>.35&&bp%32===31?1:0;T.black+=(inh-T.black)*(1-X(-dts/(inh?.03:.06)));
   /* distortion: tears, blocks, scanlines and a colour split; none of it when the sound is pure */
@@ -4694,7 +4717,7 @@ function bdDrop(t){BD.drops++;BD.jv=vpGet(53,'jump')*(BD.look===3?150/230:1);BD.
 function bdStep(t,dts,ons,beatTick){const A=ADV;
   if(!BD.seen){BD.seen=true;BD.look=S.bdLook||BD.look||1;BD.lastChange=A.beatN;}
   if(S.bdLook)BD.look=S.bdLook;
-  else if(beatTick&&A.beatN-BD.lastChange>=4*BD_EVERY[S.bdEvery]&&(A.beatN-A.phrase0)%4===0){bdPick();BD.lastChange=A.beatN;}
+  else if(beatTick&&A.beatN-BD.lastChange>=4*CONDUCTOR.phraseBarsNow()&&(A.beatN-A.phrase0)%4===0){bdPick();BD.lastChange=A.beatN;}
   if(ons[1])BD.coin=0;BD.coin=Math.min(9,BD.coin+dts);
   const g=BD.look===3?140:980;   /* the astronaut floats */
   if(BD.jump>0||BD.jv>0){BD.jv-=g*dts;BD.jump=Math.max(0,BD.jump+BD.jv*dts);if(BD.jump<=0&&BD.jv<0)BD.jv=0;}
@@ -4794,7 +4817,7 @@ function brStep(t,dts,ons,beatTick){const A=ADV,B=BR;
   if(!B.seen){B.seen=true;B.lastChange=A.beatN;B.lay=B.layB=S.brLay?S.brLay-1:B.lay;B.mix=0;brLoad();}
   brHear(t,dts);
   if(S.brLay){if(S.brLay-1!==(B.mix>0?B.layB:B.lay))brCut(S.brLay-1);}
-  else if(beatTick&&A.beatN-B.lastChange>=4*BR_EVERY[S.brEvery]&&(A.beatN-A.phrase0)%4===0)brCut(brPick());
+  else if(beatTick&&A.beatN-B.lastChange>=4*CONDUCTOR.phraseBarsNow()&&(A.beatN-A.phrase0)%4===0)brCut(brPick());
   if(B.mix>0){B.mix+=dts*A.bpm/(60*vpGet(54,'blend'));if(B.mix>=1){B.lay=B.layB;B.mix=0;}}   /* a cut blends over 2 beats */
   /* how monstrous: loudness against the song's average, builds and drops up, breakdowns and lulls down */
   const en=A.eS/Math.max(A.eL,1e-4);B.roar*=Math.exp(-dts/vpGet(54,'roar'));B.rz*=Math.exp(-dts/.35);
@@ -5515,8 +5538,8 @@ function pudeStep(t,dts,ons,beatTick){const A=ADV,P=PUDE;
     else{const p16=((bpos%16)+16)%16,rem=16-p16,want=S.puG===10||(!S.puG&&(st==='build'||(A.armT>4&&A.build>.12)));
       P.count=want&&rem<=vpGet(51,'countdown')?rem:(want&&p16===0&&P.count===1?0:-1);}
     if(bar===0){
-      if(!S.puG&&(A.beatN-P.g0>=4*PU_EVERY[S.puEvery]||P.stCh))puSetG(puPickG(),t);
-      if(!S.puC&&(A.beatN-P.c0>=4*ADV_BARS[S.puBars]||(P.stCh&&(st==='break'||st==='lull'))))puSetC(puPickC());
+      if(!S.puG&&(A.beatN-P.g0>=4*Math.max(1,CONDUCTOR.phraseBarsNow()/4)||P.stCh))puSetG(puPickG(),t);
+      if(!S.puC&&(A.beatN-P.c0>=4*CONDUCTOR.phraseBarsNow()||(P.stCh&&(st==='break'||st==='lull'))))puSetC(puPickC());
       if(A.beatN-P.k0>=vpGet(51,'looks')||P.stCh){P.k0=A.beatN;puLooks();}
       puCellsBar();P.colPh+=.17;P.stCh=false;
     }else if(P.stCh&&st!=='groove'){if(!S.puG)puSetG(puPickG(),t);P.stCh=false;}
@@ -5602,7 +5625,7 @@ function readAdapt(){
 const FEEL_G={pk:.2,key:null,cur:{key:null,name:''},subs:[],out:FEEL.create().step(0,{now:0})};   /* identity until the first real step */
 /* which visual Feel is working on: the pattern; the Director's scene ('dir:'+id); the Text show's scene ('txt:'+n) */
 function feelVisual(){let key=String(S.pat),name=PAT_NAME[S.pat]||('Visual '+S.pat);
-  if(S.pat===55){const d=SHOW[55],id=d&&d.ENG&&d.ENG.sc&&d.ENG.sc.def&&d.ENG.sc.def.id;key='dir:'+(id||'');name='Director'+(id?' › '+((d.ENG_SCENE[id]&&d.ENG_SCENE[id].name)||id):'');}
+  if(S.pat===55){const d=SHOW[55],id=d&&d.ENG&&d.ENG.sc&&d.ENG.sc.def&&d.ENG.sc.def.id;key='dir:'+(id||'');name='Epic'+(id?' › '+((d.ENG_SCENE[id]&&d.ENG_SCENE[id].name)||id):'');}
   else if(S.pat===49){key='txt:'+ADV.scene;name='Text show › '+(ADV_SCN[ADV.scene]||ADV.scene);}
   return{key,name};}
 function feelFrame(t,dts){
@@ -5617,12 +5640,13 @@ function feelFrame(t,dts){
    Sensitivity, Brightness and Calm-Busy live here and are the SAME state as the Sound tab's Hit sensitivity (S.hitSens, MUSIC.cfg.sens reads it) and the master strip's Brightness (S.bright) ---------- */
 const PAD_G={chg:[],pad:null};
 {const SENS=[1.2,4],BR=[.02,1],host={
-  get(k){return k==='sensitivity'?(SENS[1]-S.hitSens)/(SENS[1]-SENS[0]):k==='brightness'?(S.bright-BR[0])/(BR[1]-BR[0]):k==='calmBusy'?S.calmBusy:null;},   /* more sensitive = the slider's "more hits" end */
+  get(k){return k==='sensitivity'?(SENS[1]-S.hitSens)/(SENS[1]-SENS[0]):k==='brightness'?(S.bright-BR[0])/(BR[1]-BR[0]):k==='calmBusy'?S.calmBusy:k==='variety'?CONDUCTOR.get('variety'):null;},   /* more sensitive = the slider's "more hits" end */
   set(k,v){v=Math.max(0,Math.min(1,+v));
     if(k==='sensitivity'){setCtl('hitSens',SENS[1]-v*(SENS[1]-SENS[0]));save();}
     else if(k==='brightness'){setCtl('bright',BR[0]+v*(BR[1]-BR[0]));onLight();save();if(window.HOUSE_SYNC)HOUSE_SYNC();}
-    else if(k==='calmBusy'){CONDUCTOR.set('calmBusy',v);}},   /* the conductor's Calm-Busy (S.calmBusy is its state); General > Timing has the same slider */
-  defaultOf(k){return k==='sensitivity'?(SENS[1]-DEF.hitSens)/(SENS[1]-SENS[0]):k==='brightness'?(DEF.bright-BR[0])/(BR[1]-BR[0]):.5;},
+    else if(k==='calmBusy'){CONDUCTOR.set('calmBusy',v);}
+    else if(k==='variety'){CONDUCTOR.set('variety',v);}},   /* the conductor's Variety; General > Timing has the same slider */   /* the conductor's Calm-Busy (S.calmBusy is its state); General > Timing has the same slider */
+  defaultOf(k){return k==='sensitivity'?(SENS[1]-DEF.hitSens)/(SENS[1]-SENS[0]):k==='brightness'?(DEF.bright-BR[0])/(BR[1]-BR[0]):k==='variety'?0:.5;},
   currentVisual(){if(!FEEL_G.cur.key)FEEL_G.cur=feelVisual();return FEEL_G.cur;},
   onVisualChange(cb){FEEL_G.subs.push(cb);return()=>{const i=FEEL_G.subs.indexOf(cb);if(i>=0)FEEL_G.subs.splice(i,1);};},
   onChange(cb){PAD_G.chg.push(cb);return()=>{const i=PAD_G.chg.indexOf(cb);if(i>=0)PAD_G.chg.splice(i,1);};},
@@ -5635,6 +5659,31 @@ const PAD_G={chg:[],pad:null};
   m.el.querySelectorAll('.row .nm').forEach(l=>addTip(l,tips[l.textContent]));
   const tk=m.el.querySelector('label.tick'),am=m.el.querySelector('.amt .l');addTip(tk,tk.title);addTip(am,m.el.querySelector('.amt').title);
  }catch(e){console.error('pad.js',e);}}
+/* ---------- page-level transitions (LOOK.tr) from one pattern to the next: the library's host.transition hook starts one (pattrBegin), frame() applies it to the LED values after
+   readPixels (pattrApply), so the screen, the meter and the real LEDs all see it. The old picture is a snapshot of the last frame. Types: LOOK / conductor style names. ---------- */
+const PATTR={on:false,type:'',t:0,dur:0,old:null,N:0,rank:null,mA:null,n:0,last:''};window.INF_PATTR=PATTR;
+function pattrRead(){const n=gridN*gridN,L=new Float32Array(n*3);for(let i=0;i<n;i++){L[3*i]=readBuf[4*i]/255;L[3*i+1]=readBuf[4*i+1]/255;L[3*i+2]=readBuf[4*i+2]/255;}return L;}
+function pattrBegin(type,bars){
+  if(type==='strobe'&&!LOOK.flashGate(performance.now()/1000))type='cut';
+  if(!readBuf||!type||type==='cut'){PATTR.on=false;PATTR.last='cut';PATTR.n++;return;}
+  const n=gridN*gridN,bpm=MUSIC.bpm||120,B=60/bpm;
+  if(!PATTR.rank||PATTR.rank.length!==n){PATTR.rank=new Float32Array(n);for(let i=0;i<n;i++)PATTR.rank[i]=Math.random();}
+  const dur=type==='black'?HOUSE.fixed.blackBeats*B:type==='strobe'?.12:Math.max(.25,(bars==null?1:bars)*4*B);
+  PATTR.old=pattrRead();PATTR.N=gridN;PATTR.mA=type==='morph'?LOOK.tr.morphPts(PATTR.old,gridN,HOUSE.fixed.morphK):null;
+  Object.assign(PATTR,{on:true,type,t:0,dur,last:type});PATTR.n++;}
+function pattrApply(dts){const P=PATTR;if(!P.on)return;if(P.N!==gridN||!readBuf){P.on=false;return;}
+  P.t+=dts;const p=P.t/P.dur,n=gridN*gridN;if(p>=1){P.on=false;return;}
+  const L2=pattrRead(),L1=P.old.slice(),R=Math.random;let out=L1;
+  switch(P.type){
+    case 'xfade':LOOK.tr.xfade(L1,L2,n,p,P.rank);break;
+    case 'flicker':LOOK.tr.flicker(L1,L2,n,p,R,P.rank,HOUSE.fixed.light);break;
+    case 'morph':out=new Float32Array(n*3);LOOK.tr.morph(out,L2,p,P.mA||[],gridN,[1,1,1]);break;
+    case 'black':case 'blackout':out=new Float32Array(n*3);break;
+    case 'dissolve':LOOK.tr.dissolve(L1,n,p,P.rank);break;
+    case 'iris':LOOK.tr.iris(L1,gridN,p,(gridN-1)/2,(gridN-1)/2,new Float32Array(n*3));break;
+    case 'strobe':{const w=.85*(1-p)*(1-p);for(let j=0;j<L2.length;j++)L2[j]+=(1-L2[j])*w;out=L2;break;}
+    default:P.on=false;return;}
+  for(let i=0;i<n;i++){readBuf[4*i]=Math.round(Math.min(1,out[3*i])*255);readBuf[4*i+1]=Math.round(Math.min(1,out[3*i+1])*255);readBuf[4*i+2]=Math.round(Math.min(1,out[3*i+2])*255);}}
 function frame(ts){
   if(P2n&&progReady(P2n)){gl.deleteProgram(P2.p);P2=P2n;P2n=null;}
   if(!progReady(P1)||!progReady(P2)){if(!hudTR.dataset.wait){hudTR.dataset.wait='1';hudTR.textContent='Preparing the visuals… the graphics driver compiles the shaders, up to a minute after the page has changed';}
@@ -5677,6 +5726,7 @@ function frame(ts){
 
   /* read the LEDs back: the meter and the mirror use exactly these duties */
   gl.readPixels(0,0,N,N,gl.RGBA,gl.UNSIGNED_BYTE,readBuf);
+  pattrApply(dts);   /* a library transition between two patterns (LOOK.tr), if one runs */
   const m=meter(readBuf,N*N,dutyF);
   try{vpLiveSample(readBuf,N,t);}catch(e){}
   gl.bindFramebuffer(gl.FRAMEBUFFER,null);
@@ -5879,9 +5929,10 @@ $('frameBtn').addEventListener('click',()=>{const L=LEDS[S.led],half=(L.outer||L
   'st-mirror':()=>(LEDS[S.led].size>=1000?'1 m':LEDS[S.led].size/10+' cm')+' · '+FILMS[S.front].n+' / '+FILMS[S.back].n,
   'st-led':()=>LEDS[S.led].n,'st-woofer':()=>['always on','on the sound','off'][S.prtM],'st-room':()=>AMBS[S.amb].n,
   'st-shop':()=>shopSum(),'st-smoke':()=>['off','timer','on the beat','non-stop'][S.fogM],'st-dj':()=>S.djP?'on the podium':'on the ground','st-power':()=>S.supplyA+' A · limit '+Math.round(S.pwrLimit*100)+' %',
-  'sn-input':()=>S.autoLvl?'auto level':'manual '+outs.gain.out.textContent,'sn-tempo':()=>(S.tempo?'match the song':'free running')+' · '+S.prefBpm+' BPM','sn-drop':()=>outs.dropSens.out.textContent,'sn-safe':()=>'max '+S.flashMax+' flashes/s',
-  'ge-col':()=>({own:'visual\'s own',palette:PAL[S.pal].n,single:'single colour',music:'follow music'})[S.colModeAll],
-  'ge-over':()=>[S.ovl>.01?'frame '+Math.round(S.ovl*100)+' %':'',S.puTop?'Hand and Cube':'',S.glitch>.01&&S.tempo?'glitches':''].filter(Boolean).join(' · ')||'nothing'};
+  'sn-input':()=>S.autoLvl?'auto level':'manual '+outs.gain.out.textContent,'sn-tempo':()=>(S.tempo?'match the song':'free running')+' · '+S.prefBpm+' BPM','ge-listen':()=>'sensitivity '+outs.hitSens.out.textContent.split(' ')[0]+' · drops '+outs.dropSens.out.textContent,
+  'ge-feel':()=>'flash '+Math.round(FEEL.get('flash')*100)+' % · '+(FEEL.get('lullDim')>.01?'dark when quiet':'no dimming'),
+  'ge-colour':()=>({own:'visual\'s own',palette:PAL[S.pal].n,single:'single colour',music:'follow music'})[S.colModeAll],
+  'ge-motion':()=>[S.ovl>.01?'frame '+Math.round(S.ovl*100)+' %':'',S.puTop?'Hand and Cube':'',S.glitch>.01&&S.tempo?'glitches':''].filter(Boolean).join(' · ')||'nothing over the visual'};
  let n=0;
  setInterval(()=>{n++;
    const c=cur();if(document.activeElement!==sel&&sel.value!==c&&sel.querySelector('option[value="'+c+'"]'))sel.value=c;
@@ -5936,7 +5987,7 @@ document.addEventListener('fullscreenchange',()=>setTimeout(resize,60));
    keys: pat:<id> visual, story:<id>|story:<pat>:<story> built-in story, scene:<pat>:<scene> show scene, set:<pat> built-in set. ref = plain JSON {pat,story?,scene?}. */
 try{(()=>{
 if(!window.INF_LIBRARY||!window.INF_LIB_CORE)return;
-const SHN={55:'Director'},LOCKERS=[55];
+const SHN={55:'Epic'},LOCKERS=[55];
 const lst=p=>{try{const s=SHOW[p];return s&&s.list?s.list():{scenes:[],stories:[]};}catch(e){return{scenes:[],stories:[]};}};
 const unlock=except=>{for(const p of LOCKERS)if(p!==except&&SHOW[p]&&SHOW[p].lock)try{SHOW[p].lock(null);}catch(e){}};
 function items(){
@@ -5950,18 +6001,25 @@ function items(){
     L.scenes.forEach(s=>o.push({key:'scene:'+p+':'+s.id,kind:'scene',name:SHN[p]+' · '+s.name,group:SHN[p],desc:'scene',ref:{pat:p,scene:s.id}}));}
   const sets=[[49,'Text show'],[52,'Tunnel show']];for(const k in INF_SHOWS)if(INF_SHOWS[k].home!=='hand')sets.push([INF_SHOWS[k].pat,INF_SHOWS[k].name]);
   for(const[p,n]of sets)o.push({key:'set:'+p,kind:'set',name:n,group:'Sets',desc:String(note(p)||''),ref:{pat:p}});
+  {const have=new Set(o.map(i=>i.key));for(const c of INF_SCENES.list())if(!have.has(c.key))o.push({key:c.key,kind:'card',name:c.name,group:c.group||'',desc:c.desc||'',ref:c.ref});}   /* the registry's other cards (Text show scenes): playable in a set, not drawn as rows */
   return o;}
+/* the scene registry (scenes.js): every playable thing as one card. Built here, once everything it reads exists. */
+{const IS=INF_SCENES,e=SHOW[55],ids=new Set();IS.fromVisualParams(window.VISUAL_PARAMS,{skip:[9],groupOf:p=>{for(const g of PGROUPS)if(g.items.some(i=>i[0]===p))return g.g;return 'Visuals';}});
+ if(e&&e.ENG_SCENE){let st=[];try{st=e.list().stories.map(s=>s.id);}catch(x){}IS.fromEpic(e.ENG_SCENE,{pat:55,stories:st});}
+ IS.fromShows(INF_SHOWS);const bad=IS.problems();if(bad.length)console.error('scene cards with problems',bad);}
 let selfPlay=0;
 function play(ref,st){
   if(!ref||ref.pat==null)return;
   selfPlay++;
   try{unlock(ref.pat);
+    if(ref.pat===49){S.advSc=ref.adv!=null?ref.adv+1:0;}   /* a Text show scene locks to that scene, the whole show is on Auto again */
     if(st&&typeof st==='object'){S.vp[ref.pat]=cleanVisualState({vp:{[ref.pat]:st}}).vp[ref.pat]||{};for(const k in S.vp[ref.pat])window.onVpChange(ref.pat,k);}   /* a variant: its slider values replace the visual's own (set before syncPat so the panel shows them) */
     S.pat=ref.pat;save();syncPat();
     const sh=SHOW[ref.pat],id=ref.story||ref.scene||null;   /* no lock id = the whole set, normal directing */
     if(sh&&sh.lock){const go=n=>{try{sh.lock(id);}catch(e){if(n>0)setTimeout(()=>{if(S.pat===ref.pat)go(n-1);},200);}};go(8);}}   /* a show that never ran has no state yet: retry after its first frames */
   finally{selfPlay--;}}
 const H={bar:[],drop:[],userpick:[]},emit=(e,a)=>H[e].slice().forEach(f=>{try{f(a);}catch(x){console.error(x);}});
+let sty=null;   /* the General values a set's style preset replaced */
 let clk=0;   /* the library's beat count: the music ear's, or a free run at its tempo while the ear stands still (no sound) */
 let toastEl=null,toastT=0;
 const ltoast=m=>{if(!toastEl){toastEl=document.createElement('div');toastEl.style.cssText='position:fixed;left:50%;bottom:70px;transform:translateX(-50%);background:var(--panel-2);border:1px solid var(--line);border-radius:8px;padding:8px 14px;font:500 13px var(--ui);color:var(--fg);z-index:1000;pointer-events:none';document.body.appendChild(toastEl);}
@@ -5972,6 +6030,18 @@ const host={items,play,
   openSettings:ref=>{if(!ref)return;selfPlay++;try{unlock(ref.pat);S.pat=ref.pat;save();syncPat();}finally{selfPlay--;}
     UI.rtab=STORY_IDS.includes(ref.pat)?'stories':SET_IDS.includes(ref.pat)?'sets':'visuals';UI.open.vis=1;uiLayout();uiSave();uiAfter();},
   clock:()=>({bpm:MUSIC.bpm||120,beat:clk,beatsPerBar:4}),
+  /* the sequencer is about to change what plays: draw the change out with LOOK.tr. A story step: a cross-fade of HOUSE's length. A set: the conductor's chosen style for this moment. A drop: the cut. The start: none. */
+  transition:info=>{if(!info||info.first){PATTR.on=false;return;}
+    const bars=t=>HOUSE.fixed.trBars[t]?LOOK.tr.pickBars(t,Math.random):0;
+    if(info.kind==='drop'){pattrBegin('cut');return;}
+    if(info.kind==='story'){pattrBegin('xfade',bars('xfade'));return;}
+    const m=MUSIC,A=m.ear||{};let st='xfade';try{st=CONDUCTOR.style({phase:CONDUCTOR.phase(A,m.arc,0),e:A.gen?m.arc:A.energy||0,rng:Math.random});}catch(e){}
+    const type=st==='strip'?'black':st;pattrBegin(type,bars(type));},
+  /* a set's style preset (Calm-Busy, Feel amount, palette): applied while the set plays, the General values come back when it stops. null = give them back. */
+  style:st=>{try{if(st&&typeof st==='object'){if(!sty)sty={cb:CONDUCTOR.get('calmBusy'),fa:FEEL.get('amount'),pal:S.pal,col:S.colModeAll};
+      if(st.calmBusy!=null)CONDUCTOR.set('calmBusy',st.calmBusy);if(st.feel!=null)FEEL.set('amount',st.feel);
+      if(st.palette!=null&&st.palette>=0&&st.palette<PAL.length){S.pal=st.palette;if(S.colModeAll==='own'||S.colModeAll==='single')S.colModeAll='palette';save();syncPal();}}
+    else if(sty){CONDUCTOR.set('calmBusy',sty.cb);FEEL.set('amount',sty.fa);S.pal=sty.pal;S.colModeAll=sty.col;save();syncPal();sty=null;}}catch(x){console.error(x);}},
   on:(e,f)=>{if(H[e])H[e].push(f);},
   mountPoints:{stories:document.getElementById('libStories'),sets:document.getElementById('libSets'),visuals:document.getElementById('patChips')},
   toast:ltoast};

@@ -61,30 +61,30 @@ function build(s){
   const m=mm=>up(mm/1000,0.5);                                               /* metres to buy, in half metres */
   const g0=s.glassMm||4,air=!!G.air,tF=air?thick(F,g0):0,tB=air?thick(B,g0):0;
   const stackMm=air?tF+G.mm+tB:G.mm,perim=4*O;
-  const kgGlass=air?(O/1000)**2*(tF+tB)/1000*2500:(O/1000)**2*G.mm/1000*1190;
+  const sqm=(O/1000)**2,kgGlass=air?(O/1000)**2*(tF+tB)/1000*2500:(O/1000)**2*G.mm/1000*1190;
 
   /* ---------- mirror ---------- */
   {const a=sec('Mirror: glass, film and acrylic','From the LEDs forwards: back mirror, the gap, front mirror. Every sheet '+O+' × '+O+' mm.');
-   const plate=(f,where)=>f.glass?it(1,'pcs',f.full,O+' × '+O+' mm, toughened after coating, edges ground and polished.','Coated glass, no film needed. Pilkington mounts the coating facing the viewer.',{find:'Pilkington MirroView '+(f.T>.4?'50/50 ':'')+'glass'}):
-     it(1,'pcs','Float glass '+g0+' mm, toughened (tempered / ESG)',O+' × '+O+' mm, edges ground and polished.',where+' film goes on the side facing the gap. Toughened, because it rides on a trailer.',{find:'toughened float glass '+g0+' mm cut to size'});
+   const plate=(f,where)=>f.glass?it(1,'pcs',f.full,O+' × '+O+' mm, toughened after coating, edges ground and polished.','Coated glass, no film needed. Pilkington mounts the coating facing the viewer.',{core:1,m2:sqm,find:'Pilkington MirroView '+(f.T>.4?'50/50 ':'')+'glass'}):
+     it(1,'pcs','Float glass '+g0+' mm, toughened (tempered / ESG)',O+' × '+O+' mm, edges ground and polished.',where+' film goes on the side facing the gap. Toughened, because it rides on a trailer.',{core:1,m2:sqm,find:'toughened float glass '+g0+' mm cut to size'});
    if(air){a.push(Object.assign(plate(B,'The back ('+B.n+')'),{n:(B.glass?B.full:'Float glass '+g0+' mm, toughened (tempered / ESG)')+' · back mirror'}));
      a.push(Object.assign(plate(F,'The front ('+F.n+')'),{n:(F.glass?F.full:'Float glass '+g0+' mm, toughened (tempered / ESG)')+' · front mirror'}));}
-   else{a.push(it(1,'pcs','Cast acrylic sheet (PMMA GS), clear, '+G.mm+' mm',O+' × '+O+' mm, protective foil on both faces.','Cast, not extruded: less inner stress, so the film does not lift or craze. Both films go on this one sheet.',{find:'cast acrylic sheet '+G.mm+' mm clear cut to size'}));
+   else{a.push(it(1,'pcs','Cast acrylic sheet (PMMA GS), clear, '+G.mm+' mm',O+' × '+O+' mm, protective foil on both faces.','Cast, not extruded: less inner stress, so the film does not lift or craze. Both films go on this one sheet.',{core:1,m2:sqm,find:'cast acrylic sheet '+G.mm+' mm clear cut to size'}));
      if(F.glass||B.glass)warn.push('MirroView is coated glass: it cannot go on an acrylic sheet. Pick an air gap in Stage › Mirror, or a film.');
      else if(!F.plastic||!B.plastic)warn.push('These window films are made for glass. On acrylic, warmth from the LEDs can make the plastic outgas and lift the film in bubbles (3M warns about this). Use 3M Silver 15 Plastic on acrylic, or an air gap with the films on glass.');}
    const films={};for(const[f,side]of[[B,'back'],[F,'front']])if(!f.glass){(films[f.full]=films[f.full]||{f,sides:[]}).sides.push(side);}
    const piece=O+100;
    for(const k in films){const{f,sides}=films[k],len=(sides.length+1)*piece;
      a.push(it(up(len/1000,0.5),'m',f.full,'From a 1.52 m (60″) wide roll: '+sides.length+' piece'+(sides.length>1?'s':'')+' of '+piece+' × '+piece+' mm ('+sides.join(' and ')+' mirror) plus one spare piece to practise on.',
-       'T '+Math.round(f.T*100)+' %, R '+Math.round(f.R*100)+' %. '+f.src+'.',{est:1,find:f.full+' window film'}));}
+       'T '+Math.round(f.T*100)+' %, R '+Math.round(f.R*100)+' %. '+f.src+'.',{est:1,core:1,find:f.full+' window film'}));}
    if(Object.keys(films).length)a.push(it(1,'set','Window film fitting kit','Spray bottle for slip solution, hard and soft squeegee, snap-off knife with spare blades, glass scraper, lint-free cloths.','Apply the film wet; dust under the film shows in every copy of the tunnel.',{find:'window film installation tool kit'}));}
 
   /* ---------- frames and spacers ---------- */
   {const a=sec('Frames and spacers','The empty frames between the layers and the frame that holds the stack in the trailer slot.');
    const air2=s.ledAirMm||3.45;
-   if(T==='strip'||T==='mat'){a.push(it(1,'pcs','Aluminium sheet 2 mm, LED back plate',O+' × '+O+' mm.','The strips or matrices are stuck on it and it spreads their heat. Paint the front matte black so the plate does not show between the LEDs.',{find:'aluminium sheet 2 mm cut to size'}));
+   if(T==='strip'||T==='mat'){a.push(it(1,'pcs','Aluminium sheet 2 mm, LED back plate',O+' × '+O+' mm.','The strips or matrices are stuck on it and it spreads their heat. Paint the front matte black so the plate does not show between the LEDs.',{m2:sqm,find:'aluminium sheet 2 mm cut to size'}));
      a.push(it(1,'can','Matte black spray paint, heat resistant','For the LED plate and the inside edges of the frames.','Anything light inside the box shows up in the mirror tunnel.',{find:'heat resistant matte black spray paint'}));}
-   else if(T==='mod'){a.push(it(1,'pcs',bom.frame||'Galvanised steel sheet 1.5 mm, module back plate',bom.frame?'Holds the modules on their magnets.':O+' × '+O+' mm. The modules hold on with their magnets.','The modules go '+bom.grid+'; the back of each module needs air, keep the plate clear of the power supplies.',{find:bom.frame?'P10 module cabinet 960 x 960':'galvanised steel sheet 1.5 mm cut to size'}));}
+   else if(T==='mod'){a.push(it(1,'pcs',bom.frame||'Galvanised steel sheet 1.5 mm, module back plate',bom.frame?'Holds the modules on their magnets.':O+' × '+O+' mm. The modules hold on with their magnets.','The modules go '+bom.grid+'; the back of each module needs air, keep the plate clear of the power supplies.',{m2:bom.frame?0:sqm,find:bom.frame?'P10 module cabinet 960 x 960':'galvanised steel sheet 1.5 mm cut to size'}));}
    a.push(it(m(perim*1.1),'m','Spacer frame 1, LEDs to back mirror: black PVC strip '+fmt(Math.round(air2*2)/2,1)+' × 10 mm','Four sides of '+O+' mm round the edge, '+fmt(perim/1000,1)+' m plus 10 %.','Keeps the back mirror '+fmt(air2,2)+' mm in front of the LEDs, as the simulator draws it. Black, so it does not show in the tunnel.',{est:1,find:'black PVC strip 3 x 10 mm'}));
    if(air){const igu=G.mm<=24;
      a.push(it(m(perim*1.1),'m','Spacer frame 2, between the mirrors: '+(igu?'insulating-glass spacer bar, aluminium, '+G.mm+' mm, black':'aluminium rectangular tube '+G.mm+' × 10 mm, wall 1.5 mm, black anodised'),'Four sides of '+O+' mm, mitred or with corner keys.','Sets the '+G.mm+' mm air gap that makes the tunnel ('+(G.mm*2)+' mm between copies). Black so its edge disappears in the tunnel.',{est:!igu,find:igu?'insulating glass spacer bar '+G.mm+' mm black':'aluminium rectangular tube '+G.mm+' x 10 black'}));
@@ -106,12 +106,12 @@ function build(s){
   let mats=0,feeders=0,feedA=0,modules=0;
   if(T==='strip'){const per=bom.perM*bom.reelM,rows=Math.floor(per/N),reels=Math.ceil(N/rows)+1,rowMm=Math.round(N/bom.perM*1000);
     ledSec.push(it(reels,'reels',bom.chip+' LED strip, '+bom.perM+' LEDs/m, 5 V, '+bom.reelM+' m reel','Cut into '+N+' rows of '+N+' LEDs ('+rowMm+' mm each), '+rows+' rows per reel; '+fmt(nLED/bom.perM,1)+' m in all, plus one spare reel for repairs.',
-      (bom.mine?'The simulator calls this your current matrix: skip it if you have that. ':'')+(bom.check||''),{est:!!bom.check,find:bom.chip+' LED strip '+bom.perM+' LEDs/m 5V'}));
+      (bom.mine?'The simulator calls this your current matrix: skip it if you have that. ':'')+(bom.check||''),{est:!!bom.check,core:1,find:bom.chip+' LED strip '+bom.perM+' LEDs/m 5V'}));
     ledSec.push(it(10,'m','Silicone wire 0.25 mm² (24 AWG), for the data links between rows','Rows are chained in a zigzag: data out of one row into the next.','',{find:'silicone wire 24 AWG'}));}
-  else if(T==='mat'){for(const[c,n,name,where]of bom.mats){mats+=c;ledSec.push(it(c+1,'pcs',name,c+' ('+where+'), plus one spare.','Daisy-chained: data out of one matrix into the next.',{find:name.split(',')[0]}));}}
-  else if(T==='mod'){modules=bom.count;ledSec.push(it(bom.count+1,'pcs',bom.n,bom.count+' modules, '+bom.grid+', plus one spare to swap a bad one.','A HUB75 ribbon and a power lead usually come with each module; check before ordering.',{find:bom.n.split(',')[0]}));
+  else if(T==='mat'){for(const[c,n,name,where]of bom.mats){mats+=c;ledSec.push(it(c+1,'pcs',name,c+' ('+where+'), plus one spare.','Daisy-chained: data out of one matrix into the next.',{core:1,find:name.split(',')[0]}));}}
+  else if(T==='mod'){modules=bom.count;ledSec.push(it(bom.count+1,'pcs',bom.n,bom.count+' modules, '+bom.grid+', plus one spare to swap a bad one.','A HUB75 ribbon and a power lead usually come with each module; check before ordering.',{core:1,find:bom.n.split(',')[0]}));
     ledSec.push(it(bom.count*4,'pcs','Module magnets (screw-in), if not included','Four per module.','',{find:'LED module magnet screw'}));}
-  else ledSec.push(it(1,'pcs',bom.n,'Comes with its own power supplies, receiving card and frame.',L.src||'',{find:'Dahua PHGOA10-FC'}));
+  else ledSec.push(it(1,'pcs',bom.n,'Comes with its own power supplies, receiving card and frame.',L.src||'',{core:1,find:'Dahua PHGOA10-FC'}));
 
   /* ---------- power ---------- */
   const pw=sec('Power',T==='cab'?'The cabinet runs on 230 V: its 5 V supplies are inside.':'5 V supplies sized from Stage › Power, then the cables from supply to the LEDs, sized for current and voltage drop.');
@@ -125,7 +125,7 @@ function build(s){
     if(capA<nowA){w+=' So the Director dims full white to '+fmt(capA*lim)+' A, '+Math.round(capA*lim/nowA*100)+' % of what the LEDs could draw. To run it without dimming you would need '+psuFor(nowA*1.15).k+' × '+psuFor(nowA*1.15).p.n+'.';
       warn.push('The supply set in Stage › Power ('+capA+' A) is below what full white needs ('+fmt(nowA)+' A): the list follows your setting, so the picture is dimmed on bright frames. Raise Power supply in Stage › Power to buy for full brightness.');}
     else w+=' The list buys for full white at your brightness plus 15 %, which is less than the '+capA+' A you set.';
-    pw.push(it(P.k,'pcs',P.p.n,'5 V, '+P.p.A+' A, '+P.p.W+' W each: '+totA+' A in all.',w+(P.k>1?' Never join the outputs of two supplies: each feeds its own group of '+(T==='strip'?'rows':T==='mat'?'matrices':'modules')+', all minus (V−) wires joined.':''),{find:P.p.n}));
+    pw.push(it(P.k,'pcs',P.p.n,'5 V, '+P.p.A+' A, '+P.p.W+' W each: '+totA+' A in all.',w+(P.k>1?' Never join the outputs of two supplies: each feeds its own group of '+(T==='strip'?'rows':T==='mat'?'matrices':'modules')+', all minus (V−) wires joined.':''),{core:1,find:P.p.n}));
     /* mains */
     const acW=P.k*P.p.W/P.p.eff,acA=acW/230,acf=ACFUSES.find(f=>f>=acA*2);   /* twice the running current: room for the supplies' inrush (est) */
     pw.push(it(1,'pcs','Neutrik powerCON TRUE1 TOP chassis inlet (NAC3MPX)','Mains into the mirror box.','The supplies take up to '+fmt(acW)+' W, '+fmt(acA,1)+' A from 230 V.',{find:'Neutrik NAC3MPX'}));
@@ -138,7 +138,7 @@ function build(s){
     const fd=wireFor(P.p.A,0.5,0.1,TERM_MM2);
     pw.push(it(Math.ceil(P.k*fd.n*0.6),'m each','Flexible wire '+fd.s+' mm², red and black','From each supply: '+fd.n+' wire'+(fd.n>1?'s':'')+' per pole over its output screws, about 0.5 m.',P.p.A+' A over 0.5 m loses '+fmt(fd.V,2)+' V of the 5 V.',{est:1,find:'flexible wire '+fd.s+' mm2 red black'}));
     if(T==='strip'){const side=totA/2,b=barFor(side);
-      pw.push(it(4,'pcs','Copper flat bar '+b[0]+' × '+b[1]+' mm, '+O+' mm long','Bus bars along the left and right edge: 5 V and GND on each side.','Every row is fed at both ends. Up to '+fmt(side)+' A per side.'+(P.k>1?' With '+P.k+' supplies, cut the 5 V bars into '+P.k+' groups of rows (GND stays one piece).':''),{est:1,find:'copper flat bar '+b[0]+' x '+b[1]+' mm'}));
+      pw.push(it(4,'pcs','Copper flat bar '+b[0]+' × '+b[1]+' mm, '+O+' mm long','Bus bars along the left and right edge: 5 V and GND on each side.','Every row is fed at both ends. Up to '+fmt(side)+' A per side.'+(P.k>1?' With '+P.k+' supplies, cut the 5 V bars into '+P.k+' groups of rows (GND stays one piece).':''),{est:1,lenM:O/1000,find:'copper flat bar '+b[0]+' x '+b[1]+' mm'}));
       pw.push(it(12,'pcs','Bus bar insulators / standoffs M5','Three per bar.','',{find:'busbar insulator M5'}));
       const rowA=N*sumMA/1000,rw=wireFor(rowA/2,0.08,0.05);
       feeders=2*N;feedA=rowA/2;
@@ -218,59 +218,78 @@ function build(s){
   return{id:s.id||'',name,at:s.at||'',sum,warn,sections:secs,facts};
 }
 
-/* what an item costs: shop-prices.js (INF_PRICES) holds one AliExpress listing per search term, priced for one purchase
-   that covers `per` of the list's unit; local items carry why they are not bought there */
+/* what an item costs: shop-prices.js (INF_PRICES, made by tools/shop-research.mjs) holds per search term either a few
+   AliExpress offers {price, per, ship} (one purchase covers `per` of the list's unit; the cheapest mix for the quantity
+   wins) or a hand-checked local price per m², metre or piece. core = the stack itself (glass/film, LEDs, supplies);
+   the rest is the material around it. skip = search terms the user leaves out (has them, or has a deal). */
 const prices=()=>root.INF_PRICES||null;
 const eur=v=>'€'+(+v).toLocaleString('nl-NL',{minimumFractionDigits:2,maximumFractionDigits:2});
+const keyOf=i=>i.find||i.n;
+const need=i=>i.u==='outputs'?1:i.u==='m each'?i.q*(/green\/yellow/.test(i.n)?3:2):i.q;
 function priceOf(i,P){
-  const e=P&&P.items&&P.items[i.find||i.n];if(!e)return null;
-  if(e.shop!=='ali')return{local:1,why:e.why||''};
-  const packs=Math.max(1,Math.ceil(i.q/(e.per||1)-1e-9)),ship=e.ship||0;
-  return{packs,each:e.price,ship,total:packs*e.price+ship,url:e.url,title:e.title,buy:e.buy||''};
+  const e=P&&P.items&&P.items[keyOf(i)];if(!e)return null;
+  const base={checked:e.checked||'',est:!!e.est,stale:e.stale||''};
+  if(e.shop==='local'){if(e.price==null)return Object.assign(base,{local:1,total:null,why:e.why||'',note:e.note||'',url:e.url||'',shopName:e.shopName||''});
+    let qty=i.q,each=e.price;
+    if(e.unit==='m2'){const a=i.m2||0;each=e.price*a+(e.edgeM?e.edgeM*4*Math.sqrt(a):0);}
+    else if(e.unit==='m'){if(i.lenM)each=e.price*i.lenM;else qty=need(i);}
+    return Object.assign(base,{local:1,qty,each,total:qty*each,why:e.why||'',note:e.note||'',url:e.url||'',shopName:e.shopName||''});}
+  if(e.shop!=='ali'||!e.opts||!e.opts.length)return Object.assign(base,{none:1,total:null,why:e.why||''});
+  const n=need(i);let best=null;
+  for(const o of e.opts){const packs=Math.max(1,Math.ceil(n/(o.per||1)-1e-9)),total=packs*o.price+(o.ship||0);
+    if(!best||total<best.total)best={packs,each:o.price,per:o.per,ship:o.ship||0,total,url:o.url,title:o.title,buy:o.buy||'',store:o.store||''};}
+  return Object.assign(base,best,{note:e.buyNote||''});
 }
-function totals(list,P){
-  const t={ali:0,n:0,local:0,none:0,opt:0};
-  for(const s of list.sections)for(const i of s.items){const p=priceOf(i,P);
-    if(!p)t.none++;else if(p.local)t.local++;else if(i.opt)t.opt++;else{t.ali+=p.total;t.n++;}}
-  return t;
+/* the money: stack (core) + the rest, without skipped and only-if-needed items */
+function totals(list,P,skip){
+  const sk=new Set(skip||list.skip||[]),t={core:0,extra:0,total:0,n:0,skipped:0,opt:0,missing:[],est:0,local:0,ali:0};
+  for(const s of list.sections)for(const i of s.items){
+    if(sk.has(keyOf(i))){t.skipped++;continue;}if(i.opt){t.opt++;continue;}
+    const p=priceOf(i,P);if(!p||p.total==null){t.missing.push(i.n);continue;}
+    t[i.core?'core':'extra']+=p.total;t[p.local?'local':'ali']+=p.total;t.n++;if(p.est)t.est++;}
+  t.total=t.core+t.extra;return t;
 }
+const skipSet=list=>new Set(list.skip||[]);
+const how=p=>p.local?(p.qty!==1?fmt(p.qty,p.qty%1?1:0)+' × '+eur(p.each):'')+(p.shopName?' at '+p.shopName:''):
+  (p.packs>1?p.packs+' × '+eur(p.each):'')+(p.ship?(p.packs>1?' + ':'')+eur(p.ship)+' shipping':'');
 function text(list){
-  const P=prices(),out=[list.name,list.at?'Saved '+new Date(list.at).toLocaleString('en-GB'):'',''];
+  const P=prices(),sk=skipSet(list),out=[list.name,list.at?'Saved '+new Date(list.at).toLocaleString('en-GB'):'',''];
   for(const[k,v]of list.sum)out.push(k+': '+v);
   if(list.warn.length){out.push('');for(const w of list.warn)out.push('! '+w);}
-  for(const s of list.sections){out.push('','== '+s.title+' ==');for(const i of s.items){const p=priceOf(i,P);
-    out.push('[ ] '+i.q+' '+i.u+'  '+i.n+(i.d?'  ('+i.d+')':'')+(i.est?'  [estimate]':'')+
-      (p?p.local?'  [buy locally]':'  '+p.packs+' × '+eur(p.each)+(p.ship?' + '+eur(p.ship)+' shipping':'')+' = '+eur(p.total)+(i.opt?' (only if needed)':'')+'  '+p.url:''));}}
-  if(P){const t=totals(list,P);out.push('','AliExpress: '+eur(t.ali)+' for '+t.n+' items (prices of '+P.checked+'). '+t.local+' item'+(t.local!==1?'s':'')+' to buy locally, not priced.');}
+  for(const s of list.sections){out.push('','== '+s.title+' ==');for(const i of s.items){const p=priceOf(i,P),h=how(p||{});
+    out.push((sk.has(keyOf(i))?'[x] ':'[ ] ')+i.q+' '+i.u+'  '+i.n+(i.d?'  ('+i.d+')':'')+(i.est?'  [estimate]':'')+
+      (p&&p.total!=null?'  '+eur(p.total)+(h?' ('+h+')':'')+(p.est?' [price estimate]':'')+(i.opt?' (only if needed)':'')+(p.url?'  '+p.url:''):p&&p.local?'  [buy locally, no price]':''));}}
+  if(P){const t=totals(list,P);out.push('','Stack '+eur(t.core)+' + the rest '+eur(t.extra)+' = '+eur(t.total)+(t.skipped?', '+t.skipped+' item'+(t.skipped>1?'s':'')+' you have left out ([x])':'')+
+    (t.missing.length?', '+t.missing.length+' without a price':'')+'. Prices of '+String(P.updated||'').slice(0,10)+'.');}
   return out.join('\n');
 }
 function csv(list){
-  const P=prices(),q=v=>'"'+String(v==null?'':v).replace(/"/g,'""')+'"';
-  const rows=[['Section','Qty','Unit','Item','Details','Why','Estimate','Shop','Buy','Packs','Each EUR','Shipping EUR','Total EUR','Link']];
-  for(const s of list.sections)for(const i of s.items){const p=priceOf(i,P),n2=v=>v==null?'':(+v).toFixed(2);
-    rows.push([s.title,i.q,i.u,i.n,i.d,i.w,i.est?'yes':'',p?p.local?'local':'AliExpress':'',p&&!p.local?p.buy:'',p&&!p.local?p.packs:'',
-      p&&!p.local?n2(p.each):'',p&&!p.local?n2(p.ship):'',p&&!p.local?n2(p.total):'',p&&!p.local?p.url:'https://www.google.com/search?q='+encodeURIComponent(i.find||i.n)]);}
+  const P=prices(),sk=skipSet(list),q=v=>'"'+String(v==null?'':v).replace(/"/g,'""')+'"',n2=v=>v==null?'':(+v).toFixed(2);
+  const rows=[['Section','Qty','Unit','Item','Details','Why','Estimate','Left out','Shop','Buy','Packs or qty','Each EUR','Shipping EUR','Total EUR','Price estimate','Link']];
+  for(const s of list.sections)for(const i of s.items){const p=priceOf(i,P)||{};
+    rows.push([s.title,i.q,i.u,i.n,i.d,i.w,i.est?'yes':'',sk.has(keyOf(i))?'yes':'',p.local?(p.shopName||'local'):p.url?'AliExpress':'',p.buy||'',p.local?p.qty:p.packs,
+      n2(p.each),n2(p.ship),n2(p.total),p.est?'yes':'',p.url||'https://www.google.com/search?q='+encodeURIComponent(keyOf(i))]);}
   return rows.map(r=>r.map(q).join(',')).join('\r\n');
 }
 /* the list as its own page: tick off what you have, print it, copy it as text or save it as CSV */
 function page(list){
-  const find=t=>'https://www.google.com/search?q='+encodeURIComponent(t),P=prices();
+  const find=t=>'https://www.google.com/search?q='+encodeURIComponent(t),P=prices(),sk=skipSet(list);
   let n=0;
-  const cell=(i,p)=>!p?'<span class="u">no price</span>':p.local?'<span class="loc" title="'+esc(p.why)+'">local</span>':
-    '<a class="pr" href="'+esc(p.url)+'" target="_blank" rel="noopener" title="'+esc(p.title)+'">'+eur(p.total)+'</a>'+
-    '<div class="pk">'+(p.packs>1?p.packs+' × '+eur(p.each):'')+(p.ship?(p.packs>1?' + ':'')+eur(p.ship)+' ship':'')+(i.opt?'<br>if needed':'')+'</div>';
+  const cell=(i,p)=>!p||p.total==null?'<span class="'+(p&&p.local?'loc':'u')+'" title="'+esc(p&&(p.note||p.why)||'')+'">'+(p&&p.local?'local':'no price')+'</span>':
+    '<a class="pr" href="'+esc(p.url)+'" target="_blank" rel="noopener" title="'+esc(p.title||p.note||'')+'">'+(p.est?'≈ ':'')+eur(p.total)+'</a>'+
+    '<div class="pk">'+esc(how(p))+(i.opt?'<br>if needed':'')+'</div>';
   const secs=list.sections.map(s=>'<section><h2>'+esc(s.title)+'</h2>'+(s.note?'<p class="note">'+esc(s.note)+'</p>':'')+
     '<table><thead><tr><th class="ck"></th><th class="q">Qty</th><th>Item</th><th class="p">Price</th><th class="f"></th></tr></thead><tbody>'+
-    s.items.map(i=>{const p=priceOf(i,P),cost=p&&!p.local&&!i.opt?p.total:0;
-      return '<tr data-cost="'+cost.toFixed(2)+'"><td class="ck"><input type="checkbox" data-i="'+(n++)+'" aria-label="Have it: '+esc(i.n)+'"></td><td class="q">'+esc(i.q)+' <span class="u">'+esc(i.u)+'</span></td><td><div class="n">'+esc(i.n)+(i.est?' <span class="est" title="Rule of thumb, not a datasheet value">estimate</span>':'')+'</div>'+
+    s.items.map(i=>{const p=priceOf(i,P),cost=p&&p.total!=null&&!i.opt?p.total:0;
+      return '<tr data-cost="'+cost.toFixed(2)+'"><td class="ck"><input type="checkbox" data-i="'+(n++)+'"'+(sk.has(keyOf(i))?' data-skip="1"':'')+' aria-label="Have it: '+esc(i.n)+'"></td><td class="q">'+esc(i.q)+' <span class="u">'+esc(i.u)+'</span></td><td><div class="n">'+esc(i.n)+(i.est?' <span class="est" title="Rule of thumb, not a datasheet value">estimate</span>':'')+'</div>'+
       (i.d?'<div class="d">'+esc(i.d)+'</div>':'')+(i.w?'<div class="w">'+esc(i.w)+'</div>':'')+
-      (p&&!p.local&&p.buy?'<div class="b">On AliExpress: '+esc(p.buy)+'</div>':'')+(p&&p.local&&p.why?'<div class="b">'+esc(p.why)+'</div>':'')+
-      '</td><td class="p">'+cell(i,p)+'</td><td class="f"><a href="'+esc(find(i.find||i.n))+'" target="_blank" rel="noopener">find</a></td></tr>';}).join('')+
+      (p&&!p.local&&p.buy?'<div class="b">On AliExpress: '+esc(p.buy)+'</div>':'')+(p&&p.note?'<div class="b">'+esc(p.note)+'</div>':'')+(p&&p.local&&p.why&&!p.note?'<div class="b">'+esc(p.why)+'</div>':'')+
+      '</td><td class="p">'+cell(i,p)+'</td><td class="f"><a href="'+esc(find(keyOf(i)))+'" target="_blank" rel="noopener">find</a></td></tr>';}).join('')+
     '</tbody></table></section>').join('');
-  const total=list.sections.reduce((a,s)=>a+s.items.length,0),tt=P?totals(list,P):null;
-  const tbox=tt?'<div class="tot"><div><span class="big" id="left">'+eur(tt.ali)+'</span> still to buy on AliExpress</div><div class="u">'+eur(tt.ali)+' for all '+tt.n+' AliExpress items, shipping included where the listing charges it'+
-    (tt.opt?' · '+tt.opt+' only-if-needed item'+(tt.opt>1?'s':'')+' left out':'')+' · '+tt.local+' item'+(tt.local!==1?'s':'')+' to buy locally, not priced'+(tt.none?' · '+tt.none+' without a price yet':'')+
-    ' · prices checked '+esc(P.checked)+', shipped to '+esc(P.shipTo||'NL')+'</div></div>':'';
+  const total=list.sections.reduce((a,s)=>a+s.items.length,0),tt=P?totals(list,P,[]):null;
+  const tbox=tt?'<div class="tot"><div><span class="big" id="left">'+eur(tt.total)+'</span> still to buy</div><div class="u">'+eur(tt.total)+' for all '+tt.n+' priced items: the stack '+eur(tt.core)+', the rest '+eur(tt.extra)+
+    (tt.opt?' · '+tt.opt+' only-if-needed item'+(tt.opt>1?'s':'')+' left out':'')+(tt.missing.length?' · '+tt.missing.length+' without a price':'')+(tt.est?' · ≈ = an estimate, not an offer':'')+
+    ' · prices of '+esc(String(P.updated||'').slice(0,10))+', shipped to '+esc(P.shipTo||'NL')+'</div></div>':'';
   return '<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Shopping list · '+esc(list.name)+'</title><style>'+
   ':root{--bg:#f6f6f3;--card:#fff;--ink:#1d1d1b;--mute:#6a6a64;--line:#e2e2dc;--acc:#2f6fdb;--warn:#a2470d;--wbg:#fbefe4;--est:#7a5b00;--ebg:#f6ecc8}'+
   '@media (prefers-color-scheme:dark){:root{--bg:#141413;--card:#1d1d1b;--ink:#ecebe6;--mute:#9b9a93;--line:#33332f;--acc:#7aa7f5;--warn:#f0a36b;--wbg:#3a2516;--est:#e6c763;--ebg:#3a3112}}'+
@@ -292,18 +311,18 @@ function page(list){
   '<dl>'+list.sum.map(([k,v])=>'<dt>'+esc(k)+'</dt><dd>'+esc(v)+'</dd>').join('')+'</dl>'+
   tbox+list.warn.map(w=>'<p class="warn">'+esc(w)+'</p>').join('')+secs+
   '<p class="note" style="margin-top:22px">Only the mirror and, when they are on, the woofer LEDs: not the trailer, the fog machine, the bulbs or the DJ gear. Items marked estimate are sized by a rule of thumb; the rest follows the data sheets the simulator uses. '+
-  (P?'Prices are one AliExpress listing per item, checked '+esc(P.checked)+': they change daily, so open the link before ordering. Items marked local are bought in the Netherlands (glass, cut sheets, long profiles, aerosols, branded films); their find link is a plain web search.':'The find links are a plain web search.')+'</p>'+
+  (P?'AliExpress prices are the cheapest fitting listing per item from the last price research: they change daily, so open the link before ordering. Local items (glass, cut sheets, long profiles, aerosols, branded films) carry a hand-checked Dutch price; ≈ marks an estimate where no shop lists one. Ticked items are ones you have or buy elsewhere: they are not counted.':'The find links are a plain web search.')+'</p>'+
   '</main><script>(function(){var K="infinity-mirror-have-'+esc(list.id)+'",T='+total+',have={};try{have=JSON.parse(localStorage.getItem(K)||"{}")||{}}catch(e){}'+
   'var bx=[].slice.call(document.querySelectorAll("input[data-i]")),L=document.getElementById("left");function show(){var c=0,e=0;bx.forEach(function(b){var r=b.closest("tr");r.classList.toggle("have",b.checked);if(b.checked)c++;else e+=+r.dataset.cost||0});document.getElementById("prog").textContent=c+" of "+T+" ticked";'+
   'if(L)L.textContent="\\u20ac"+e.toLocaleString("nl-NL",{minimumFractionDigits:2,maximumFractionDigits:2})}'+
-  'bx.forEach(function(b){b.checked=!!have[b.dataset.i];b.addEventListener("change",function(){have[b.dataset.i]=b.checked?1:0;try{localStorage.setItem(K,JSON.stringify(have))}catch(e){}show()})});show();'+
+  'bx.forEach(function(b){b.checked=b.dataset.i in have?!!have[b.dataset.i]:b.dataset.skip==="1";b.addEventListener("change",function(){have[b.dataset.i]=b.checked?1:0;try{localStorage.setItem(K,JSON.stringify(have))}catch(e){}show()})});show();'+
   'var TXT='+JSON.stringify(text(list)).replace(/</g,'\\u003c')+',CSV='+JSON.stringify(csv(list)).replace(/</g,'\\u003c')+';'+
   'document.getElementById("bPrint").onclick=function(){print()};'+
   'document.getElementById("bCopy").onclick=function(e){var t=e.target;(navigator.clipboard?navigator.clipboard.writeText(TXT):Promise.reject()).then(function(){t.textContent="Copied"},function(){t.textContent="Copy failed"});setTimeout(function(){t.textContent="Copy as text"},1500)};'+
   'document.getElementById("bCsv").onclick=function(){var a=document.createElement("a");a.href=URL.createObjectURL(new Blob(["\\ufeff"+CSV],{type:"text/csv"}));a.download="infinity mirror shopping list.csv";document.body.appendChild(a);a.click();a.remove()};'+
   'document.getElementById("bClear").onclick=function(){bx.forEach(function(b){b.checked=false});have={};try{localStorage.removeItem(K)}catch(e){}show()};})();</script></body></html>';
 }
-const API={build,page,text,csv,priceOf,totals,BOM,wireFor,psuFor};
+const API={build,page,text,csv,priceOf,totals,keyOf,need,eur,BOM,wireFor,psuFor};
 root.INF_SHOP=API;
 if(typeof module!=='undefined'&&module.exports)module.exports=API;
 })(typeof window!=='undefined'?window:globalThis);

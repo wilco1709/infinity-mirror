@@ -184,7 +184,10 @@
       return s ? deepClone(s) : null;
     }
 
-    function addSet(name, pool, rules) {
+    /* a set = scenes + a style preset. pool entry: { key, ref, name, settings?, energy?, role?, mark?: 'intro' | 'drop' } (energy / role come from the scene card,
+       scenes.js; mark: the intro scene plays first, drop scenes play on the drops, the unmarked ones fill the rest).
+       style: null | { calmBusy?, feel?, palette? } applied while the set plays (a missing field = leave the General value). rules: the conductor decides when and what; only order and noRepeat are the person's. */
+    function addSet(name, pool, rules, style) {
       const newSet = {
         id: randomId('set'),
         name: name || 'New Set',
@@ -195,7 +198,8 @@
           order: 'random',
           noRepeat: true,
           changeOnDrop: true
-        }, rules || {})
+        }, rules || {}),
+        style: style && typeof style === 'object' ? deepClone(style) : null
       };
       state.sets.push(newSet);
       save();
@@ -210,6 +214,7 @@
       if (updates.rules) {
         s.rules = Object.assign(s.rules, updates.rules);
       }
+      if (updates.style !== undefined) s.style = updates.style && typeof updates.style === 'object' ? deepClone(updates.style) : null;
       save();
       return deepClone(s);
     }
@@ -376,6 +381,23 @@
 
     function stopSequencer() {
       activeSeq = null;
+      styleHost(null);   // a set's style preset goes back to the General values
+    }
+    function styleHost(st) {
+      try { if (hostRef && typeof hostRef.style === 'function') hostRef.style(st || null); } catch (e) { console.error(e); }
+    }
+    /* the scene card (scenes.js) gives an entry the energy and role it lacks, so the conductor can fit it to the music */
+    function scenes() {
+      return (typeof window !== 'undefined' && window.INF_SCENES) || null;
+    }
+    function withCards(pool) {
+      const R = scenes();
+      if (!R) return pool;
+      return pool.map(e => {
+        if (e && e.energy != null && e.role != null) return e;
+        const c = R.get(e.key);
+        return c ? Object.assign({}, e, { energy: e.energy != null ? e.energy : c.energy, role: e.role != null ? e.role : c.role }) : e;
+      });
     }
 
     function running() {
@@ -409,6 +431,7 @@
         return false;
       }
 
+      styleHost(null);
       activeSeq = {
         type: 'story',
         id: storyId,
@@ -420,6 +443,11 @@
       };
 
       return advanceStoryStep(0);
+    }
+
+    /* a change is about to be played: the host may take a snapshot and draw it out with LOOK.tr (host.transition({kind, first})). kind: 'story' | 'set' | 'drop'; first = the sequence's own start, never a transition */
+    function announce(kind, first) {
+      try { if (hostRef && typeof hostRef.transition === 'function') hostRef.transition({ kind, first: !!first }); } catch (e) { console.error(e); }
     }
 
     function advanceStoryStep(targetIndex) {
@@ -447,6 +475,8 @@
 
       const resolved = resolveEntry(steps[idx].entry);
       if (hostRef && typeof hostRef.play === 'function' && resolved) {
+        announce('story', !activeSeq.playCount);
+        activeSeq.playCount = (activeSeq.playCount || 0) + 1;
         hostRef.play(resolved.ref, resolved.settings);
       }
       return true;
@@ -475,9 +505,9 @@
         currentIndex: -1,
         playCount: 0,
         barInStep: 1,
-        barsInStep: 8,
-        pendingDropSwitch: false
+        barsInStep: 8
       };
+      styleHost(s.style || null);
 
       return advanceSetEntry();
     }
@@ -491,11 +521,27 @@
       return nodeCond;
     }
 
-    function pickNextSetIndex() {
-      const pool = activeSeq.pool;
+    function pickNextSetIndex(why) {
+      const pool = withCards(activeSeq.pool);
       const rules = activeSeq.set.rules;
       activeSeq.recent = (activeSeq.recent || []).slice(-2);
-      const ix = cond().pickEntry(pool, activeSeq.currentIndex, rules, rng, activeSeq.recent);
+      let ix;
+      const marked = e => e.mark === 'intro' || e.mark === 'drop';
+      const intro = pool.findIndex(e => e.mark === 'intro');
+      if (activeSeq.playCount === 0 && intro >= 0) {
+        ix = intro;   // the intro scene opens the set
+      } else if (rules.order === 'in order') {
+        ix = cond().pickEntry(pool, activeSeq.currentIndex, rules, rng, activeSeq.recent);
+      } else {
+        // a drop takes one of the drop scenes; otherwise the unmarked scenes fill the rest (all marked: all of them)
+        const idx = pool.map((e, i) => i);
+        let use = idx.filter(i => why === 'drop' ? pool[i].mark === 'drop' : !marked(pool[i]));
+        if (!use.length) use = idx;
+        const sub = use.map(i => pool[i]);
+        const cur = use.indexOf(activeSeq.currentIndex);
+        const recentSub = activeSeq.recent.map(r => use.indexOf(r)).filter(r => r >= 0);
+        ix = use[cond().pickEntry(sub, cur, rules, rng, recentSub)];
+      }
       activeSeq.recent.push(ix);
       return ix;
     }
@@ -504,7 +550,7 @@
       return cond().holdFor(activeSeq.set.rules, rng);
     }
 
-    function advanceSetEntry() {
+    function advanceSetEntry(why) {
       if (!activeSeq || activeSeq.type !== 'set') return false;
       // Re-filter pool in case items changed
       const pool = activeSeq.set.pool.filter(e => isItemAvailable(e));
@@ -514,16 +560,16 @@
       }
       activeSeq.pool = pool;
 
-      const nextIdx = pickNextSetIndex();
+      const nextIdx = pickNextSetIndex(why);
       activeSeq.currentIndex = nextIdx;
       activeSeq.playCount++;
       activeSeq.barInStep = 1;
       activeSeq.barsInStep = calculateSetDuration();
-      activeSeq.pendingDropSwitch = false;
 
       const entry = pool[nextIdx];
       const resolved = resolveEntry(entry);
       if (hostRef && typeof hostRef.play === 'function' && resolved) {
+        announce(why || 'set', activeSeq.playCount <= 1);
         hostRef.play(resolved.ref, resolved.settings);
       }
       return true;
@@ -540,11 +586,8 @@
           activeSeq.barInStep++;
         }
       } else if (activeSeq.type === 'set') {
-        const rules = activeSeq.set.rules;
-        if (activeSeq.pendingDropSwitch && rules.changeOnDrop) {
-          advanceSetEntry();
-        } else if (activeSeq.barInStep >= activeSeq.barsInStep) {
-          advanceSetEntry();
+        if (activeSeq.barInStep >= activeSeq.barsInStep) {
+          advanceSetEntry('set');
         } else {
           activeSeq.barInStep++;
         }
@@ -554,9 +597,9 @@
     function handleDrop() {
       if (!activeSeq || activeSeq.type !== 'set') return;
       if (activeSeq.set.rules.changeOnDrop) {
-        // "switch at the next bar, but only if current entry has run at least 4 bars" (Calm-Busy scales the 4)
+        // "switch at once, but only if current entry has run at least 4 bars" (Calm-Busy scales the 4)
         if (activeSeq.barInStep >= cond().dropMinBars()) {
-          activeSeq.pendingDropSwitch = true;
+          advanceSetEntry('drop');   // a drop changes on its own beat, the cut, not at the next bar
         }
       }
     }

@@ -135,7 +135,6 @@ window.SLIDER_TIPS_VP=Object.assign(window.SLIDER_TIPS_VP||{},{
 '50:outline':'Distance of the outline round the shape, in LEDs. Low: a hugging line. High: a wider, softer glow band.',
 '50:drift':'How fast the colours slowly slide round over time. 0 = the colours stay put.',
 '49:flashFade':'How fast a white flash fades out (seconds). Low: a very short blink. High: a long fade.',
-'49:kickFlash':'How hard a kick must be for a white flash. Low: many kicks flash white. High: only the hardest ones do (the others still change the colour).',
 '49:particles':'How many particles per second are shot out in the particle scene. Loud passages and builds add more. 0 = only the loud parts add particles.',
 '49:dropBurst':'How many particles burst out at the drop. 0 = no burst. The maximum is 128.',
 '49:textStart':'In the rings scene: from which beat of the text cycle the text appears. 0 = straight away, high = late in the cycle.',

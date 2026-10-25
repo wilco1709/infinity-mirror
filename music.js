@@ -61,6 +61,26 @@ function defaultCfg(){return{
 function create(){
 const cfg=defaultCfg();
 const M={cfg,version:1};
+/* General > Listen: the ear's tunables that are worth a slider (Hit sensitivity and Drop sensitivity are the page's S.hitSens / S.dropSens: host.cfg writes them into cfg.sens / cfg.dropSens each frame).
+   Each: id, label, tip, def, min, max, step, unit, get(), set(v). dump() = only what differs from the default, load(o) = put them back. */
+{const arr=(k,i)=>({get:()=>cfg[k][i],set:v=>{cfg[k][i]=v;}}),one=k=>({get:()=>cfg[k],set:v=>{cfg[k]=v;}});
+ const P=(id,label,tip,acc,min,max,step,unit)=>Object.assign({id,label,tip,def:acc.get(),min,max,step,unit:unit||''},acc);
+ const PA=[
+  P('pulseKick','Kick pulse length','How long the picture\'s kick pulse takes to die away after a kick (the "hit-latched" pulse every Feel effect and every visual reads). Short is tight, long is swampy.',arr('pulseTau',0),.05,.5,.01,'s'),
+  P('pulseSnare','Snare pulse length','How long the snare pulse takes to die away.',arr('pulseTau',1),.03,.4,.01,'s'),
+  P('pulseHat','Hat pulse length','How long the hat pulse takes to die away. Short keeps hats crisp.',arr('pulseTau',2),.02,.2,.01,'s'),
+  P('pulseMel','Melody pulse length','How long the melody pulse takes to die away.',arr('pulseTau',3),.03,.4,.01,'s'),
+  P('gapKick','Shortest gap between kicks','Two kicks are never counted closer together than this. Raise it if a roll of kicks looks like a mush.',arr('onGap',0),.05,.4,.01,'s'),
+  P('gapSnare','Shortest gap between snares','Two snares are never counted closer together than this.',arr('onGap',1),.04,.3,.01,'s'),
+  P('gapHat','Shortest gap between hats','Two hats are never counted closer together than this.',arr('onGap',2),.03,.2,.01,'s'),
+  P('lullAt','Quiet passage below','The music counts as quiet (a lull) when its energy of the last moments falls under this share of its long-term level. Higher: more passages count as quiet.',one('lullAt'),.2,.7,.01),
+  P('lullIn','Quiet: fade in over','How long it takes for a quiet passage to be noticed.',one('lullIn'),.1,2,.05,'s'),
+  P('lullOut','Quiet: fade out over','How fast the quiet state ends when the music comes back. Short brings the light back at once.',one('lullOut'),.02,.5,.01,'s')];
+ M.params=PA;M.paramById={};for(const p of PA)M.paramById[p.id]=p;
+ M.setParam=(id,v)=>{const p=M.paramById[id];if(!p)return;v=+v;if(!isFinite(v))return;p.set(v<p.min?p.min:v>p.max?p.max:v);};
+ M.resetParam=id=>{const p=M.paramById[id];if(p)p.set(p.def);};
+ M.dumpParams=()=>{const o={};for(const p of PA)if(Math.abs(p.get()-p.def)>1e-9)o[p.id]=p.get();return o;};
+ M.loadParams=o=>{if(!o||typeof o!=='object')return;for(const p of PA)if(p.id in o)M.setParam(p.id,o[p.id]);};}
 const listeners={};
 M.last={};          /* type -> {t, beat} of the latest event */
 M.recent=[];        /* the last 32 events */
